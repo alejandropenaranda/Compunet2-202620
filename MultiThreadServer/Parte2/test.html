@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡HTML Servido con Éxito!</title>
+
+    <!-- Tipografía moderna desde Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Tarjeta principal estilo Glassmorphism */
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Insignia de estado */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+
+        .badge-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            color: #94a3b8;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        /* Caja de explicación */
+        .flow-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 0.95rem;
+            color: #cbd5e1;
+            margin-bottom: 28px;
+        }
+
+        .flow-box span {
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        /* Botón interactivo básico */
+        .btn {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #ffffff;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <div class="badge">
+            <span class="badge-dot"></span>
+            Petición HTTP Resuelta (200 OK)
+        </div>
+
+        <h1>🚀 ¡Conexión Exitosa!</h1>
+
+        <p>
+            Si estás viendo esta pantalla, significa que el navegador realizó la petición y el servidor respondió
+            enviando este archivo HTML.
+        </p>
+
+        <div class="flow-box">
+            🖥️ <strong>Navegador</strong> ➔ Pide la página<br>
+            ⚙️ <strong>Servidor</strong> ➔ Envía este archivo<br>
+            🎨 <strong>Navegador</strong> ➔ <span>Renderiza el HTML + CSS</span>
+        </div>
+
+        <button class="btn" onclick="celebrar()">🎉 Probar interacción JS</button>
+    </div>
+
+    <script>
+        function celebrar() {
+            alert("¡Correcto! El código JavaScript también vino dentro del archivo enviado por el servidor.");
+        }
+    </script>
+
+</body>
+
+</html>

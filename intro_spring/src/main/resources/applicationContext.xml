@@ -9,17 +9,17 @@
     <bean id="estudianteRepositoryBean"
         class="com.example.repository.EstudianteRepositoryInMemory" />
 
-    <!-- 2. Bean del Servicio usando Inyección por Constructor -->
+    <!-- 2.1 Bean del Servicio usando Inyección por Constructor -->
     <bean id="estudianteServiceBean"
         class="com.example.service.EstudianteServiceImpl">
         <constructor-arg ref="estudianteRepositoryBean" />
     </bean>
 
-    <!-- 2. Inyección por Setter usando la propiedad 'estudianteRepository' -->
+    <!-- 2.2 Inyección por Setter usando la propiedad 'estudianteRepository' -->
 
-    <!-- <bean id="estudianteServiceSetterBean"
-        class="com.example.service.EstudianteServiceSetterImpl">
+    <bean id="estudianteServiceSetterBean"
+        class="com.example.service.EstudianteServiceImpl">
         <property name="estudianteRepository" ref="estudianteRepositoryBean" />
-    </bean> -->
+    </bean>
 
 </beans>

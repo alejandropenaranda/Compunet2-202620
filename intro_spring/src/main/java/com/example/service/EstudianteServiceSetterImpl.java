@@ -4,12 +4,16 @@ import com.example.model.Estudiante;
 import com.example.repository.EstudianteRepository;
 import java.util.List;
 
-public class EstudianteServiceImpl implements EstudianteService {
+public class EstudianteServiceSetterImpl implements EstudianteService {
 
-    private final EstudianteRepository estudianteRepository;
+    private EstudianteRepository estudianteRepository;
 
-    // Dependencia requerida inyectada por constructor
-    public EstudianteServiceImpl(EstudianteRepository estudianteRepository) {
+    // Dependencia requerida inyectada por setter
+    public EstudianteServiceSetterImpl() {
+    }
+
+    // Setter para inyección de dependencia
+    public void setEstudianteRepository(EstudianteRepository estudianteRepository) {
         this.estudianteRepository = estudianteRepository;
     }
 

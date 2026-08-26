@@ -5,10 +5,22 @@
   version="6.0">
 
   <!-- 1. Ubicación del archivo de configuración XML de Spring -->
+
+  <context-param>
+    <param-name>contextClass</param-name>
+    <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
+  </context-param> 
+
   <context-param>
     <param-name>contextConfigLocation</param-name>
-    <param-value>classpath:applicationContext.xml</param-value>
+    <param-value>com.example.config.AppConfig</param-value>
   </context-param>
+
+  <!-- Para Uso de annottions pero sin @config aun o uso directo de XML  -->
+  <!-- <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:applicationContextAnnotation.xml</param-value>
+  </context-param> -->
 
   <!-- 2. Listener de Spring que inicializa el ApplicationContext al arrancar Tomcat -->
   <listener>

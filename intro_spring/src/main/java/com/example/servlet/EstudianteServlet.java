@@ -30,7 +30,7 @@ public class EstudianteServlet extends HttpServlet {
         WebApplicationContext context = WebApplicationContextUtils
                 .getRequiredWebApplicationContext(getServletContext());
 
-        this.estudianteService = (EstudianteService) context.getBean("estudianteServiceBean");
+        this.estudianteService = context.getBean("estudianteServiceImpl", EstudianteService.class);
     }
 
     protected void doGet(HttpServletRequest reques, HttpServletResponse response)

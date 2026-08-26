@@ -4,6 +4,10 @@ import com.example.model.Estudiante;
 import com.example.repository.EstudianteRepository;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
 public class EstudianteServiceSetterImpl implements EstudianteService {
 
     private EstudianteRepository estudianteRepository;
@@ -13,6 +17,7 @@ public class EstudianteServiceSetterImpl implements EstudianteService {
     }
 
     // Setter para inyección de dependencia
+    @Autowired
     public void setEstudianteRepository(EstudianteRepository estudianteRepository) {
         this.estudianteRepository = estudianteRepository;
     }

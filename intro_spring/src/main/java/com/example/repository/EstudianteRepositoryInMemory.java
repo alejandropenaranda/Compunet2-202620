@@ -1,9 +1,16 @@
 package com.example.repository;
 
 import com.example.model.Estudiante;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Repository;
+
+@Repository
 public class EstudianteRepositoryInMemory implements EstudianteRepository {
 
     private final List<Estudiante> estudiantes = new ArrayList<>();
@@ -11,10 +18,10 @@ public class EstudianteRepositoryInMemory implements EstudianteRepository {
     public EstudianteRepositoryInMemory() {
         
     }
-
     // Método invocado al inicializar el Bean
+    @PostConstruct
     public void iniciarRepositorio() {
-        System.out.println("-> [LIFECYCLE] Inicializando repositortio y cargando datos iniciales...");
+        System.out.println("-> [LIFECYCLE] @PostConstruct: Inicializando repositortio y cargando datos iniciales...");
 
         estudiantes.add(new Estudiante("1", "Ana Gómez", "ana@icesi.edu.co"));
         estudiantes.add(new Estudiante("2", "Carlos Pérez", "carlos@icesi.edu.co"));
@@ -22,8 +29,9 @@ public class EstudianteRepositoryInMemory implements EstudianteRepository {
     }
 
     // Método invocado al destruir el Bean
+    @PreDestroy
     public void limpiarRecursos() {
-        System.out.println("-> [LIFECYCLE] Eliminando datos y iberando memoria...");
+        System.out.println("-> [LIFECYCLE] @PreDestoy Eliminando datos y iberando recursos...");
     }
 
     @Override

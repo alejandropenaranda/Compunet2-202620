@@ -4,11 +4,15 @@ import com.example.model.Estudiante;
 import com.example.repository.EstudianteRepository;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
 public class EstudianteServiceImpl implements EstudianteService {
 
     private final EstudianteRepository estudianteRepository;
 
-    // Dependencia requerida inyectada por constructor
+    @Autowired
     public EstudianteServiceImpl(EstudianteRepository estudianteRepository) {
         this.estudianteRepository = estudianteRepository;
     }

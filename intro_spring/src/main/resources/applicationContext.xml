@@ -27,4 +27,5 @@
 
     <!-- 3. Definición de bean CarritoMatriculo con scope prototype -->
     <bean id="carritoMatriculoBean" class="com.example.model.CarritoMatricula" scope="singleton" />
+
 </beans>

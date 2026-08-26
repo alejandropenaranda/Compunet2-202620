@@ -1,54 +1,44 @@
-# Plan de Implementación - Práctica Sesión 4: Scopes de Beans (Singleton vs Prototype)
+# Implementation Plan: Transición de Configuración XML a Anotaciones en Spring
 
-Este documento detalla exclusivamente las modificaciones y adiciones a realizar sobre el proyecto de la sesión anterior para explicar de forma práctica los Scopes de Spring.
+Este plan detalla los pasos exactos para migrar el manejo de dependencias y el ciclo de vida de los Beans del archivo `applicationContext.xml` a la configuración moderna basada en anotaciones de Spring.
 
-- **Paso 1: Creación de la Entidad Stateful (`CarritoMatricula`)**
-  - Ubicación: Crear en el paquete `com.compunet.model`.
-  - Atributos a definir:
-    - `Estudiante estudiante`
-    - `List<String> materias`
-  - Constructor: 
-    - Inicializar la lista de materias.
-    - **Clave pedagógica:** Agregar un `System.out.println` que imprima el Hash de memoria del objeto (`System.identityHashCode(this)`) para evidenciar en consola cada vez que Spring hace un `new`.
-  - Métodos: `asignarEstudiante()`, `agregarMateria()`, y getters correspondientes.
+### 1. Eliminar (o comentar) la configuración XML
+* **Acción:** Dirigirse a `src/main/resources/applicationContext.xml`.
+* **Modificación:** Comentar todo el contenido del archivo o eliminarlo por completo. A partir de ahora, Spring no leerá los Beans desde aquí.
 
-- **Paso 2: Modificación del XML (`applicationContext.xml`)**
-  - Abrir el archivo existente en `src/main/resources`.
-  - Explicar brevemente que los beans de Repositorio y Servicio siguen siendo `singleton` (su comportamiento por defecto, ya que no guardan estado de sesión).
-  - Agregar la definición del nuevo bean `carritoMatricula`:
-    - **Fase 1 (Para mostrar el error):** Configurar el bean con `scope="singleton"` (o sin el atributo, para demostrar el valor por defecto).
-    - **Fase 2 (Para mostrar la solución):** Modificar el bean agregando `scope="prototype"`.
+### 2. Crear la Clase de Configuración Principal (`AppConfig`)
+* **Acción:** Crear un nuevo archivo llamado `AppConfig.java` dentro del paquete base del proyecto (por ejemplo, `com.example.config`).
+* **Modificación:**
+    * Anotar la clase con `@Configuration`.
+    * Anotar la clase con `@ComponentScan(basePackages = "com.example")` para indicarle a Spring dónde buscar los componentes, servicios y repositorios.
 
-- **Paso 3: Actualización de la clase de pruebas (`Main.java`)**
-  - Mantener la inicialización del contexto `ClassPathXmlApplicationContext`.
-  - Obtener el `estudianteService` y extraer dos estudiantes distintos (ej. Ana y Carlos).
-  - **Simulación del Estudiante 1:**
-    - Pedir el bean `carritoMatricula` al contexto (`context.getBean`).
-    - Asignar el estudiante Ana y agregarle 2 materias.
-    - Imprimir el estado del carrito.
-  - **Simulación del Estudiante 2:**
-    - Pedir NUEVAMENTE el bean `carritoMatricula` al contexto.
-    - Asignar el estudiante Carlos y agregarle 1 materia distinta.
-    - Imprimir el estado del carrito.
-  - **Verificación en memoria:**
-    - Imprimir el resultado de la comparación de instancias: `(carritoAna == carritoCarlos)`.
+### 3. Migrar el Bean del Repositorio y su Ciclo de Vida
+* **Objetivo:** Reemplazar el bean `estudianteRepositoryBean` y sus métodos `init-method` y `destroy-method`.
+* **Modificación en `EstudianteRepositoryInMemory.java`:**
+    * Anotar la clase con `@Repository`.
+    * Anotar el método `iniciarRepositorio()` con `@PostConstruct` (Asegurarse de tener la dependencia `jakarta.annotation-api` en el `pom.xml`).
+    * Anotar el método `limpiarRecursos()` con `@PreDestroy`.
 
-- **Paso 4: Dinámica de Ejecución en Clase**
-  - **Primera ejecución (Singleton):** Mostrar a los estudiantes cómo el carrito de Carlos incluye accidentalmente las materias de Ana. Explicar el riesgo en aplicaciones web concurrentes (fuga de datos).
-  - **Segunda ejecución (Prototype):** Tras cambiar el scope en el XML, reejecutar para evidenciar que Spring ahora instancia hashes de memoria diferentes y los carritos son completamente independientes.
+### 4. Migrar los Beans de la Capa de Servicio (Inyección de Dependencias)
+* **Objetivo:** Reemplazar `estudianteServiceBean` y `estudianteServiceSetterBean`. 
+* *Nota para la clase:* Para evitar el error `NoUniqueBeanDefinitionException` (ya que hay dos implementaciones de la misma interfaz), solo una debe estar activa como Componente principal, o usar perfiles.
+* **Modificación en `EstudianteServiceImpl.java` (Inyección por Constructor):**
+    * Anotar la clase con `@Service`.
+    * Anotar el constructor que recibe el `EstudianteRepository` con `@Autowired`.
+* **Modificación en `EstudianteServiceSetterImpl.java` (Inyección por Setter):**
+    * *Si se usa esta implementación:* Anotar la clase con `@Service`.
+    * Anotar el método `setEstudianteRepository(...)` con `@Autowired`.
 
-  ---
+### 5. Migrar el Bean del Carrito de Matrícula (Manejo de Scopes)
+* **Objetivo:** Reemplazar `carritoMatriculoBean` y asignar correctamente su ciclo de vida para que no comparta estado entre sesiones.
+* **Modificación en `CarritoMatricula.java`:**
+    * Anotar la clase con `@Component`.
+    * Anotar la clase con `@Scope("prototype")` para asegurar que cada vez que se inyecte o solicite este Bean, Spring entregue una instancia completamente nueva.
 
-- **Ciclo de Vida de los Beans (Init y Destroy)**
-  - **Modificación en el Repositorio (`EstudianteRepositoryInMemory`):**
-    - Dejar el constructor vacío.
-    - Crear el método `iniciarRepositorio()`: Aquí se deben agregar los 3 estudiantes por defecto (Ana, Carlos, María) y un `System.out.println` con la etiqueta `[LIFECYCLE]` para evidenciar la inicialización.
-    - Crear el método `limpiarRecursos()`: Aquí se simula la eliminación de datos o cierre de conexiones, agregando un `System.out.println` con la etiqueta `[LIFECYCLE]`.
-  - **Configuración del XML (`applicationContext.xml`):**
-    - En la definición del bean del repositorio, enlazar los métodos creados usando los atributos de ciclo de vida.
-    - El bean debe quedar estructurado así:
-      `<bean id="estudianteRepository" class="com.compunet.repository.EstudianteRepositoryInMemory" init-method="iniciarRepositorio" destroy-method="limpiarRecursos" />`
-  - **Ejecución y Cierre del Contexto en el `Main.java`:**
-    - Al inicio de la ejecución del programa, los estudiantes notarán en la consola que el método `iniciarRepositorio()` se ejecuta automáticamente al instanciar el contenedor.
-    - **Paso Clave:** Para que Spring invoque el método de destrucción (`limpiarRecursos`), se debe cerrar el contexto explícitamente al final del programa.
-    - Agregar al final del `main` la línea: `((ClassPathXmlApplicationContext) context).close();` (o alternativamente `registerShutdownHook()`).
+### 6. Actualizar la Inicialización del Contexto en el Servlet/Main
+* **Objetivo:** Cambiar la forma en que la aplicación arranca el contenedor de Spring, dejando de leer el XML.
+* **Modificación (Si usan el método `init()` manual en el Servlet):**
+    * Reemplazar `ClassPathXmlApplicationContext("applicationContext.xml")` por `AnnotationConfigApplicationContext(AppConfig.class)`.
+* **Modificación (Si usan `web.xml` con ContextLoaderListener):**
+    * Cambiar el `contextClass` a `AnnotationConfigWebApplicationContext`.
+    * Cambiar el `contextConfigLocation` para que apunte al paquete/clase `com.example.config.AppConfig`.

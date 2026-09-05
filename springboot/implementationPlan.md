@@ -1,439 +1,185 @@
-# 📋 Plan de Implementación: Proyecto Base Spring Boot
-**Curso:** Computación en Red II (Compunet II) — Universidad ICESI  
-**Profesor / Docente Guía:** Alejandro Peñaranda  
-**Objetivo del Taller:** Guiar a los estudiantes paso a paso en la creación, configuración y comprensión de los componentes fundamentales de una aplicación Spring Boot moderna con persistencia JPA (H2/PostgreSQL), logging, Lombok y endpoints REST.
+# Plan de Implementación: Spring Data JPA, Hibernate y relaciones
 
----
+**Proyecto:** Compunet II - Spring Boot
 
-## 🎯 Tabla de Contenido
-1. [Visión General del Proyecto](#1-visión-general-del-proyecto)
-2. [Estructura del Proyecto](#2-estructura-del-proyecto)
-3. [Paso 1: Configuración de Dependencias (`pom.xml`)](#3-paso-1-configuración-de-dependencias-pomxml)
-4. [Paso 2: Configuración de Propiedades (`application.properties`)](#4-paso-2-configuración-de-propiedades-applicationproperties)
-5. [Paso 3: Modelado de Datos y Entidades JPA con Lombok](#5-paso-3-modelado-de-datos-y-entidades-jpa-con-lombok)
-6. [Paso 4: Inicialización Automática de Datos (`data.sql`)](#6-paso-4-inicialización-automática-de-datos-datasql)
-7. [Paso 5: Exposición de Endpoints REST (`Controller.java`)](#7-paso-5-exposición-de-endpoints-rest-controllerjava)
-8. [Paso 6: Ejecución, Pruebas y Validación en Clase](#8-paso-6-ejecución-pruebas-y-validación-en-clase)
-9. [Preguntas Frecuentes y Errores Comunes para Estudiantes](#9-preguntas-frecuentes-y-errores-comunes-para-estudiantes)
+## 1. Objetivo
 
----
+Evidenciar cómo una aplicación Spring Boot utiliza Spring Data JPA y Hibernate para:
 
-## 1. Visión General del Proyecto
+- Definir entidades Java que se convierten en tablas relacionales.
+- Generar claves primarias, columnas, restricciones y relaciones a partir de anotaciones JPA.
+- Crear repositorios sin implementar manualmente las consultas básicas.
+- Exponer métodos HTTP `GET` como punto de entrada para consultar la información persistida.
 
-Este proyecto sirve como plantilla base para aprender:
-- El ciclo de vida de una aplicación **Spring Boot**.
-- La configuración de **Spring Data JPA** y **Hibernate** para la gestión automática del esquema de base de datos.
-- El uso de bases de datos en memoria (**H2 Database**) para desarrollo rápido y su consola web interactiva.
-- La alternativa para conectarse a un motor de base de datos relacional de producción (**PostgreSQL**).
-- La reducción de código repetitivo (*boilerplate*) mediante **Project Lombok**.
-- El orden de ejecución y sincronización entre la creación del esquema DDL y la inserción de scripts SQL (`data.sql`).
-
----
-
-## 2. Estructura del Proyecto
+## 2. Flujo general de la aplicación
 
 ```text
-springboot/
-├── pom.xml                                   # Configuración de Maven y dependencias
-├── src/
-│   ├── main/
-│   │   ├── java/com/compunet/springboot/
-│   │   │   ├── SpringbootApplication.java     # Clase principal (punto de entrada)
-│   │   │   ├── ServletInitializer.java        # Inicializador para empaquetado WAR
-│   │   │   ├── controller/
-│   │   │   │   └── Controller.java            # Controlador REST base
-│   │   │   └── model/
-│   │   │       ├── Entidad.java               # Ejemplo de Lombok avanzado (@RequiredArgsConstructor)
-│   │   │       ├── Estudiante.java            # Entidad JPA: Estudiante
-│   │   │       └── Profesor.java              # Entidad JPA: Profesor
-│   │   └── resources/
-│   │       ├── application.properties         # Configuración centralizada de Spring Boot
-│   │       └── data.sql                       # Semilla de datos iniciales
-│   └── test/
-│       └── java/com/compunet/springboot/
-│           └── SpringbootApplicationTests.java
-└── logs/
-    └── application.log                        # Archivo físico de logs generado
+Entidades JPA
+    -> Hibernate analiza las anotaciones
+    -> genera el esquema SQL de la base de datos
+    -> data.sql inserta datos iniciales
+    -> Spring Data crea los repositorios
+    -> Controller recibe GET y llama findAll()
+    -> Hibernate consulta la BD y convierte las filas en objetos Java
+    -> Spring Web serializa los objetos como JSON
 ```
 
----
+## 3. Configuración y dependencias
 
-## 3. Paso 1: Configuración de Dependencias (`pom.xml`)
+El archivo `pom.xml` incluye los componentes que soportan el flujo:
 
-El archivo `pom.xml` define las bibliotecas necesarias y la configuración del compilador.
+| Dependencia | Función |
+| --- | --- |
+| `spring-boot-starter-data-jpa` | Integra JPA con Hibernate y Spring Data. |
+| `spring-boot-starter-webmvc` | Expone los controladores y endpoints HTTP. |
+| `h2` | Base de datos relacional en memoria para desarrollo y pruebas. |
+| `spring-boot-h2console` | Permite inspeccionar H2 desde la consola web. |
+| `lombok` | Genera getters, setters y constructores durante la compilación. |
+| `postgresql` | Driver disponible para cambiar a PostgreSQL. |
 
-### 3.1. Propiedades y Parent POM
-```xml
-<parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.8</version>
-    <relativePath/>
-</parent>
+La aplicación usa Java 17 y está empaquetada como WAR.
 
-<properties>
-    <java.version>17</java.version>
-</properties>
-```
-* **`spring-boot-starter-parent`:** Gestiona las versiones compatibles (BOM - *Bill of Materials*) y los plugins de Maven para evitar conflictos de dependencias.
-* **`<java.version>17</java.version>`:** Establece la versión de Java del proyecto.
+## 4. Configuración de persistencia
 
----
+En `src/main/resources/application.properties` se configura H2:
 
-### 3.2. Detalle de Dependencias
-
-| Dependencia | `groupId` / `artifactId` | Propósito pedagógico |
-| :--- | :--- | :--- |
-| **Spring Web MVC** | `org.springframework.boot:spring-boot-starter-webmvc` | Proporciona el servidor Tomcat embebido y el soporte para construir APIs REST y controladores HTTP. |
-| **Spring Data JPA** | `org.springframework.boot:spring-boot-starter-data-jpa` | Integra Hibernate y JPA para mapear clases Java a tablas de base de datos relacionales sin escribir SQL manual. |
-| **H2 Database** | `com.h2database:h2` (`runtime`) | Motor de base de datos relacional ligero en memoria RAM / archivo local, ideal para desarrollo y pruebas. |
-| **H2 Web Console** | `org.springframework.boot:spring-boot-h2console` | Habilita la interfaz web interactiva en el navegador para consultar tablas y datos de H2. |
-| **PostgreSQL Driver** | `org.postgresql:postgresql` (`runtime`) | Driver JDBC para conectar la aplicación a un servidor PostgreSQL real cuando se pase a producción/taller. |
-| **Project Lombok** | `org.projectlombok:lombok` (`optional`) | Genera automáticamente getters, setters, constructores y métodos `toString/equals/hashCode` en tiempo de compilación. |
-
----
-
-### 3.3. Configuración del Plugin de Compilación para Lombok
-Para que Lombok funcione correctamente con el compilador de Java y procese las anotaciones (`@Getter`, `@Setter`, etc.):
-
-```xml
-<build>
-    <finalName>mySpringBootApp</finalName>
-    <plugins>
-        <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-        </plugin>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <executions>
-                <execution>
-                    <id>default-compile</id>
-                    <phase>compile</phase>
-                    <goals>
-                        <goal>compile</goal>
-                    </goals>
-                    <configuration>
-                        <annotationProcessorPaths>
-                            <path>
-                                <groupId>org.projectlombok</groupId>
-                                <artifactId>lombok</artifactId>
-                            </path>
-                        </annotationProcessorPaths>
-                    </configuration>
-                </execution>
-            </executions>
-        </plugin>
-    </plugins>
-</build>
-```
-
----
-
-## 4. Paso 2: Configuración de Propiedades (`application.properties`)
-
-El archivo `src/main/resources/application.properties` está dividido en 5 bloques fundamentales que los estudiantes deben dominar:
-
-### 4.1. Configuración Básica del Servidor y Logging
 ```properties
-# 1. Nombre identificador del microservicio o aplicación
-spring.application.name=springboot
-
-# 2. Puerto HTTP donde escuchará el servidor Tomcat embebido
-server.port=8080
-
-# 3. Context Path: Prefijo global de todas las rutas HTTP
-# Cualquier endpoint como @GetMapping("/users") responderá en:
-# http://localhost:8080/springboot-api/users
-server.servlet.context-path=/springboot-api
-
-# 4. Configuración de Logs:
-# Nivel de log global para todas las librerías del framework
-logging.level.root=INFO
-# Nivel de log detallado únicamente para los paquetes de nuestra aplicación
-logging.level.com.compunet.springboot=DEBUG
-# Guarda los logs en un archivo físico en disco además de la consola
-logging.file.name=logs/application.log
-```
-
----
-
-### 4.2. Configuración de Base de Datos (H2 vs PostgreSQL)
-
-#### Opción A: H2 Database (Activa para la clase)
-```properties
-# Driver JDBC de H2
-spring.datasource.driver-class-name=org.h2.Driver
-
-# H2 en Memoria RAM:
-# 'DB_CLOSE_DELAY=-1' evita que la base de datos se destruya cuando se cierran las conexiones inactivas
 spring.datasource.url=jdbc:h2:mem:sistema-academico;DB_CLOSE_DELAY=-1
-
-# (Alternativa: H2 persistido en archivo en disco)
-# spring.datasource.url=jdbc:h2:./sistema-academico;DB_CLOSE_DELAY=-1
-
-# Credenciales de conexión
 spring.datasource.username=user
 spring.datasource.password=password
-
-# Dialecto SQL específico para optimizar las consultas de Hibernate hacia H2
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect
-```
-
-#### Opción B: PostgreSQL (Lista para alternar)
-```properties
-# spring.datasource.driver-class-name=org.postgresql.Driver
-# spring.datasource.url=jdbc:postgresql://localhost:5432/boardgame
-# spring.datasource.username=postgres
-# spring.datasource.password=postgres
-# spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-```
-
----
-
-### 4.3. Gestión del Esquema DDL con Hibernate (`ddl-auto`)
-```properties
 spring.jpa.hibernate.ddl-auto=create-drop
-```
-> **Explicación para los estudiantes sobre los valores de `ddl-auto`:**
-> - `none`: Hibernate no hace nada en la base de datos (requiere esquemas manuales).
-> - `validate`: Verifica que las tablas y columnas existentes en la BD coincidan exactamente con las clases `@Entity`. Falla si no coinciden.
-> - `update`: Modifica la estructura agregando nuevas tablas o columnas sin borrar los datos existentes.
-> - `create`: Borra las tablas existentes y las vuelve a crear al arrancar la aplicación.
-> - `create-drop`: Crea el esquema al iniciar la aplicación y lo destruye automáticamente al apagarla (ideal para pruebas y laboratorios).
-
----
-
-### 4.4. Inicialización de Datos y Sincronización Clave
-```properties
-# Ejecutar siempre los scripts SQL de inicialización (data.sql / schema.sql)
 spring.sql.init.mode=always
-
-# Muestra u oculta las sentencias SQL ejecutadas por Hibernate en la consola
-spring.jpa.show-sql=false
-
-# ¡PROPIEDAD CRÍTICA!
-# En Spring Boot moderno, el script data.sql se ejecuta por defecto ANTES de que Hibernate cree las tablas.
-# Al habilitar 'defer-datasource-initialization=true', forzamos a Spring a esperar que Hibernate cree las tablas
-# (mediante ddl-auto) ANTES de ejecutar el script data.sql. Sin esta propiedad, la app fallará con "Table not found".
 spring.jpa.defer-datasource-initialization=true
 ```
 
----
+### Efecto de las propiedades principales
 
-### 4.5. Consola Web Interactiva de H2
-```properties
-# Habilita la consola web en el navegador
-spring.h2.console.enabled=true
+- `ddl-auto=create-drop`: Hibernate crea las tablas al iniciar y las elimina al cerrar la aplicación.
+- `sql.init.mode=always`: ejecuta `data.sql` durante el arranque.
+- `defer-datasource-initialization=true`: ejecuta `data.sql` después de que Hibernate haya creado las tablas.
+- `server.servlet.context-path=/springboot-api`: agrega ese prefijo a todas las rutas HTTP.
+- `spring.h2.console.path=/h2-console`: habilita la consola de H2.
 
-# Ruta URI para ingresar (tomará en cuenta el context-path o ruta directa)
-spring.h2.console.path=/h2-console
-```
+La URL de conexión para la consola es `jdbc:h2:mem:sistema-academico`, con usuario `user` y contraseña `password`.
 
----
+## 5. Definición de entidades y generación de tablas
 
-## 5. Paso 3: Modelado de Datos y Entidades JPA con Lombok
+Las clases ubicadas en `src/main/java/com/compunet/springboot/model` están marcadas con `@Entity`. Hibernate las registra como entidades persistentes y, a partir de ellas, genera el esquema.
 
-En este paso se implementan las entidades dentro del paquete `com.compunet.springboot.model`.
+### 5.1. Tabla `Estudiante`
 
-### 5.1. Entidad `Estudiante.java`
-Ubicación: `src/main/java/com/compunet/springboot/model/Estudiante.java`
+`Estudiante` usa `@Table(name = "Estudiante")`. Su estructura se define con:
 
-```java
-package com.compunet.springboot.model;
+- `id`: clave primaria generada con `@GeneratedValue(strategy = GenerationType.IDENTITY)`.
+- `nombre` y `apellido`: columnas obligatorias (`nullable = false`).
+- `correo_institucional`: columna obligatoria, única y con longitud máxima de 50 caracteres.
+- `active`: columna booleana obligatoria.
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+La propiedad Java `correoInstitucional` se mapea explícitamente a la columna `correo_institucional` mediante `@Column(name = "correo_institucional")`.
 
-@Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class Estudiante {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    private String nombre;
-    private String apellido;
-    private String email;
-    private boolean active;
+### 5.2. Tabla `Profesor`
 
-}
-```
-* **`@Entity`:** Marca la clase como una tabla administrada por JPA/Hibernate.
-* **`@Id` y `@GeneratedValue(strategy = GenerationType.IDENTITY)`:** Define la clave primaria auto-incremental.
-* **Lombok (`@Getter`, `@Setter`, `@NoArgsConstructor`, `@AllArgsConstructor`):** Ahorra más de 40 líneas de código repetitivo de constructores y métodos de acceso.
+`Profesor` usa `@Table(name = "Profesor")` y contiene:
 
----
+- `id`: clave primaria autogenerada.
+- `nombre`, `apellido`, `correo_institucional`, `especialidad`, `departamento` y `active`.
+- Restricciones `NOT NULL` y unicidad para el correo, definidas con `@Column`.
+- La colección `cursos`, definida con `@OneToMany(mappedBy = "profesor")`.
 
-### 5.2. Entidad `Profesor.java`
-Ubicación: `src/main/java/com/compunet/springboot/model/Profesor.java`
+`mappedBy = "profesor"` indica que la relación es administrada por el atributo `profesor` de la entidad `Curso`. `cascade = CascadeType.ALL` propaga operaciones y `orphanRemoval = true` elimina cursos huérfanos.
+
+### 5.3. Tabla `Curso` y relación con `Profesor`
+
+`Curso` usa `@Table(name = "Curso")` y contiene `id`, `nombre`, `creditos` y `departamento`. El vínculo con el profesor se define así:
 
 ```java
-package com.compunet.springboot.model;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-@Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class Profesor {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
-    private String nombre;
-    private String apellido;
-    private String especialidad;
-
-}
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "profesor_id", nullable = false)
+private Profesor profesor;
 ```
 
----
+Esto genera una relación **muchos a uno**:
 
-### 5.3. Modelo POJO Didáctico: `Entidad.java` (Lombok Avanzado)
-Ubicación: `src/main/java/com/compunet/springboot/model/Entidad.java`
+```text
+Profesor (1) -------- (N) Curso
+                         |
+                         +-- profesor_id -> Profesor.id
+```
+
+En la base de datos, `Curso.profesor_id` funciona como clave foránea hacia `Profesor.id`. Por tanto, varios cursos pueden pertenecer al mismo profesor, pero cada curso debe tener un profesor (`nullable = false`). `FetchType.LAZY` indica que el profesor relacionado se carga bajo demanda.
+
+## 6. Datos iniciales
+
+El archivo `src/main/resources/data.sql` inserta:
+
+- Tres estudiantes.
+- Cuatro profesores.
+- Cuatro cursos asociados a profesores mediante `profesor_id`.
+
+Los `id` usados por los cursos (`1` a `4`) corresponden a los profesores insertados previamente. El orden de inserción es posible porque `data.sql` se ejecuta después de la creación del esquema y porque los profesores se insertan antes que los cursos.
+
+## 7. Repositorios con Spring Data JPA
+
+`CursoRepository` y `ProfesorRepository` son interfaces anotadas con `@Repository` que extienden:
 
 ```java
-package com.compunet.springboot.model;
-
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-
-@RequiredArgsConstructor
-@Getter
-@Setter
-public class Entidad {
-
-    private final String prop1;
-    private String prop2;
-    private final String prop3;
-
-    @NonNull
-    private Integer prop4;
-    
-}
-```
-> **Nota de Clase:** Explicar a los estudiantes cómo `@RequiredArgsConstructor` genera automáticamente un constructor únicamente para los campos marcados como `final` (`prop1`, `prop3`) o anotados con `@NonNull` (`prop4`), mientras que `prop2` queda fuera de ese constructor.
-
----
-
-## 6. Paso 4: Inicialización Automática de Datos (`data.sql`)
-
-Ubicación: `src/main/resources/data.sql`
-
-Este script se ejecuta automáticamente al levantar el contexto de Spring:
-
-```sql
--- Inserts base de las tablas - Se ejecuta automáticamente al iniciar el proyecto --
-INSERT INTO Estudiante (NOMBRE, APELLIDO, EMAIL, ACTIVE) VALUES ('Alejandro', 'Penaranda', 'apenaranda@icesi.edu.co', TRUE);
-INSERT INTO Estudiante (NOMBRE, APELLIDO, EMAIL, ACTIVE) VALUES ('Carlos', 'Perez', 'cperez@icesi.edu.co', TRUE);
-INSERT INTO Estudiante (NOMBRE, APELLIDO, EMAIL, ACTIVE) VALUES ('Raul', 'Martinez', 'rmartinez@icesi.edu.co', TRUE);
-
-INSERT INTO Profesor (NOMBRE, APELLIDO, ESPECIALIDAD) VALUES ('Domiciano', 'Rincon', 'Telematica');
-INSERT INTO Profesor (NOMBRE, APELLIDO, ESPECIALIDAD) VALUES ('Kevin', 'Rodriguez', 'Desarrollo de Software');
-INSERT INTO Profesor (NOMBRE, APELLIDO, ESPECIALIDAD) VALUES ('Alejandro', 'Munoz', 'Arquitectura de Software');
+JpaRepository<Curso, Long>
+JpaRepository<Profesor, Long>
 ```
 
----
+Al extender `JpaRepository`, Spring Data genera automáticamente la implementación y proporciona operaciones como `findAll`, `findById`, `save` y `deleteById`. En este proyecto se declara `findAll()` para obtener todos los registros de cada entidad.
 
-## 7. Paso 5: Exposición de Endpoints REST (`Controller.java`)
+No es necesario escribir una consulta SQL para los `GET`: el repositorio delega la operación a Hibernate, que genera y ejecuta el `SELECT` correspondiente y transforma cada fila en una instancia de la entidad.
 
-Ubicación: `src/main/java/com/compunet/springboot/controller/Controller.java`
+## 8. Controller como punto de entrada
 
-```java
-package com.compunet.springboot.controller;
+El archivo `controller/Controller.java` recibe los repositorios por inyección de dependencias en su constructor.
 
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
+### Endpoints disponibles
 
-@RestController
-public class Controller {
+| Método | URL completa | Comportamiento |
+| --- | --- | --- |
+| `GET` | `http://localhost:8080/springboot-api/` | Verifica que la aplicación está funcionando. |
+| `GET` | `http://localhost:8080/springboot-api/cursos` | Ejecuta `cursoRepository.findAll()` y retorna cursos en JSON. |
+| `GET` | `http://localhost:8080/springboot-api/profesores` | Ejecuta `profesorRepository.findAll()` y retorna profesores en JSON. |
 
-    @GetMapping("/")
-    public String home() {
-        return "!Proyecto Spring boot funcionando correctamente¡";
-    }
-    
-}
+El recorrido de `/cursos` es:
+
+```text
+Solicitud HTTP GET
+    -> Controller.getCursos()
+    -> CursoRepository.findAll()
+    -> Hibernate ejecuta la consulta SQL
+    -> filas de Curso se convierten en objetos Curso
+    -> Spring MVC responde con JSON
 ```
-* **`@RestController`:** Indica que la clase maneja peticiones HTTP y que las respuestas de los métodos se serializan directamente en el cuerpo de la respuesta (Response Body).
-* **`@GetMapping("/")`:** Mapea solicitudes HTTP GET en la ruta raíz del contexto.
 
----
+El endpoint de profesores sigue el mismo recorrido mediante `ProfesorRepository`.
 
-## 8. Paso 6: Ejecución, Pruebas y Validación en Clase
+## 9. Ejecución y comprobación
 
-### 8.1. Compilación y Ejecución
-Ejecutar en la terminal de la raíz del proyecto:
+Desde la carpeta `springboot`:
+
 ```bash
-# Con Maven Wrapper (Windows PowerShell / CMD)
 ./mvnw.cmd spring-boot:run
-
-# O con Maven estándar
-mvn spring-boot:run
 ```
 
----
+Después de iniciar la aplicación:
 
-### 8.2. Verificación de Endpoints y Consolas
+1. Abrir `/springboot-api/` para comprobar el estado del servidor.
+2. Abrir `/springboot-api/profesores` y verificar los profesores cargados desde `data.sql`.
+3. Abrir `/springboot-api/cursos` y verificar el campo `profesor` y la relación con cada curso.
+4. Abrir `/springboot-api/h2-console` y conectarse con los datos configurados para revisar las tablas `ESTUDIANTE`, `PROFESOR` y `CURSO`.
 
-1. **Endpoint REST Principal:**
-   - Abrir el navegador en: `http://localhost:8080/springboot-api/`
-   - **Respuesta esperada:** `!Proyecto Spring boot funcionando correctamente¡`
+La evidencia principal del funcionamiento es que las tablas se generan desde las entidades, la clave foránea `CURSO.PROFESOR_ID` se genera desde `@JoinColumn` y los endpoints consultan los datos mediante repositorios JPA sin SQL escrito en el controlador.
 
-2. **Consola Web de H2 Database:**
-   - Abrir en el navegador: `http://localhost:8080/springboot-api/h2-console`
-   - **Parámetros de conexión a ingresar en la interfaz:**
-     * **Driver Class:** `org.h2.Driver`
-     * **JDBC URL:** `jdbc:h2:mem:sistema-academico`
-     * **User Name:** `user`
-     * **Password:** `password`
-   - Presionar **Connect** y ejecutar:
-     ```sql
-     SELECT * FROM ESTUDIANTE;
-     SELECT * FROM PROFESOR;
-     ```
-   - Verificar que los datos insertados por `data.sql` estén presentes.
+## 10. Resultado esperado
 
-3. **Verificación de Logs:**
-   - Revisar la consola estándar de ejecución.
-   - Revisar el archivo generado en `logs/application.log` para confirmar la salida de nivel `DEBUG` del paquete `com.compunet.springboot`.
+La implementación demuestra la separación de responsabilidades:
 
----
-
-## 9. Preguntas Frecuentes y Errores Comunes para Estudiantes
-
-### ❓ 1. ¿Por qué la URL tiene `/springboot-api` antes de cualquier endpoint?
-> Porque en `application.properties` configuramos `server.servlet.context-path=/springboot-api`. Todo endpoint expuesto en la aplicación hereda este prefijo global.
-
-### ❓ 2. ¿Por qué `data.sql` fallaba antes con error `Table "ESTUDIANTE" not found`?
-> En versiones recientes de Spring Boot, el inicializador SQL corre antes de que Hibernate cree las tablas. Se debe agregar obligatoriamente `spring.jpa.defer-datasource-initialization=true` para indicar a Spring que espere la creación del esquema por parte de Hibernate.
-
-### ❓ 3. ¿Por qué al reiniciar el servidor se borran los datos en H2?
-> Porque se configuró la URL `jdbc:h2:mem:...` (en memoria RAM) y `spring.jpa.hibernate.ddl-auto=create-drop`. Para persistir datos entre reinicios en H2, se debe cambiar la URL a archivo local: `jdbc:h2:./sistema-academico;DB_CLOSE_DELAY=-1` y el ddl-auto a `update`.
-
-### ❓ 4. ¿Cómo cambiar a PostgreSQL para el laboratorio?
-> Comentar las líneas del bloque H2 en `application.properties` y descomentar el bloque de PostgreSQL configurando la base de datos, usuario y clave correspondientes.
+- **Modelo:** define la estructura y las relaciones de los datos.
+- **Hibernate:** traduce el modelo JPA a SQL y administra la persistencia.
+- **Spring Data JPA:** ofrece repositorios con operaciones CRUD.
+- **Controller:** expone la información mediante endpoints HTTP `GET`.
+- **H2:** permite observar y validar el esquema y los datos durante la ejecución.

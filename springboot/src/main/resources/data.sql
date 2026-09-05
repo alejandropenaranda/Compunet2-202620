@@ -1,8 +1,16 @@
 -- Inserts base de las tablas - Se ejecuta automaticamente al iniciar el proyecto --
-INSERT INTO Estudiante (NOMBRE, APELLIDO, EMAIL, ACTIVE) VALUES ('Alejandro', 'Penaranda', 'apenaranda@icesi.edu.co', TRUE);
-INSERT INTO Estudiante (NOMBRE, APELLIDO, EMAIL, ACTIVE) VALUES ('Carlos', 'Perez', 'cperez@icesi.edu.co', TRUE);
-INSERT INTO Estudiante (NOMBRE, APELLIDO, EMAIL, ACTIVE) VALUES ('Raul', 'Martinez', 'rmartinez@icesi.edu.co', TRUE);
+INSERT INTO Estudiante (nombre, apellido, correo_institucional, active) VALUES ('Alejandro', 'Paez', 'apaez@icesi.edu.co', TRUE);
+INSERT INTO Estudiante (nombre, apellido, correo_institucional, active) VALUES ('Carlos', 'Perez', 'cperez@icesi.edu.co', TRUE);
+INSERT INTO Estudiante (nombre, apellido, correo_institucional, active) VALUES ('Raul', 'Martinez', 'rmartinez@icesi.edu.co', TRUE);
 
-INSERT INTO Profesor (NOMBRE, APELLIDO, ESPECIALIDAD) VALUES ('Domiciano', 'Rincon', 'Telematica');
-INSERT INTO Profesor (NOMBRE, APELLIDO, ESPECIALIDAD) VALUES ('Kevin', 'Rodriguez', 'Desarrollo de Software');
-INSERT INTO Profesor (NOMBRE, APELLIDO, ESPECIALIDAD) VALUES ('Alejandro', 'Munoz', 'Arquitectura de Software');
+INSERT INTO Profesor (nombre, apellido, correo_institucional, especialidad, departamento, active) VALUES ('Domiciano', 'Rincon', 'drincon@icesi.edu.co', 'Telematica', 'Computación y Sistemas Inteligentes', TRUE);
+INSERT INTO Profesor (nombre, apellido, correo_institucional, especialidad, departamento, active) VALUES ('Kevin', 'Rodriguez', 'krodriguez@icesi.edu.co', 'Desarrollo de software', 'Computación y Sistemas Inteligentes', TRUE);
+INSERT INTO Profesor (nombre, apellido, correo_institucional, especialidad, departamento, active) VALUES ('Alejandro', 'Munoz', 'amunoz@icesi.edu.co', 'Arquitectura de Software', 'Computación y Sistemas Inteligentes', TRUE);
+INSERT INTO Profesor (nombre, apellido, correo_institucional, especialidad, departamento, active) VALUES ('Alejandro', 'Peñaranda', 'apenaranda@icesi.edu.co', 'Desarrollo de software', 'Computación y Sistemas Inteligentes', TRUE);
+
+
+INSERT INTO Curso (nombre, creditos, departamento, profesor_id) VALUES ('Desarrollo de aplicaciones moviles', 2, 'Computación y Sistemas Inteligentes', 1);
+-- INSERT INTO Curso (nombre, creditos, departamento, profesor_id) VALUES (NULL, 2, 'Computación y Sistemas Inteligentes', 1);
+INSERT INTO Curso (nombre, creditos, departamento, profesor_id) VALUES ('Computacion en internet 3', 4, 'Computación y Sistemas Inteligentes', 2);
+INSERT INTO Curso (nombre, creditos, departamento, profesor_id) VALUES ('Ingenieria de Software 4', 3, 'Computación y Sistemas Inteligentes', 3);
+INSERT INTO Curso (nombre, creditos, departamento, profesor_id) VALUES ('Computacion en internet 2', 3, 'Computación y Sistemas Inteligentes', 4);

@@ -47,7 +47,7 @@ public class Profesor {
     @Column (name = "active", nullable = false)
     private boolean active;
 
-    // @JsonIgnore
+    //@JsonIgnore
     @OneToMany(mappedBy = "profesor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Curso> cursos = new ArrayList<>();
     

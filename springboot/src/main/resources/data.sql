@@ -9,8 +9,8 @@ INSERT INTO Profesor (nombre, apellido, correo_institucional, especialidad, depa
 INSERT INTO Profesor (nombre, apellido, correo_institucional, especialidad, departamento, active) VALUES ('Alejandro', 'Peñaranda', 'apenaranda@icesi.edu.co', 'Desarrollo de software', 'Computación y Sistemas Inteligentes', TRUE);
 
 
-INSERT INTO Curso (nombre, creditos, departamento, profesor_id) VALUES ('Desarrollo de aplicaciones moviles', 2, 'Computación y Sistemas Inteligentes', 1);
 -- INSERT INTO Curso (nombre, creditos, departamento, profesor_id) VALUES (NULL, 2, 'Computación y Sistemas Inteligentes', 1);
+INSERT INTO Curso (nombre, creditos, departamento, profesor_id) VALUES ('Desarrollo de aplicaciones moviles', 2, 'Computación y Sistemas Inteligentes', 1);
 INSERT INTO Curso (nombre, creditos, departamento, profesor_id) VALUES ('Computacion en internet 3', 4, 'Computación y Sistemas Inteligentes', 2);
 INSERT INTO Curso (nombre, creditos, departamento, profesor_id) VALUES ('Ingenieria de Software 4', 3, 'Computación y Sistemas Inteligentes', 3);
 INSERT INTO Curso (nombre, creditos, departamento, profesor_id) VALUES ('Computacion en internet 2', 3, 'Computación y Sistemas Inteligentes', 4);

@@ -9,21 +9,24 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Table(name = "Estudiante")
-public class Estudiante {
 
+@Entity 
+@Getter
+@Setter 
+@AllArgsConstructor 
+@NoArgsConstructor 
+@Table(name = "estudiante_many")
+public class EstudianteMany {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -40,7 +43,14 @@ public class Estudiante {
     @Column(name = "active", nullable = false)
     private boolean active;
 
-    @OneToMany(mappedBy = "estudiante", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EstudianteCurso> estudianteCursos = new ArrayList<>();
+    // Ejemplo rápido de cómo sería un @ManyToMany puro dentro de Estudiante.java
+    // SIN crear la entidad Matricula:
 
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}) // Evitar cascade ALL y REMOVE porque si se elimina un estudiante, 
+    @JoinTable(                                                     // intentara eliminar los cursos asociados
+    name = "Estudiante_Curso_Many", 
+    joinColumns = @JoinColumn(name = "estudiante_id"), 
+    inverseJoinColumns = @JoinColumn(name = "curso_id")
+    )
+    private List<CursoMany> cursos = new ArrayList<>();
 }

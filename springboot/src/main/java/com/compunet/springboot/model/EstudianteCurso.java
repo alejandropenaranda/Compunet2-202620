@@ -1,43 +1,41 @@
 package com.compunet.springboot.model;
 
-import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Matricula")
-public class Matricula {
+@Table(name = "estudiante_curso")
+public class EstudianteCurso {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private EstudianteCursoId id = new EstudianteCursoId();
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("estudianteId")
     @JoinColumn(name = "estudiante_id", nullable = false)
     private Estudiante estudiante;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("cursoId")
     @JoinColumn(name = "curso_id", nullable = false)
     private Curso curso;
 
-    @Column(name = "fecha_matricula", nullable = false, updatable = false)
-    private LocalDateTime fechaMatricula = LocalDateTime.now();
-    
-    @Column(name = "estado", nullable = false)
-    private String estado = "ACTIVA"; 
+    public EstudianteCurso(Estudiante estudiante, Curso curso){
+        this.estudiante = estudiante;
+        this.curso = curso;
+        this.id = new EstudianteCursoId(estudiante.getId(),curso.getId());
+    }
 }

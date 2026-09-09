@@ -3,7 +3,7 @@ package com.compunet.springboot.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -47,7 +47,7 @@ public class Profesor {
     @Column (name = "active", nullable = false)
     private boolean active;
 
-    //@JsonIgnore
+    @JsonIgnoreProperties (value = "profesor")
     @OneToMany(mappedBy = "profesor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Curso> cursos = new ArrayList<>();
     

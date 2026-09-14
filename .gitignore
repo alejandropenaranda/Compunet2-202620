@@ -32,3 +32,16 @@ build/
 ### VS Code ###
 .vscode/
 logs/
+
+#### Others ###
+*.aux
+*.fls
+*.fdb*
+*.log
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+*.sty

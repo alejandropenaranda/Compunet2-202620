@@ -1,0 +1,640 @@
+\documentclass[aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{listings}
+
+% Estilo personalizado Beamer (ICESI)
+\usepackage{custombeamer}
+
+% ==============================================================================
+% CONFIGURACIÓN DE LISTINGS: PALETA VIBRANTE MULTICOLOR DE ALTO CONTRASTE
+% ==============================================================================
+\definecolor{codeBg}{HTML}{13141F}        % Fondo grafito oscuro profundo
+\definecolor{codeFrame}{HTML}{2A2D3D}     % Borde sutil del marco
+\definecolor{codeText}{HTML}{FFFFFF}      % Texto plano en blanco puro
+\definecolor{codeKeyword}{HTML}{FF2A85}   % Palabras reservadas en Rosa Neón (#FF2A85)
+\definecolor{codePrimitive}{HTML}{00F5A0} % Tipos primitivos en Verde Menta Neón (#00F5A0)
+\definecolor{codeType}{HTML}{00D2FF}      % Entidades y Clases en Cyan / Sky Blue (#00D2FF)
+\definecolor{codeAnnotation}{HTML}{FFD600}% Anotaciones Spring en Amarillo / Dorado Neón (#FFD600)
+\definecolor{codeBoolean}{HTML}{FF6B6B}   % Booleanos y constantes en Coral / Salmón (#FF6B6B)
+\definecolor{codeString}{HTML}{A7F432}    % Cadenas de texto en Lima Neón (#A7F432)
+\definecolor{codeComment}{HTML}{8E9AB0}   % Comentarios en Gris Lavanda (#8E9AB0)
+
+\lstdefinestyle{SpringCodeStyle}{
+  language=Java,
+  basicstyle=\ttfamily\fontsize{6pt}{7.5pt}\selectfont\color{codeText},
+  deletekeywords=[1]{boolean,int,long,void,double,float,char,byte,true,false,null},
+  keywordstyle=[1]\color{codeKeyword}\bfseries,
+  keywordstyle=[2]\color{codePrimitive}\bfseries,
+  keywordstyle=[3]\color{codeType}\bfseries,
+  keywordstyle=[4]\color{codeAnnotation}\bfseries,
+  keywordstyle=[5]\color{codeBoolean}\bfseries,
+  stringstyle=\color{codeString},
+  commentstyle=\color{codeComment}\itshape,
+  alsoletter={@},
+  morekeywords=[1]{public,private,final,class,interface,return,new,extends,implements,throw,if,var},
+  morekeywords=[2]{boolean,int,long,void,double,float,char,byte},
+  morekeywords=[3]{Usuario,Profesor,Curso,Estudiante,EstudianteCurso,Rol,Permiso,Optional,List,Page,Pageable,String,Long,Integer,ResponseEntity,PageRequest,Sort},
+  morekeywords=[4]{@Service,@Repository,@Transactional,@Query,@Param,@RequiredArgsConstructor,@Modifying,@GetMapping,@RequestParam,@PathVariable},
+  morekeywords=[5]{true,false,null},
+  numbers=none,
+  breaklines=true,
+  backgroundcolor=\color{codeBg},
+  frame=single,
+  rulecolor=\color{codeFrame},
+  tabsize=2,
+  aboveskip=1pt,
+  belowskip=1pt,
+  showstringspaces=false
+}
+\lstset{style=SpringCodeStyle}
+
+\begin{document}
+
+% ==============================================================================
+% PORTADA & AGENDA
+% ==============================================================================
+
+\titleSlideMinimalist
+  {Spring Data JPA}
+  {Services, Query Methods y Consultas Avanzadas}
+  {Prof. Alejandro Pe\~naranda}
+  {Universidad ICESI -- Compunet II}
+
+\agendaSlideNumbered
+  {Agenda de la Sesi\'on}
+  {Capa de Servicios y Repositorios}
+  {Query Methods por Convenci\'on}
+  {Consultas Avanzadas con @Query}
+  {Estudio Aut\'onomo: Transacciones y Paginaci\'on}
+
+% ==============================================================================
+% SECCIÓN 1: CAPA DE SERVICIOS Y CONSUMO DE REPOSITORIOS
+% ==============================================================================
+
+\sectionSlideStripe{01}{Capa de Servicios}{Invocaci\'on de Repositorios y Separaci\'on de Capas}
+
+\contentSlideBulletCard{Arquitectura en Capas: El Rol del Service}
+  {
+    \begin{itemize}
+      \item \textbf{Aislamiento de L\'ogica:} El Controller jam\'as accede directamente a la base de datos.
+      \item \textbf{Orquestaci\'on:} El Service coordina m\'ultiples repositorios y entidades.
+      \item \textbf{Reutilizaci\'on:} Reglas consumibles por REST, procesos batch o eventos.
+    \end{itemize}
+  }
+  {Principio SRP}
+  {El Service encapsula las reglas de negocio y delega las operaciones de acceso a datos al Repositorio.}
+
+\contentSlideTwoCols{Flujo de Consulta: Controller vs Service}
+  {Controller (Presentaci\'on)}
+  {
+    \begin{itemize}
+      \item Mapea rutas y verbos HTTP.
+      \item Recibe \texttt{@RequestParam} / \texttt{@PathVariable}.
+      \item Valida tipos de datos de entrada.
+      \item Retorna \texttt{ResponseEntity<T>}.
+    \end{itemize}
+  }
+  {Service (Negocio)}
+  {
+    \begin{itemize}
+      \item Aplica las pol\'iticas del dominio.
+      \item Invoca Query Methods del repositorio.
+      \item Transforma entidades a DTOs.
+      \item Orquesta m\'ultiples entidades.
+    \end{itemize}
+  }
+
+\contentSlideBulletCard{Inyecci\'on de Dependencias Robusta}
+  {
+    \begin{itemize}
+      \item \textbf{Inyecci\'on por Constructor:} Garantiza inmutabilidad con atributos \texttt{final}.
+      \item \textbf{Lombok @RequiredArgsConstructor:} Genera el constructor de dependencias autom\'aticamente.
+      \item \textbf{Mocks y Tests:} Permite instanciar el Service en tests aislando los Repositorios con Mockito.
+    \end{itemize}
+  }
+  {Inmutabilidad}
+  {Evitar \texttt{@Autowired} sobre campos para eliminar referencias nulas y facilitar pruebas unitarias.}
+
+\begin{frame}[fragile]{Ejemplo: Service Consumiendo Repositorios}
+\begin{lstlisting}[style=SpringCodeStyle]
+@Service
+@RequiredArgsConstructor
+public class CursoService {
+    private final CursoRepository cursoRepository;
+
+    // Invoca un metodo basico de busqueda en el repositorio
+    public List<Curso> listarCursosPorDepartamento(String depto) {
+        return cursoRepository.findByDepartamento(depto);
+    }
+
+    // Invoca la busqueda por identificador unico
+    public Optional<Curso> obtenerCursoPorId(Long id) {
+        return cursoRepository.findById(id);
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+% ==============================================================================
+% SECCIÓN 2: QUERY METHODS POR CONVENCIÓN (PASO A PASO DIDÁCTICO)
+% ==============================================================================
+
+\sectionSlideStripe{02}{Query Methods}{Introspecci\'on y Ejercicios Granulares}
+
+\contentSlideBulletCard{?`Qu\'e es un Query Method?}
+  {
+    \begin{itemize}
+      \item \textbf{Definici\'on:} Consulta derivada declarada \'unicamente mediante la firma de un m\'etodo en un \texttt{Repository}.
+      \item \textbf{Convenci\'on de Nombres:} El nombre del m\'etodo expresa directamente el criterio de b\'usqueda sin escribir SQL.
+      \item \textbf{Cero Boilerplate:} Elimina la necesidad de escribir implementaciones repetitivas de persistencia.
+    \end{itemize}
+  }
+  {Idea Clave}
+  {El nombre del m\'etodo Java se convierte en la propia sentencia de persistencia ejecutada contra la base de datos.}
+
+\contentSlideBulletCard{?`C\'omo Funcionan los Query Methods?}
+  {
+    \begin{itemize}
+      \item \textbf{Introspecci\'on en Arranque:} Spring analiza el nombre de cada m\'etodo de la interfaz.
+      \item \textbf{Traducci\'on Autom\'atica:} Convierte nombres Java en cl\'ausulas SQL/JPQL.
+      \item \textbf{Cero Implementaci\'on:} T\'u s\'olo declaras la firma; Spring genera el proxy.
+    \end{itemize}
+  }
+  {Sin SQL Manual}
+  {El desarrollador no escribe consultas manuales para el 80\% de las b\'usquedas del dominio.}
+
+% ------------------------------------------------------------------------------
+% PASO 1: BÚSQUEDA ÚNICA (findBy + Optional$<$T$>$)
+% ------------------------------------------------------------------------------
+\contentSlideBulletCard{B\'usqueda \'Unica: findBy... con Optional$<$T$>$}
+  {
+    \begin{itemize}
+      \item \textbf{Prop\'osito:} Consultar un registro \'unico mediante un campo identificador o \'unico.
+      \item \textbf{Retorno Optional$<$T$>$:} Modela expl\'icitamente la presencia o ausencia de la entidad.
+      \item \textbf{Evita NullPointer:} El Service decide si desempaquetar o lanzar una excepci\'on controlada.
+    \end{itemize}
+  }
+  {Claves \'Unicas}
+  {Ideal para buscar por correo institucional, c\'edula o nombres \'unicos en el sistema.}
+
+\begin{frame}[fragile]{Ejemplo 1: B\'usqueda \'Unica con Optional$<$T$>$}
+\begin{lstlisting}[style=SpringCodeStyle]
+// 1. Declaracion en UsuarioRepository
+@Repository
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+    Optional<Usuario> findByCorreoInstitucional(String correo);
+}
+
+// 2. Invocacion limpia desde UsuarioService
+@Service
+@RequiredArgsConstructor
+public class UsuarioService {
+    private final UsuarioRepository usuarioRepository;
+
+    public Optional<Usuario> obtenerPorCorreo(String correo) {
+        return usuarioRepository.findByCorreoInstitucional(correo);
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+% PASO 2: EXISTENCIA BOOLEANA (existsBy + boolean)
+% ------------------------------------------------------------------------------
+\contentSlideBulletCard{Comprobaci\'on de Existencia: existsBy... con boolean}
+  {
+    \begin{itemize}
+      \item \textbf{Prop\'osito:} Verificar r\'apidamente si ya existe un registro que cumpla el criterio.
+      \item \textbf{Retorno boolean:} Devuelve \texttt{true} si existe al menos una coincidencia; si no, \texttt{false}.
+      \item \textbf{Ultra-eficiente:} Genera \texttt{SELECT COUNT(id) > 0}, sin traer entidades pesadas a memoria.
+    \end{itemize}
+  }
+  {Rendimiento}
+  {Ideal para validaciones previas de disponibilidad de correos o c\'odigos antes de registrar.}
+
+\begin{frame}[fragile]{Ejemplo 2: Verificaci\'on de Existencia con boolean}
+\begin{lstlisting}[style=SpringCodeStyle]
+// 1. Declaracion en UsuarioRepository
+@Repository
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+    boolean existsByCorreoInstitucional(String correo);
+}
+
+// 2. Invocacion en UsuarioService para validaciones livianas
+@Service
+@RequiredArgsConstructor
+public class UsuarioService {
+    private final UsuarioRepository usuarioRepository;
+
+    public boolean existeCorreo(String correo) {
+        return usuarioRepository.existsByCorreoInstitucional(correo);
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+% PASO 3: BÚSQUEDA DE COLECCIONES (findBy + List$<$>$)
+% ------------------------------------------------------------------------------
+\contentSlideBulletCard{Colecciones de Entidades: findBy... con List$<$T$>$}
+  {
+    \begin{itemize}
+      \item \textbf{Prop\'osito:} Recuperar todas las entidades que coincidan con un criterio com\'un.
+      \item \textbf{Retorno List$<$T$>$:} Contiene todas las coincidencias ordenadas o en bruto.
+      \item \textbf{Colecci\'on Vac\'ia:} Si no hay registros coincidentes, Spring retorna una lista vac\'ia (nunca \texttt{null}).
+    \end{itemize}
+  }
+  {M\'ultiples Filas}
+  {Ideal para filtrar entidades que comparten una categor\'ia, departamento o estado com\'un.}
+
+\begin{frame}[fragile]{Ejemplo 3: B\'usqueda de Colecciones con List$<$T$>$}
+\begin{lstlisting}[style=SpringCodeStyle]
+// 1. Declaracion en CursoRepository
+@Repository
+public interface CursoRepository extends JpaRepository<Curso, Long> {
+    List<Curso> findByDepartamento(String departamento);
+}
+
+// 2. Invocacion en CursoService
+@Service
+@RequiredArgsConstructor
+public class CursoService {
+    private final CursoRepository cursoRepository;
+
+    public List<Curso> listarPorDepartamento(String depto) {
+        return cursoRepository.findByDepartamento(depto);
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+% PASO 4: CONTEO AGREGADO (countBy + long)
+% ------------------------------------------------------------------------------
+\contentSlideBulletCard{Conteo Num\'erico: countBy... con long}
+  {
+    \begin{itemize}
+      \item \textbf{Prop\'osito:} Conocer el total exacto de registros que cumplen una condici\'on.
+      \item \textbf{Retorno long:} Devuelve el n\'umero escalar directamente desde el motor SQL.
+      \item \textbf{Cero Sobrecarga:} Evita el antipatr\'on de hacer \texttt{findAll().size()} que colapsa la memoria JVM.
+    \end{itemize}
+  }
+  {M\'etricas}
+  {Genera directamente \texttt{SELECT COUNT(*)} en base de datos de manera at\'omica y veloz.}
+
+\begin{frame}[fragile]{Ejemplo 4: Conteo Num\'erico con countBy y long}
+\begin{lstlisting}[style=SpringCodeStyle]
+// 1. Declaracion en CursoRepository
+@Repository
+public interface CursoRepository extends JpaRepository<Curso, Long> {
+    long countByDepartamento(String departamento);
+}
+
+// 2. Invocacion en CursoService
+@Service
+@RequiredArgsConstructor
+public class CursoService {
+    private final CursoRepository cursoRepository;
+
+    public long contarCursosPorDepartamento(String depto) {
+        return cursoRepository.countByDepartamento(depto);
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+% PASO 5: OPERADORES LÓGICOS Y BANDERAS (And, Or, ActiveTrue)
+% ------------------------------------------------------------------------------
+\contentSlideBulletCard{Filtros Combinados: Operadores And / Or y Banderas}
+  {
+    \begin{itemize}
+      \item \textbf{Operador And:} Exige que se cumplan m\'ultiples condiciones simult\'aneas en el \texttt{WHERE}.
+      \item \textbf{Operador Or:} Permite coincidencia de cualquiera de las condiciones especificadas.
+      \item \textbf{Banderas Booleanas:} Sufijos directos como \texttt{ActiveTrue} o \texttt{ActiveFalse}.
+    \end{itemize}
+  }
+  {L\'ogica Booleana}
+  {Permite componer filtros complejos concatenando nombres de atributos de forma declarativa.}
+
+\begin{frame}[fragile]{Ejemplo 5: Filtro Combinado con And y ActiveTrue}
+\begin{lstlisting}[style=SpringCodeStyle]
+// 1. Declaracion en ProfesorRepository
+@Repository
+public interface ProfesorRepository extends JpaRepository<Profesor, Long> {
+    List<Profesor> findByDepartamentoAndActiveTrue(String depto);
+}
+
+// 2. Invocacion en ProfesorService
+@Service
+@RequiredArgsConstructor
+public class ProfesorService {
+    private final ProfesorRepository profesorRepository;
+
+    public List<Profesor> listarProfesoresActivos(String depto) {
+        return profesorRepository.findByDepartamentoAndActiveTrue(depto);
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+% PASO 6: RANGOS Y DESIGUALDADES (Between, GreaterThanEqual)
+% ------------------------------------------------------------------------------
+\contentSlideBulletCard{Rangos y Comparaciones Num\'ericas}
+  {
+    \begin{itemize}
+      \item \textbf{Between:} Rango cerrado inclusivo (\texttt{campo BETWEEN min AND max}).
+      \item \textbf{GreaterThan / GreaterThanEqual:} Valores mayores o mayores e iguales que un umbral.
+      \item \textbf{LessThan / LessThanEqual:} Valores menores o menores e iguales que un l\'imite.
+    \end{itemize}
+  }
+  {Filtros de Escala}
+  {Ideal para consultar rangos de cr\'editos acad\'emicos, edades, fechas o presupuestos.}
+
+\begin{frame}[fragile]{Ejemplo 6: Rangos de Cr\'editos con Between}
+\begin{lstlisting}[style=SpringCodeStyle]
+// 1. Declaracion en CursoRepository
+@Repository
+public interface CursoRepository extends JpaRepository<Curso, Long> {
+    List<Curso> findByCreditosBetween(int minCreditos, int maxCreditos);
+    List<Curso> findByCreditosGreaterThanEqual(int creditosMinimos);
+}
+
+// 2. Invocacion en CursoService
+@Service
+@RequiredArgsConstructor
+public class CursoService {
+    private final CursoRepository cursoRepository;
+
+    public List<Curso> listarPorRangoCreditos(int min, int max) {
+        return cursoRepository.findByCreditosBetween(min, max);
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+% PASO 7: BÚSQUEDA DE TEXTO Y ORDENAMIENTO (Containing, OrderBy)
+% ------------------------------------------------------------------------------
+\contentSlideBulletCard{B\'usqueda Parcial de Texto y Ordenamiento}
+  {
+    \begin{itemize}
+      \item \textbf{Containing:} Traduce a \texttt{LIKE \%texto\%} para b\'usqueda de fragmentos o palabras clave.
+      \item \textbf{IgnoreCase:} Aplica \texttt{UPPER()} en SQL para comparaciones insensibles a may\'usculas.
+      \item \textbf{OrderBy...Asc / Desc:} Aplica cl\'ausula \texttt{ORDER BY} directamente en la base de datos.
+    \end{itemize}
+  }
+  {Buscadores Web}
+  {Los par\'ametros se procesan v\'ia PreparedStatement, previniendo vulnerabilidades de inyecci\'on SQL.}
+
+\begin{frame}[fragile]{Ejemplo 7: B\'usqueda de Texto y Ordenamiento}
+\begin{lstlisting}[style=SpringCodeStyle]
+// 1. Declaraciones en repositorios
+public interface CursoRepository extends JpaRepository<Curso, Long> {
+    List<Curso> findByNombreContainingIgnoreCase(String fragmento);
+}
+
+public interface ProfesorRepository extends JpaRepository<Profesor, Long> {
+    List<Profesor> findByEspecialidadIgnoreCaseOrderByApellidoAsc(String esp);
+}
+
+// 2. Invocacion en Services correspondientes
+public List<Curso> buscarCursosPorTexto(String texto) {
+    return cursoRepository.findByNombreContainingIgnoreCase(texto);
+}
+
+public List<Profesor> listarPorEspecialidadOrdenados(String esp) {
+    return profesorRepository.findByEspecialidadIgnoreCaseOrderByApellidoAsc(esp);
+}
+\end{lstlisting}
+\end{frame}
+
+% ------------------------------------------------------------------------------
+% PASO 8: NAVEGACIÓN DE RELACIONES (_)
+% ------------------------------------------------------------------------------
+\contentSlideBulletCard{Navegaci\'on de Relaciones del Modelo (\_)}
+  {
+    \begin{itemize}
+      \item \textbf{Guion Bajo (\_):} Permite descender a trav\'es de relaciones JPA sin ambig\"uedad.
+      \item \textbf{Relaciones @ManyToOne:} \texttt{findByProfesor\_Id(Long id)} o por atributos anidados.
+      \item \textbf{Relaciones @ManyToMany:} \texttt{findByRoles\_Nombre(String rol)}.
+      \item \textbf{Tablas Intermedias:} \texttt{existsById\_EstudianteId(Long estudianteId)}.
+    \end{itemize}
+  }
+  {JOIN Autom\'atico}
+  {Spring Data detecta las relaciones mapeadas y genera autom\'aticamente el \texttt{INNER JOIN} relacional.}
+
+\begin{frame}[fragile]{Ejemplo 8: Navegaci\'on de Relaciones con Guion Bajo (\_)}
+\begin{lstlisting}[style=SpringCodeStyle]
+// 1. Repositorios navegando relaciones ManyToOne y ManyToMany
+public interface CursoRepository extends JpaRepository<Curso, Long> {
+    List<Curso> findByProfesor_Id(Long profesorId);
+    List<Curso> findByProfesor_Departamento(String depto);
+}
+
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+    List<Usuario> findByRoles_Nombre(String nombreRol);
+}
+
+// 2. Invocacion en UsuarioService
+public List<Usuario> listarUsuariosPorRol(String rol) {
+    return usuarioRepository.findByRoles_Nombre(rol);
+}
+\end{lstlisting}
+\end{frame}
+
+% ==============================================================================
+% SECCIÓN 3: CONSULTAS AVANZADAS CON @QUERY (JPQL Y NATIVE QUERIES)
+% ==============================================================================
+
+\sectionSlideStripe{03}{Consultas con @Query}{JPQL, Native SQL y Modificaciones Masivas}
+
+\contentSlideBulletCard{?`Cu\'ando los Query Methods no son Suficientes?}
+  {
+    \begin{itemize}
+      \item \textbf{M\'etodos Kilom\'etricos:} Nombres excesivamente largos y dif\'iciles de mantener.
+      \item \textbf{Agregaciones Complejas:} Cl\'ausulas \texttt{COUNT}, \texttt{AVG}, \texttt{GROUP BY}, \texttt{HAVING}.
+      \item \textbf{JOINs Expl\'icitos:} Consultas que cruzan tablas intermedias asociativas.
+    \end{itemize}
+  }
+  {Control Total}
+  {La anotaci\'on \texttt{@Query} permite definir exactamente la consulta requerida.}
+
+\contentSlideTwoCols{JPQL vs Native Query}
+  {JPQL (Java Persistence Query Language)}
+  {
+    \begin{itemize}
+      \item Basado en clases y atributos Java.
+      \item 100\% portable entre motores SQL.
+      \item Valida sintaxis al arrancar la app.
+      \item Mapea entidades directamente.
+    \end{itemize}
+  }
+  {Native Query (SQL del Motor)}
+  {
+    \begin{itemize}
+      \item Basado en tablas y columnas f\'isicas.
+      \item Acoplado al motor (PostgreSQL/H2).
+      \item Permite funciones espec\'ificas y CTEs.
+      \item Se valida al momento de ejecutarse.
+    \end{itemize}
+  }
+
+\contentSlideBulletCard{Par\'ametros Nombrados y Operaciones @Modifying}
+  {
+    \begin{itemize}
+      \item \textbf{Par\'ametros Nombrados:} Se vinculan usando \texttt{:nombre} y la anotaci\'on \texttt{@Param("nombre")}.
+      \item \textbf{Sentencias UPDATE/DELETE:} Deben marcarse obligatoriamente con \texttt{@Modifying}.
+      \item \textbf{Retorno de Filas:} Retornan un valor primitivo \texttt{int} con el total de filas modificadas.
+      \item \textbf{Contexto Transaccional:} Operaciones de modificaci\'on requieren transacci\'on activa.
+    \end{itemize}
+  }
+  {Actualizaci\'on Masiva}
+  {\texttt{@Modifying} actualiza directamente en la base de datos sin cargar entidades a memoria.}
+
+\begin{frame}[fragile]{Ejemplo 9: Consulta con JPQL y Native SQL}
+\begin{lstlisting}[style=SpringCodeStyle]
+@Repository
+public interface EstudianteRepository extends JpaRepository<Estudiante, Long> {
+
+    // 1. JPQL: Orientado al modelo de entidades (EstudianteCurso)
+    @Query("SELECT ec.estudiante FROM EstudianteCurso ec " +
+           "WHERE ec.curso.id = :cursoId AND ec.estudiante.active = true " +
+           "ORDER BY ec.estudiante.apellido ASC")
+    List<Estudiante> buscarEstudiantesPorCursoJPQL(@Param("cursoId") Long cursoId);
+
+    // 2. Native Query: SQL directo con INNER JOIN sobre tablas fisicas
+    @Query(value = "SELECT e.* FROM estudiante e " +
+                   "INNER JOIN estudiante_curso ec ON e.id = ec.estudiante_id " +
+                   "WHERE ec.curso_id = :cursoId AND e.active = true " +
+                   "ORDER BY e.apellido ASC", nativeQuery = true)
+    List<Estudiante> buscarEstudiantesPorCursoNativo(@Param("cursoId") Long cursoId);
+}
+\end{lstlisting}
+\end{frame}
+
+% ==============================================================================
+% SECCIÓN 4: ESTUDIO AUTÓNOMO (TRANSACCIONES, ACID Y PAGINACIÓN)
+% ==============================================================================
+
+\sectionSlideDark{04}{Estudio Aut\'onomo}{Transacciones ACID, Rollback y Paginaci\'on}
+
+\contentSlideQuoteStat{Propiedades ACID}{ACID}{Garant\'ia de Integridad}{“O se ejecutan todas las operaciones con \'exito, o ninguna deja huella en la base de datos.”}
+
+\contentSlideBulletCard{La Anotaci\'on @Transactional}
+  {
+    \begin{itemize}
+      \item \textbf{Proxy Din\'amico (AOP):} Spring intercepta el m\'etodo y gestiona la conexi\'on JDBC.
+      \item \textbf{Delimitaci\'on At\'omica:} Abre transacci\'on al entrar y confirma con \texttt{commit}.
+      \item \textbf{Gesti\'on de Fallos:} Si ocurre una excepci\'on no controlada, revierte con \texttt{rollback}.
+    \end{itemize}
+  }
+  {Consistencia}
+  {Evita estados intermedios inconsistentes entre m\'ultiples tablas ante fallos imprevistos.}
+
+\contentSlideTwoCols{Pol\'iticas de Rollback y Rendimiento}
+  {Comportamiento de Rollback}
+  {
+    \begin{itemize}
+      \item \textbf{Por defecto:} Rollback en \texttt{RuntimeException} y \texttt{Error}.
+      \item \textbf{Checked Exceptions:} Por defecto NO provocan rollback.
+      \item \textbf{Regla robusta:} Usar \texttt{@Transactional(rollbackFor = Exception.class)}.
+    \end{itemize}
+  }
+  {Optimizaci\'on readOnly}
+  {
+    \begin{itemize}
+      \item Con \texttt{readOnly = true}:
+      \item Hibernate apaga el \textit{Dirty Checking}.
+      \item Ahorra CPU y memoria Heap.
+      \item Permite enrutar a r\'eplicas de lectura.
+    \end{itemize}
+  }
+
+\begin{frame}[fragile]{Ejemplo Aut\'onomo: Transacci\'on y Rollback}
+\begin{lstlisting}[style=SpringCodeStyle]
+@Service
+@RequiredArgsConstructor
+public class MatriculaService {
+    private final EstudianteRepository estudianteRepo;
+    private final CursoRepository cursoRepo;
+    private final EstudianteCursoRepository estudianteCursoRepo;
+
+    @Transactional(rollbackFor = Exception.class)
+    public EstudianteCurso matricular(Long estId, Long cursoId) {
+        var est = estudianteRepo.findById(estId)
+            .orElseThrow(() -> new IllegalArgumentException("Estudiante no existe"));
+        var cur = cursoRepo.findById(cursoId)
+            .orElseThrow(() -> new IllegalArgumentException("Curso no existe"));
+
+        var mat = estudianteCursoRepo.save(new EstudianteCurso(est, cur));
+
+        // Regla tardia: si excede creditos, lanza excepcion y dispara ROLLBACK
+        if (cur.getCreditos() > 4) {
+            throw new RuntimeException("Creditos excedidos -> ROLLBACK de la matricula");
+        }
+        return mat;
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+\contentSlideBulletCard{Paginaci\'on: ?`Por qu\'e Evitar findAll()?}
+  {
+    \begin{itemize}
+      \item \textbf{Saturaci\'on de Memoria:} Cargar miles de filas satura el Heap (OutOfMemory).
+      \item \textbf{Latencia de Red:} Transferir payloads JSON gigantescos bloquea al cliente.
+      \item \textbf{Carga en BD:} Bloqueos prolongados de lectura y alto I/O en disco.
+    \end{itemize}
+  }
+  {Escalabilidad}
+  {La paginaci\'on fragmenta grandes vol\'umenes de datos entregando bloques controlados bajo demanda.}
+
+\contentSlideTwoCols{Page$<$T$>$ vs Slice$<$T$>$}
+  {Page$<$T$>$ (Paginado Completo)}
+  {
+    \begin{itemize}
+      \item Ejecuta \texttt{SELECT ... LIMIT} y \texttt{COUNT(*)}.
+      \item Conoce el total de p\'aginas y registros.
+      \item Ideal para interfaces web con barra de p\'aginas (1, 2, 3...).
+    \end{itemize}
+  }
+  {Slice$<$T$>$ (Scroll Infinito)}
+  {
+    \begin{itemize}
+      \item Ejecuta \texttt{SELECT ... LIMIT + 1}.
+      \item S\'olo sabe si existe p\'agina siguiente.
+      \item Ahorra el costo de contar todo con \texttt{COUNT(*)}.
+      \item Ideal para aplicaciones m\'oviles y feeds infinitos.
+    \end{itemize}
+  }
+
+\begin{frame}[fragile]{Ejemplo Aut\'onomo: Paginaci\'on y Ordenamiento}
+\begin{lstlisting}[style=SpringCodeStyle]
+// Repositorio: Spring Data inyecta LIMIT y OFFSET segun el Pageable
+public interface CursoRepository extends JpaRepository<Curso, Long> {
+    Page<Curso> findByDepartamento(String depto, Pageable pageable);
+}
+
+// Servicio: construye el PageRequest con paginacion y orden
+@Transactional(readOnly = true)
+public Page<Curso> listarPaginados(String depto, int page, int size, String sort) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+    return cursoRepository.findByDepartamento(depto, pageable);
+}
+
+// Controlador REST: expone los parametros de consulta al cliente
+@GetMapping("/paginados")
+public ResponseEntity<Page<Curso>> getPaginados(
+        @RequestParam String depto, @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "nombre") String sort) {
+    return ResponseEntity.ok(cursoService.listarPaginados(depto, page, size, sort));
+}
+\end{lstlisting}
+\end{frame}
+
+\contentSlideQuoteStat{Conclusi\'on de la Sesi\'on}{100\%}{Arquitectura Profesional}{“El dise\~no riguroso de Query Methods y @Query en la persistencia, coordinado por Servicios limpios, garantiza un backend expresivo, desacoplado y escalable.”}
+
+\end{document}

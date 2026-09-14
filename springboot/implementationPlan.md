@@ -1,185 +1,234 @@
-# Plan de Implementación: Spring Data JPA, Hibernate y relaciones
+# Plan de Implementación de Clase: Services, Query Methods y Native Queries en Spring Data JPA
 
-**Proyecto:** Compunet II - Spring Boot
+**Asignatura:** Computación en Red II (Compunet II)  
+**Institución:** Universidad ICESI  
+**Frameworks:** Spring Boot 4.x / 3.x, Spring Data JPA, Hibernate, H2 / PostgreSQL  
+**Asignación de Clase (Estudiantes):** [asignacion_query_methods.md](file:///C:/Users/Alexo/Documents/ICESI/2026-2/COMPUNET_II/Repositorios/Code%20-%20AP%20-%20Compunet2-202620/springboot/asignacion_query_methods.md)  
+**Guía con Solucionario (Docente):** [ejercicios_query_methods.md](file:///C:/Users/Alexo/Documents/ICESI/2026-2/COMPUNET_II/Repositorios/Code%20-%20AP%20-%20Compunet2-202620/springboot/ejercicios_query_methods.md)  
 
-## 1. Objetivo
+---
 
-Evidenciar cómo una aplicación Spring Boot utiliza Spring Data JPA y Hibernate para:
+## 1. Objetivos Pedagógicos de la Sesión
 
-- Definir entidades Java que se convierten en tablas relacionales.
-- Generar claves primarias, columnas, restricciones y relaciones a partir de anotaciones JPA.
-- Crear repositorios sin implementar manualmente las consultas básicas.
-- Exponer métodos HTTP `GET` como punto de entrada para consultar la información persistida.
+Esta sesión presencial tiene como propósito central que los estudiantes dominen el **diseño y consumo de consultas avanzadas** a través de una **arquitectura desacoplada en capas**:
 
-## 2. Flujo general de la aplicación
+### 🎯 Núcleo Presencial de la Clase:
+1. **La Capa de Servicios (`@Service`):** Aplicar el principio de responsabilidad única (SRP), orquestar múltiples repositorios, ejecutar validaciones de dominio y exponer una interfaz limpia hacia los controladores HTTP.
+2. **Consultas Derivadas (Query Methods por Convención):** Comprender el mecanismo de introspección de Spring Data JPA para derivar consultas SQL/JPQL a partir de firmas de métodos (`findBy...`, `existsBy...`, `countBy...`, operadores lógicos, rangos y navegación por asociaciones).
+3. **Consultas con `@Query` (JPQL y Native Queries):** Identificar cuándo la convención resulta insuficiente y dominar la creación de consultas orientadas a objetos (JPQL) y consultas SQL nativas del motor, gestionando parámetros con `@Param` y actualizaciones con `@Modifying`.
+4. **Desarrollo Guiado en Clase:** Resolver en vivo una serie progresiva de ejercicios prácticos basados en el dominio del proyecto (`Usuario`, `Profesor`, `Curso`, `Estudiante`, `Rol`, `Permiso`).
 
-```text
-Entidades JPA
-    -> Hibernate analiza las anotaciones
-    -> genera el esquema SQL de la base de datos
-    -> data.sql inserta datos iniciales
-    -> Spring Data crea los repositorios
-    -> Controller recibe GET y llama findAll()
-    -> Hibernate consulta la BD y convierte las filas en objetos Java
-    -> Spring Web serializa los objetos como JSON
+### 📚 Módulo de Estudio Autónomo (Anexos al final):
+- **Gestión Transaccional (`@Transactional` y Rollback ACID):** Comprender proxies de Spring AOP, garantías ACID y políticas de rollback ante checked/unchecked exceptions.
+- **Paginación y Ordenamiento (`Pageable`, `Page`, `Slice`):** Fragmentar conjuntos de datos masivos y optimizar el consumo de memoria JVM.
+
+---
+
+## 2. Arquitectura Multicapa y Flujo de Consultas
+
+El flujo de ejecución debe mantener las fronteras de cada componente estrictamente delimitadas:
+
+```
+[ Cliente HTTP (Postman / Frontend) ]
+                │  1. Petición HTTP (GET / POST)
+                ▼
+┌────────────────────────────────────────┐
+│        Capa de Controladores           │  <- @RestController
+│  - Mapea rutas y parámetros (@Param).  │  <- Valida sintaxis y formato.
+│  - No contiene lógica de negocio.      │  <- Retorna ResponseEntity<T>.
+└──────────────────┬─────────────────────┘
+                   │  2. Invoca método de negocio
+                   ▼
+┌────────────────────────────────────────┐
+│          Capa de Servicios             │  <- @Service
+│  - Reglas de validación de dominio.    │  <- Orquesta repositorios.
+│  - Invoca Query Methods y @Query.      │  <- Mapea a DTOs / Excepciones.
+└──────────────────┬─────────────────────┘
+                   │  3. Invoca método de persistencia
+                   ▼
+┌────────────────────────────────────────┐
+│        Capa de Persistencia            │  <- Interfaces @Repository
+│  - Métodos CRUD básicos de JPA.        │  <- Query Methods derivados.
+│  - JPQL y Native Queries (@Query).     │  <- Ejecución contra BD.
+└──────────────────┬─────────────────────┘
+                   │  4. Sentencia SQL generada (JDBC / HikariCP)
+                   ▼
+┌────────────────────────────────────────┐
+│       Base de Datos Relacional         │  <- H2 en memoria / PostgreSQL
+└────────────────────────────────────────┘
 ```
 
-## 3. Configuración y dependencias
+---
 
-El archivo `pom.xml` incluye los componentes que soportan el flujo:
+## 3. Módulo 1: La Capa de Servicios (`@Service`) e Invocación de Repositorios
 
-| Dependencia | Función |
-| --- | --- |
-| `spring-boot-starter-data-jpa` | Integra JPA con Hibernate y Spring Data. |
-| `spring-boot-starter-webmvc` | Expone los controladores y endpoints HTTP. |
-| `h2` | Base de datos relacional en memoria para desarrollo y pruebas. |
-| `spring-boot-h2console` | Permite inspeccionar H2 desde la consola web. |
-| `lombok` | Genera getters, setters y constructores durante la compilación. |
-| `postgresql` | Driver disponible para cambiar a PostgreSQL. |
+### 3.1. Responsabilidades del `@Service`
+- **Desacoplamiento total:** El controlador desconoce cómo se almacenan o consultan los datos; solo interactúa con el contrato del servicio.
+- **Validaciones de negocio previas:** Comprobar estados (`active`), verificar unicidad o validar reglas antes de invocar las consultas.
+- **Inyección por constructor:** Utilizar atributos `private final` combinados con `@RequiredArgsConstructor` de Lombok en lugar de `@Autowired` sobre campos. Esto facilita el testing unitario con Mockito y previene nulidades accidentales.
 
-La aplicación usa Java 17 y está empaquetada como WAR.
-
-## 4. Configuración de persistencia
-
-En `src/main/resources/application.properties` se configura H2:
-
-```properties
-spring.datasource.url=jdbc:h2:mem:sistema-academico;DB_CLOSE_DELAY=-1
-spring.datasource.username=user
-spring.datasource.password=password
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect
-spring.jpa.hibernate.ddl-auto=create-drop
-spring.sql.init.mode=always
-spring.jpa.defer-datasource-initialization=true
-```
-
-### Efecto de las propiedades principales
-
-- `ddl-auto=create-drop`: Hibernate crea las tablas al iniciar y las elimina al cerrar la aplicación.
-- `sql.init.mode=always`: ejecuta `data.sql` durante el arranque.
-- `defer-datasource-initialization=true`: ejecuta `data.sql` después de que Hibernate haya creado las tablas.
-- `server.servlet.context-path=/springboot-api`: agrega ese prefijo a todas las rutas HTTP.
-- `spring.h2.console.path=/h2-console`: habilita la consola de H2.
-
-La URL de conexión para la consola es `jdbc:h2:mem:sistema-academico`, con usuario `user` y contraseña `password`.
-
-## 5. Definición de entidades y generación de tablas
-
-Las clases ubicadas en `src/main/java/com/compunet/springboot/model` están marcadas con `@Entity`. Hibernate las registra como entidades persistentes y, a partir de ellas, genera el esquema.
-
-### 5.1. Tabla `Estudiante`
-
-`Estudiante` usa `@Table(name = "Estudiante")`. Su estructura se define con:
-
-- `id`: clave primaria generada con `@GeneratedValue(strategy = GenerationType.IDENTITY)`.
-- `nombre` y `apellido`: columnas obligatorias (`nullable = false`).
-- `correo_institucional`: columna obligatoria, única y con longitud máxima de 50 caracteres.
-- `active`: columna booleana obligatoria.
-
-La propiedad Java `correoInstitucional` se mapea explícitamente a la columna `correo_institucional` mediante `@Column(name = "correo_institucional")`.
-
-### 5.2. Tabla `Profesor`
-
-`Profesor` usa `@Table(name = "Profesor")` y contiene:
-
-- `id`: clave primaria autogenerada.
-- `nombre`, `apellido`, `correo_institucional`, `especialidad`, `departamento` y `active`.
-- Restricciones `NOT NULL` y unicidad para el correo, definidas con `@Column`.
-- La colección `cursos`, definida con `@OneToMany(mappedBy = "profesor")`.
-
-`mappedBy = "profesor"` indica que la relación es administrada por el atributo `profesor` de la entidad `Curso`. `cascade = CascadeType.ALL` propaga operaciones y `orphanRemoval = true` elimina cursos huérfanos.
-
-### 5.3. Tabla `Curso` y relación con `Profesor`
-
-`Curso` usa `@Table(name = "Curso")` y contiene `id`, `nombre`, `creditos` y `departamento`. El vínculo con el profesor se define así:
+### 3.2. Snippet de Ejemplo: `ProfesorService` consumiendo `ProfesorRepository` y `CursoRepository`
 
 ```java
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "profesor_id", nullable = false)
-private Profesor profesor;
+package com.compunet.springboot.service;
+
+import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.compunet.springboot.model.Profesor;
+import com.compunet.springboot.model.Curso;
+import com.compunet.springboot.repository.ProfesorRepository;
+import com.compunet.springboot.repository.CursoRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class ProfesorService {
+
+    private final ProfesorRepository profesorRepository;
+    private final CursoRepository cursoRepository;
+
+    @Transactional(readOnly = true)
+    public List<Profesor> listarProfesoresPorDepartamento(String departamento) {
+        if (departamento == null || departamento.isBlank()) {
+            throw new IllegalArgumentException("El departamento no puede estar vacío");
+        }
+        return profesorRepository.findByDepartamentoIgnoreCaseAndActiveTrue(departamento);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Curso> listarCursosDeProfesor(Long profesorId) {
+        if (!profesorRepository.existsByIdAndActiveTrue(profesorId)) {
+            throw new EntityNotFoundException("El profesor no existe o se encuentra inactivo");
+        }
+        return cursoRepository.findByProfesor_IdOrderByNombreAsc(profesorId);
+    }
+}
 ```
 
-Esto genera una relación **muchos a uno**:
+---
 
-```text
-Profesor (1) -------- (N) Curso
-                         |
-                         +-- profesor_id -> Profesor.id
-```
+## 4. Módulo 2: Consultas Derivadas (Query Methods por Convención)
 
-En la base de datos, `Curso.profesor_id` funciona como clave foránea hacia `Profesor.id`. Por tanto, varios cursos pueden pertenecer al mismo profesor, pero cada curso debe tener un profesor (`nullable = false`). `FetchType.LAZY` indica que el profesor relacionado se carga bajo demanda.
+Spring Data JPA analiza el nombre de cada método en la interfaz del repositorio al iniciar el contexto de la aplicación, construyendo la consulta correspondiente sin requerir código SQL manual.
 
-## 6. Datos iniciales
+### 4.1. Catálogo de Palabras Clave y Operadores
 
-El archivo `src/main/resources/data.sql` inserta:
+| Prefijo / Palabra Clave | Ejemplo de Método Java | Equivalente SQL / JPQL |
+| :--- | :--- | :--- |
+| `findBy...` | `findByCorreoInstitucional(String correo)` | `WHERE correo_institucional = ?` |
+| `existsBy...` | `existsByCorreoInstitucional(String correo)` | `SELECT CASE WHEN COUNT(x)>0 THEN TRUE...` |
+| `countBy...` | `countByActiveTrue()` | `SELECT COUNT(x) WHERE active = TRUE` |
+| `deleteBy...` | `deleteByActiveFalse()` | `DELETE FROM entidad WHERE active = FALSE` |
+| `And` / `Or` | `findByDepartamentoAndActiveTrue(String d)` | `WHERE departamento = ? AND active = TRUE` |
+| `Between` | `findByCreditosBetween(int min, int max)` | `WHERE creditos BETWEEN ? AND ?` |
+| `GreaterThan` / `LessThan` | `findByCreditosGreaterThanEqual(int min)` | `WHERE creditos >= ?` |
+| `Containing` / `StartingWith` | `findByNombreContainingIgnoreCase(String t)` | `WHERE UPPER(nombre) LIKE UPPER('%t%')` |
+| `OrderBy...Asc/Desc` | `findByActiveTrueOrderByApellidoAsc()` | `WHERE active = TRUE ORDER BY apellido ASC` |
+| `Relación Navegada (_)` | `findByProfesor_Departamento(String d)` | `JOIN profesor p WHERE p.departamento = ?` |
 
-- Tres estudiantes.
-- Cuatro profesores.
-- Cuatro cursos asociados a profesores mediante `profesor_id`.
-
-Los `id` usados por los cursos (`1` a `4`) corresponden a los profesores insertados previamente. El orden de inserción es posible porque `data.sql` se ejecuta después de la creación del esquema y porque los profesores se insertan antes que los cursos.
-
-## 7. Repositorios con Spring Data JPA
-
-`CursoRepository` y `ProfesorRepository` son interfaces anotadas con `@Repository` que extienden:
+### 4.2. Snippet de Ejemplo: `CursoRepository`
 
 ```java
-JpaRepository<Curso, Long>
-JpaRepository<Profesor, Long>
+package com.compunet.springboot.repository;
+
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import com.compunet.springboot.model.Curso;
+
+@Repository
+public interface CursoRepository extends JpaRepository<Curso, Long> {
+
+    // 1. Filtrado exacto con descarte de mayúsculas/minúsculas
+    List<Curso> findByDepartamentoIgnoreCase(String departamento);
+
+    // 2. Coincidencia parcial de texto en el nombre
+    List<Curso> findByNombreContainingIgnoreCase(String fragmento);
+
+    // 3. Rango de créditos y ordenamiento
+    List<Curso> findByCreditosBetweenOrderByCreditosDesc(int min, int max);
+
+    // 4. Navegación por relación ManyToOne (Profesor)
+    List<Curso> findByProfesor_Id(Long profesorId);
+
+    // 5. Navegación por atributo de la relación ManyToOne
+    List<Curso> findByProfesor_DepartamentoIgnoreCase(String deptoProfesor);
+
+    // 6. Verificación de existencia combinada
+    boolean existsByNombreIgnoreCaseAndDepartamentoIgnoreCase(String nombre, String departamento);
+}
 ```
 
-Al extender `JpaRepository`, Spring Data genera automáticamente la implementación y proporciona operaciones como `findAll`, `findById`, `save` y `deleteById`. En este proyecto se declara `findAll()` para obtener todos los registros de cada entidad.
+---
 
-No es necesario escribir una consulta SQL para los `GET`: el repositorio delega la operación a Hibernate, que genera y ejecuta el `SELECT` correspondiente y transforma cada fila en una instancia de la entidad.
+## 5. Módulo 3: Consultas Avanzadas con `@Query` (JPQL y Native Queries)
 
-## 8. Controller como punto de entrada
+### 5.1. ¿Cuándo usar `@Query` en lugar de Query Methods?
+- Cuando el nombre del método resulta excesivamente largo e ilegible (`findByNombreContainingAndDepartamentoAndCreditosGreaterThan...`).
+- Cuando se requieren **uniones complejas (`JOIN`, `LEFT JOIN FETCH`)** entre múltiples entidades.
+- Cuando se necesitan **funciones de agregación** (`SUM`, `AVG`, `GROUP BY`, `HAVING`).
+- Cuando se precisa aprovechar sintaxis específica del motor de base de datos (PostgreSQL: `JSONB`, `ILIKE`, CTEs).
 
-El archivo `controller/Controller.java` recibe los repositorios por inyección de dependencias en su constructor.
+### 5.2. Comparativa: JPQL vs Native Query
 
-### Endpoints disponibles
+| Dimensión | JPQL (Java Persistence Query Language) | Native Query (SQL Nativo) |
+| :--- | :--- | :--- |
+| **Entidades / Tablas** | Trabaja con clases Java (`Curso c`, `Profesor p`). | Trabaja con nombres de tablas (`curso`, `profesor`). |
+| **Portabilidad** | 100% portable entre H2, PostgreSQL, Oracle, etc. | Acoplado al dialecto SQL específico configurado. |
+| **Validación Sintáctica** | Se valida al compilar/arrancar el contexto de Spring. | Se valida en tiempo de ejecución al invocar el método. |
+| **Relaciones** | Navega directamente mediante atributos JPA (`c.profesor`). | Requiere `JOIN` manual con llaves foráneas (`ON c.profesor_id = p.id`). |
 
-| Método | URL completa | Comportamiento |
-| --- | --- | --- |
-| `GET` | `http://localhost:8080/springboot-api/` | Verifica que la aplicación está funcionando. |
-| `GET` | `http://localhost:8080/springboot-api/cursos` | Ejecuta `cursoRepository.findAll()` y retorna cursos en JSON. |
-| `GET` | `http://localhost:8080/springboot-api/profesores` | Ejecuta `profesorRepository.findAll()` y retorna profesores en JSON. |
+### 5.3. Modificaciones Masivas con `@Modifying`
+Para sentencias `UPDATE` o `DELETE` directas en base de datos:
+- Es obligatorio agregar `@Modifying` sobre el método.
+- Debe ejecutarse en el marco de una transacción (`@Transactional`).
+- El tipo de retorno debe ser `int` o `void`, indicando el número de registros afectados.
 
-El recorrido de `/cursos` es:
+### 5.4. Snippet de Ejemplo: `UsuarioRepository` y `@Query`
 
-```text
-Solicitud HTTP GET
-    -> Controller.getCursos()
-    -> CursoRepository.findAll()
-    -> Hibernate ejecuta la consulta SQL
-    -> filas de Curso se convierten en objetos Curso
-    -> Spring MVC responde con JSON
+```java
+package com.compunet.springboot.repository;
+
+import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+import com.compunet.springboot.model.Usuario;
+
+@Repository
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+
+    // 1. JPQL: Join explícito entre Usuario y Rol
+    @Query("SELECT u FROM Usuario u JOIN u.roles r WHERE r.nombre = :rol AND u.active = true")
+    List<Usuario> buscarActivosPorRol(@Param("rol") String rol);
+
+    // 2. JPQL: Agregación con COUNT
+    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.correoInstitucional LIKE %:dominio%")
+    long contarUsuariosPorDominio(@Param("dominio") String dominio);
+
+    // 3. Native Query: SQL directo con INNER JOIN sobre tablas físicas
+    @Query(value = """
+        SELECT u.* FROM usuario u
+        INNER JOIN usuario_rol ur ON u.id = ur.usuario_id
+        INNER JOIN rol r ON ur.rol_id = r.id
+        WHERE LOWER(r.nombre) = LOWER(:rol) AND u.active = true
+        """, nativeQuery = true)
+    List<Usuario> buscarActivosPorRolNativo(@Param("rol") String rol);
+
+}
 ```
 
-El endpoint de profesores sigue el mismo recorrido mediante `ProfesorRepository`.
+---
 
-## 9. Ejecución y comprobación
+## 6. Dinámica Práctica de Clase en Vivo (Hands-on)
 
-Desde la carpeta `springboot`:
+### 📌 Metodología de la Sesión:
+1. **Paso 1 (Exposición y Demostración - 25 min):** El docente presenta el flujo de llamadas `Controller -> Service -> Repository` y demuestra en consola la traducción de Query Methods con `spring.jpa.show-sql=true`.
+2. **Paso 2 (Trabajo Práctico en Parejas - 45 min):** Los estudiantes abren el archivo de asignación [asignacion_query_methods.md](file:///C:/Users/Alexo/Documents/ICESI/2026-2/COMPUNET_II/Repositorios/Code%20-%20AP%20-%20Compunet2-202620/springboot/asignacion_query_methods.md) y resuelven los ejercicios directamente sobre los repositorios y servicios del proyecto (el docente puede apoyarse en la guía con soluciones [ejercicios_query_methods.md](file:///C:/Users/Alexo/Documents/ICESI/2026-2/COMPUNET_II/Repositorios/Code%20-%20AP%20-%20Compunet2-202620/springboot/ejercicios_query_methods.md)).
+3. **Paso 3 (Puesta en Común y Casos Especiales - 20 min):** Revisión de la sintaxis con guión bajo (`_`) para relaciones compuestas y transición de un Query Method complejo a un `@Query` con JPQL.
 
-```bash
-./mvnw.cmd spring-boot:run
-```
-
-Después de iniciar la aplicación:
-
-1. Abrir `/springboot-api/` para comprobar el estado del servidor.
-2. Abrir `/springboot-api/profesores` y verificar los profesores cargados desde `data.sql`.
-3. Abrir `/springboot-api/cursos` y verificar el campo `profesor` y la relación con cada curso.
-4. Abrir `/springboot-api/h2-console` y conectarse con los datos configurados para revisar las tablas `ESTUDIANTE`, `PROFESOR` y `CURSO`.
-
-La evidencia principal del funcionamiento es que las tablas se generan desde las entidades, la clave foránea `CURSO.PROFESOR_ID` se genera desde `@JoinColumn` y los endpoints consultan los datos mediante repositorios JPA sin SQL escrito en el controlador.
-
-## 10. Resultado esperado
-
-La implementación demuestra la separación de responsabilidades:
-
-- **Modelo:** define la estructura y las relaciones de los datos.
-- **Hibernate:** traduce el modelo JPA a SQL y administra la persistencia.
-- **Spring Data JPA:** ofrece repositorios con operaciones CRUD.
-- **Controller:** expone la información mediante endpoints HTTP `GET`.
-- **H2:** permite observar y validar el esquema y los datos durante la ejecución.

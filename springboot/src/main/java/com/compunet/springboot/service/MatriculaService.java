@@ -52,4 +52,12 @@ public class MatriculaService {
 
         return guardado;
     }
+
+    /**
+     * Ejercicio 12: Comprobar si existe un registro de matrícula para un estudiante y un curso.
+     */
+    @Transactional(readOnly = true)
+    public boolean estaMatriculado(Long estudianteId, Long cursoId) {
+        return estudianteCursoRepository.existsById_EstudianteIdAndId_CursoId(estudianteId, cursoId);
+    }
 }

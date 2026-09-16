@@ -1,5 +1,7 @@
 package com.compunet.springboot.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,11 +27,13 @@ public class EstudianteCurso {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("estudianteId")
+    @JsonIgnoreProperties("estudianteCursos")
     @JoinColumn(name = "estudiante_id", nullable = false)
     private Estudiante estudiante;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("cursoId")
+    @JsonIgnoreProperties("estudianteCursos")
     @JoinColumn(name = "curso_id", nullable = false)
     private Curso curso;
 

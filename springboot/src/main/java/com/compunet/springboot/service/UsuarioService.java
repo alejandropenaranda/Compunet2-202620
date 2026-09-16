@@ -2,6 +2,7 @@ package com.compunet.springboot.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.compunet.springboot.model.Rol;
@@ -23,6 +24,30 @@ public class UsuarioService {
     @Transactional(readOnly = true)
     public List<Usuario> listarUsuariosActivos() {
         return usuarioRepository.findAll();
+    }
+
+    /**
+     * Ejercicio 1: Buscar usuario por correo institucional exacto.
+     */
+    @Transactional(readOnly = true)
+    public Optional<Usuario> obtenerPorCorreo(String correo) {
+        return usuarioRepository.findByCorreoInstitucional(correo);
+    }
+
+    /**
+     * Ejercicio 2: Verificar si existe un usuario por correo institucional.
+     */
+    @Transactional(readOnly = true)
+    public boolean existeCorreo(String correo) {
+        return usuarioRepository.existsByCorreoInstitucional(correo);
+    }
+
+    /**
+     * Ejercicio 11: Listar usuarios activos por nombre de rol.
+     */
+    @Transactional(readOnly = true)
+    public List<Usuario> listarUsuariosActivosPorRol(String rol) {
+        return usuarioRepository.findByRoles_NombreIgnoreCaseAndActiveTrue(rol);
     }
 
     /**

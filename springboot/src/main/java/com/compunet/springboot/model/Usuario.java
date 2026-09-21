@@ -47,7 +47,7 @@ public class Usuario {
     @Column(name = "active", nullable = false)
     private boolean active;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany
     @JoinTable(
         name = "usuario_rol",
         joinColumns = @JoinColumn(name = "usuario_id"),

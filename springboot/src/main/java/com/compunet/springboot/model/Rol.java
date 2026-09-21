@@ -42,7 +42,7 @@ public class Rol {
     @JsonIgnoreProperties("roles")
     private List<Usuario> usuarios = new ArrayList<>();
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany
     @JoinTable(
         name = "rol_permiso",
         joinColumns = @JoinColumn(name = "rol_id"),

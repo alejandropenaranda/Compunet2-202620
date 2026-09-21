@@ -1,7 +1,6 @@
 package com.compunet.springboot.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import com.compunet.springboot.model.Curso;
 import com.compunet.springboot.model.Estudiante;
 import com.compunet.springboot.model.EstudianteCurso;
@@ -20,10 +19,8 @@ public class MatriculaService {
     private final EstudianteCursoRepository estudianteCursoRepository;
 
     /**
-     * Proceso atómico de matrícula: si cualquier condición falla,
-     * no se guarda ningún registro parcial.
+     * Proceso de matrícula de estudiante en curso.
      */
-    @Transactional(rollbackFor = Exception.class)
     public EstudianteCurso matricularEstudianteEnCurso(Long estudianteId, Long cursoId) throws Exception {
         Estudiante estudiante = estudianteRepository.findById(estudianteId)
             .orElseThrow(() -> new IllegalArgumentException("Estudiante no encontrado con ID: " + estudianteId));
@@ -43,20 +40,12 @@ public class MatriculaService {
         EstudianteCurso nuevaMatricula = new EstudianteCurso(estudiante, curso);
         EstudianteCurso guardado = estudianteCursoRepository.save(nuevaMatricula);
 
-        // Simulación de validación tardía o fallo del sistema
-        if (curso.getCreditos() > 4) {
-            // Esta excepción disparará el ROLLBACK completo. La matrícula recién guardada
-            // NO persistirá en la base de datos.
-            throw new RuntimeException("Límite de créditos excedido: Se requiere aprobación del comité.");
-        }
-
         return guardado;
     }
 
     /**
      * Ejercicio 12: Comprobar si existe un registro de matrícula para un estudiante y un curso.
      */
-    @Transactional(readOnly = true)
     public boolean estaMatriculado(Long estudianteId, Long cursoId) {
         return estudianteCursoRepository.existsById_EstudianteIdAndId_CursoId(estudianteId, cursoId);
     }

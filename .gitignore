@@ -45,3 +45,6 @@ logs/
 *.toc
 *.vrb
 *.sty
+/slides/*.html
+/slides/*.js
+/slides/images/

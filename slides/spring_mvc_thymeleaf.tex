@@ -1,0 +1,984 @@
+\documentclass[aspectratio=169]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noquoting]{babel}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,shadows,calc,fit,backgrounds}
+
+% Estilo personalizado Beamer (ICESI)
+\usepackage{custombeamer}
+
+% ==============================================================================
+% CONFIGURACIÓN DE LISTINGS: JAVA & THYMELEAF HTML
+% ==============================================================================
+\definecolor{codeBg}{HTML}{13141F}        % Fondo grafito oscuro profundo
+\definecolor{codeFrame}{HTML}{2A2D3D}     % Borde sutil del marco
+\definecolor{codeText}{HTML}{FFFFFF}      % Texto plano en blanco puro
+\definecolor{codeKeyword}{HTML}{FF2A85}   % Palabras reservadas en Rosa Neón (#FF2A85)
+\definecolor{codePrimitive}{HTML}{00F5A0} % Tipos primitivos en Verde Menta Neón (#00F5A0)
+\definecolor{codeType}{HTML}{00D2FF}      % Entidades y Clases en Cyan / Sky Blue (#00D2FF)
+\definecolor{codeAnnotation}{HTML}{FFD600}% Anotaciones Spring en Amarillo / Dorado Neón (#FFD600)
+\definecolor{codeBoolean}{HTML}{FF6B6B}   % Booleanos y constantes en Coral / Salmón (#FF6B6B)
+\definecolor{codeString}{HTML}{A7F432}    % Cadenas de texto en Lima Neón (#A7F432)
+\definecolor{codeComment}{HTML}{8E9AB0}   % Comentarios en Gris Lavanda (#8E9AB0)
+
+\definecolor{propKey}{HTML}{00D2FF}       % Claves en Cyan / Sky Blue (#00D2FF)
+\definecolor{propValue}{HTML}{A7F432}     % Valores en Lima Neón (#A7F432)
+\definecolor{propBool}{HTML}{FF6B6B}      % Booleanos en Coral (#FF6B6B)
+\definecolor{propComment}{HTML}{8E9AB0}   % Comentarios en Gris Lavanda (#8E9AB0)
+
+\lstdefinestyle{SpringCodeStyle}{
+  language=Java,
+  basicstyle=\ttfamily\fontsize{6pt}{7.5pt}\selectfont\color{codeText},
+  deletekeywords=[1]{boolean,int,long,void,double,float,char,byte,true,false,null},
+  keywordstyle=[1]\color{codeKeyword}\bfseries,
+  keywordstyle=[2]\color{codePrimitive}\bfseries,
+  keywordstyle=[3]\color{codeType}\bfseries,
+  keywordstyle=[4]\color{codeAnnotation}\bfseries,
+  keywordstyle=[5]\color{codeBoolean}\bfseries,
+  stringstyle=\color{codeString},
+  commentstyle=\color{codeComment}\itshape,
+  alsoletter={@},
+  morekeywords=[1]{public,private,final,class,interface,return,new,extends,implements,throw,if,var},
+  morekeywords=[2]{boolean,int,long,void,double,float,char,byte},
+  morekeywords=[3]{Usuario,Profesor,Curso,Estudiante,Rol,Permiso,Optional,List,Model,RedirectAttributes,String,Long,Integer,SpringResourceTemplateResolver,SpringTemplateEngine,TemplateMode,ThymeleafConfig},
+  morekeywords=[4]{@Controller,@RestController,@Service,@Repository,@GetMapping,@PostMapping,@ModelAttribute,@RequestParam,@PathVariable,@RequiredArgsConstructor,@RequestMapping,@Configuration,@Bean,@Qualifier,@Primary},
+  morekeywords=[5]{true,false,null},
+  numbers=none,
+  breaklines=true,
+  backgroundcolor=\color{codeBg},
+  frame=single,
+  rulecolor=\color{codeFrame},
+  tabsize=2,
+  aboveskip=1.5pt,
+  belowskip=1.5pt,
+  showstringspaces=false
+}
+
+\lstdefinelanguage{PropertiesLang}{
+  morecomment=[l]{\#},
+  commentstyle=\color{propComment}\itshape,
+  alsoletter={.,-,/,:},
+  morekeywords=[1]{spring.thymeleaf.prefix,spring.thymeleaf.suffix,spring.thymeleaf.mode,spring.thymeleaf.encoding,spring.thymeleaf.cache,spring.thymeleaf.check-template-location,server.servlet.encoding.charset,server.servlet.encoding.force,server.servlet.encoding.enabled},
+  keywordstyle=[1]\color{propKey}\bfseries,
+  morekeywords=[2]{classpath:/templates/,.html,HTML,UTF-8},
+  keywordstyle=[2]\color{propValue},
+  morekeywords=[3]{true,false},
+  keywordstyle=[3]\color{propBool}\bfseries,
+}
+
+\lstdefinestyle{PropertiesStyle}{
+  language=PropertiesLang,
+  basicstyle=\ttfamily\fontsize{5.2pt}{6.6pt}\selectfont\color{codeText},
+  backgroundcolor=\color{codeBg},
+  frame=single,
+  rulecolor=\color{codeFrame},
+  breaklines=true,
+  showstringspaces=false,
+  numbers=none,
+  tabsize=2,
+  aboveskip=1.5pt,
+  belowskip=1.5pt
+}
+
+\lstdefinestyle{ThymeleafStyle}{
+  language=HTML,
+  basicstyle=\ttfamily\fontsize{5.2pt}{6.6pt}\selectfont\color{codeText},
+  keywordstyle=\color{codeKeyword}\bfseries,
+  tagstyle=\color{codeType}\bfseries,
+  stringstyle=\color{codeString},
+  commentstyle=\color{codeComment}\itshape,
+  alsoletter={:,$},
+  morekeywords={th:text,th:utext,th:each,th:if,th:unless,th:switch,th:case,th:href,th:src,th:action,th:object,th:field,th:replace,th:insert,th:fragment,th:classappend,th:value,th:attr,th:errors,th:inline},
+  numbers=none,
+  breaklines=true,
+  backgroundcolor=\color{codeBg},
+  frame=single,
+  rulecolor=\color{codeFrame},
+  tabsize=2,
+  aboveskip=1.5pt,
+  belowskip=1.5pt,
+  showstringspaces=false
+}
+
+\lstset{style=SpringCodeStyle}
+
+\begin{document}
+\shorthandoff{"}
+
+% ==============================================================================
+% PORTADA & AGENDA GENERAL (SEMANA 8)
+% ==============================================================================
+
+\titleSlideMinimalist
+  {Spring Boot MVC \& Thymeleaf}
+  {Arquitectura MVC, SSR, Vistas Din\'amicas, Formularios y Fragmentos}
+  {Prof. Alejandro Pe\~naranda}
+  {Universidad ICESI -- Computaci\'on en Internet II}
+
+\agendaSlideNumbered
+  {Contenido Semana 8 (4 Horas)}
+  {Sesi\'on 1: Arquitectura MVC, SSR, Thymeleaf, Layouts y Listados}
+  {Sesi\'on 1 Live Coding: Config UTF-8, Fragmento Navbar y Listado}
+  {Sesi\'on 2: Formularios, Data Binding, Validaci\'on, PRG y CRUD}
+  {Sesi\'on 2 Live Coding: Alertas Flash, Servicio y CRUD Completo}
+
+% ==============================================================================
+% ==============================================================================
+% SESIÓN 1 (PARTE 1: ARQUITECTURA SPRING MVC)
+% ==============================================================================
+% ==============================================================================
+
+\sectionSlideStripe{01}{Arquitectura Spring MVC}{Flujo de Peticiones y Componentes del N\'ucleo}
+
+\contentSlideBulletCard{El Patr\'on MVC (Model - View - Controller)}
+  {
+    \begin{itemize}
+      \item \textbf{Model (Modelo):} Datos y estado de la aplicaci\'on que se transfieren entre el servidor y la interfaz.
+      \item \textbf{View (Vista):} Presentaci\'on visual de los datos al usuario (HTML procesado en el servidor).
+      \item \textbf{Controller (Controlador):} Recibe las peticiones HTTP, invoca los servicios de negocio y elige qu\'e vista renderizar.
+    \end{itemize}
+  }
+  {Desacoplamiento}
+  {El MVC separa completamente la l\'ogica de negocio de la interfaz gr\'afica, facilitando mantenimiento y testing.}
+
+\begin{frame}{Arquitectura de Spring MVC: Flujo de Ejecuci\'on}
+\centering
+\includegraphics[width=0.96\textwidth,height=0.78\textheight,keepaspectratio]{images/diagram_spring_mvc_architecture.png}
+\end{frame}
+
+\contentSlideBulletCard{1. DispatcherServlet: El Front Controller}
+  {
+    \begin{itemize}
+      \item \textbf{Punto de Entrada \'Unico:} Centraliza y recibe todas las peticiones HTTP dirigidas a la aplicaci\'on.
+      \item \textbf{Coordinador Central:} No contiene l\'ogica de negocio; orquesta la llamada a los dem\'as componentes.
+      \item \textbf{Herencia Servlet:} Extiende de \texttt{HttpServlet} y se auto-configura en Spring Boot de forma transparente.
+    \end{itemize}
+  }
+  {Patr\'on de Dise\~no}
+  {Implementa el patr\'on \textbf{Front Controller}, evitando que cada ruta requiera un Servlet individual.}
+
+\contentSlideBulletCard{2. HandlerMapping \& 3. Model}
+  {
+    \begin{itemize}
+      \item \textbf{HandlerMapping:} Mapea la petici\'on HTTP entrante al m\'etodo del controlador correspondiente.
+      \item \textbf{Model (\texttt{ui.Model}):} Contenedor clave-valor que transporta datos del Controller a la plantilla.
+      \item \textbf{Request Scope:} Los datos viven \'unicamente durante el ciclo de vida de la petici\'on HTTP.
+    \end{itemize}
+  }
+  {Uso del Model}
+  {Inyecta datos en el request:\\
+   \vspace{2pt}
+   \texttt{model.addAttribute(}\\
+   \texttt{\phantom{..}"usuarios", lista);}\\[4pt]
+   Thymeleaf los lee como \texttt{\$\{usuarios\}}.}
+
+\contentSlideBulletCard{4. ViewResolver: Resolviendo Plantillas}
+  {
+    \begin{itemize}
+      \item \textbf{Resoluci\'on L\'ogica a F\'isica:} Transforma el \texttt{String} retornado por el Controller en un archivo f\'isico.
+      \item \textbf{Prefijo y Sufijo:} Toma \texttt{"usuarios/lista"} y busca en \texttt{classpath:/templates/usuarios/lista.html}.
+      \item \textbf{ThymeleafViewResolver:} Ejecuta el motor Thymeleaf pasando el \texttt{Model} y generando el HTML definitivo.
+    \end{itemize}
+  }
+  {Convenci\'on Spring Boot}
+  {Al retornar \texttt{"usuarios/lista"}, Spring resuelve autom\'aticamente la ruta sin escribir extensiones \texttt{.html}.}
+
+% ==============================================================================
+% SESIÓN 1 (PARTE 2: PARADIGMAS DE RENDERIZADO SSR VS CSR)
+% ==============================================================================
+
+\sectionSlideStripe{02}{Paradigmas de Renderizado}{Server-Side Rendering (SSR) vs Client-Side Rendering (CSR)}
+
+\contentSlideTwoCols{¿Qu\'e es SSR vs CSR?}
+  {Server-Side Rendering (SSR)}
+  {
+    \begin{itemize}
+      \item El servidor procesa la l\'ogica, inyecta datos y \textbf{construye el HTML final}.
+      \item El navegador recibe un documento HTML listo para renderizar directamente.
+      \item Ejemplo: \textbf{Spring Boot MVC + Thymeleaf}.
+    \end{itemize}
+  }
+  {Client-Side Rendering (CSR)}
+  {
+    \begin{itemize}
+      \item El servidor env\'ia un HTML vac\'io y un archivo JavaScript grande.
+      \item El navegador descarga JS, consulta APIs REST JSON y \textbf{construye el DOM en el cliente}.
+      \item Ejemplo: \textbf{React, Angular, Vue}.
+    \end{itemize}
+  }
+
+\begin{frame}{Comparativa de Flujo: SSR vs CSR}
+\centering
+\includegraphics[width=0.96\textwidth,height=0.78\textheight,keepaspectratio]{images/diagram_ssr_vs_csr.png}
+\end{frame}
+
+\contentSlideTwoCols{@Controller vs @RestController}
+  {@Controller (Spring MVC Tradicional)}
+  {
+    \begin{itemize}
+      \item Enfoque: \textbf{Server-Side Rendering (SSR)}.
+      \item Retorna un \texttt{String} con el nombre de la vista HTML.
+      \item Interact\'ua con el \texttt{Model}.
+      \item Ideal para paneles administrativos, portales web y apps monol\'iticas.
+    \end{itemize}
+  }
+  {@RestController (Web API REST)}
+  {
+    \begin{itemize}
+      \item Enfoque: \textbf{Client-Side Rendering (CSR)}.
+      \item Retorna datos crudos en formato \textbf{JSON / XML}.
+      \item Anotaci\'on compuesta: \texttt{@Controller} + \texttt{@ResponseBody}.
+      \item Ideal para backends que alimentan apps m\'oviles o SPAs (React).
+    \end{itemize}
+  }
+
+% ==============================================================================
+% SESIÓN 1 (PARTE 3: INTRODUCCIÓN A THYMELEAF)
+% ==============================================================================
+
+\sectionSlideStripe{03}{Introducci\'on a Thymeleaf}{Motor de Plantillas, Arquitectura Interna y Configuraci\'on}
+
+\contentSlideBulletCard{Que es Thymeleaf y Cual es su Objetivo?}
+  {
+    \begin{itemize}
+      \item \textbf{Motor de Plantillas Java:} Dise\~nado para procesar HTML, XML, CSS y JavaScript en el servidor.
+      \item \textbf{Objetivo Principal:} Generar interfaces web din\'amicas de forma elegante, manteniendo el c\'odigo HTML limpio y estandarizado.
+      \item \textbf{Reemplazo Moderno de JSP:} Elimina la mezcla desordenada de c\'odigo Java dentro del HTML, promoviendo alta legibilidad.
+    \end{itemize}
+  }
+  {Integraci\'on Nativa}
+  {Thymeleaf se integra al 100\% con el ecosistema Spring (Spring MVC, Form Binding, Spring Security y SpEL).}
+
+\contentSlideTwoCols{El Motor Interno: TemplateResolver vs TemplateEngine}
+  {TemplateResolver (Localizador)}
+  {
+    \begin{itemize}
+      \item \textbf{Rol:} Ubica y carga el archivo f\'isico de la plantilla.
+      \item Configura prefijo (\texttt{classpath:/templates/}), sufijo (\texttt{.html}), modo (\texttt{HTML}) y pol\'itica de cache.
+      \item Implementaci\'on Spring: \texttt{SpringResourceTemplateResolver}.
+    \end{itemize}
+  }
+  {TemplateEngine (Procesador)}
+  {
+    \begin{itemize}
+      \item \textbf{Rol:} N\'ucleo ejecutor que fusiona la plantilla con los datos del \texttt{Model}.
+      \item Interpreta atributos \texttt{th:*}, eval\'ua expresiones y aplica dialectos.
+      \item Implementaci\'on Spring: \texttt{SpringTemplateEngine}.
+    \end{itemize}
+  }
+
+\begin{frame}{Flujo Detallado: Interacci\'on Thymeleaf en la Petici\'on}
+\centering
+\includegraphics[width=0.96\textwidth,height=0.78\textheight,keepaspectratio]{images/diagram_thymeleaf_internal_flow.png}
+\end{frame}
+
+\contentSlideTwoCols{Natural Templating y Seguridad contra XSS}
+  {Natural Templating}
+  {
+    \begin{itemize}
+      \item Las plantillas son \textbf{HTML5 100\% v\'alido}.
+      \item Puedes hacer doble clic en el archivo \texttt{.html} y abrirlo en el navegador (\texttt{file:///}) como prototipo est\'atico.
+      \item En el servidor, Thymeleaf reemplaza el texto prototipo por los datos reales.
+    \end{itemize}
+  }
+  {Escape Autom\'atico (Anti-XSS)}
+  {
+    \begin{itemize}
+      \item \texttt{th:text} escapa autom\'aticamente caracteres como \texttt{<}, \texttt{>}, \texttt{\&} y comillas.
+      \item Neutraliza intentos de inyecci\'on de c\'odigo malicioso (\textit{Cross-Site Scripting}).
+      \item \texttt{th:utext} \textbf{no escapa} (usar con precauci\'on).
+    \end{itemize}
+  }
+
+\begin{frame}{Estructura de Carpetas y Convenciones en Spring Boot}
+\centering
+\includegraphics[width=0.96\textwidth,height=0.78\textheight,keepaspectratio]{images/diagram_folder_structure.png}
+\end{frame}
+
+% SLIDE: CONFIGURACION OPCION 1 (PROPERTIES)
+\begin{frame}[fragile]{Configuraci\'on en Spring Boot: Opci\'on 1 (Recomendada)}
+\begin{itemize}
+  \item \textbf{1. Dependencia Starter en \texttt{pom.xml}:}
+\end{itemize}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- pom.xml -->
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+</dependencies>
+\end{lstlisting}
+\begin{itemize}
+  \item \textbf{2. Propiedades en \texttt{src/main/resources/application.properties}:}
+\end{itemize}
+\begin{lstlisting}[style=PropertiesStyle]
+# Ruta base, extension y soporte UTF-8 en plantillas
+spring.thymeleaf.prefix=classpath:/templates/
+spring.thymeleaf.suffix=.html
+spring.thymeleaf.mode=HTML
+spring.thymeleaf.encoding=UTF-8
+spring.thymeleaf.cache=false
+
+# Forzar codificacion UTF-8 en requests/responses (evita fallos con tildes y n)
+spring.servlet.encoding.charset=UTF-8
+spring.servlet.encoding.force=true
+spring.servlet.encoding.enabled=true
+\end{lstlisting}
+\end{frame}
+
+% SLIDE: CONFIGURACION OPCION 2 (MANUAL BEANS)
+\begin{frame}[fragile]{Configuraci\'on en Spring Boot: Opci\'on 2 (Beans Manuales)}
+\begin{lstlisting}[style=SpringCodeStyle,basicstyle=\ttfamily\fontsize{5.2pt}{6.5pt}\selectfont\color{codeText}]
+@Configuration
+public class ThymeleafConfig {
+
+    @Bean
+    public SpringResourceTemplateResolver templateResolver() {
+        SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
+        resolver.setPrefix("classpath:/templates/");
+        resolver.setSuffix(".html");
+        resolver.setTemplateMode(TemplateMode.HTML);
+        resolver.setCacheable(false);
+        return resolver;
+    }
+
+    @Bean
+    public SpringTemplateEngine templateEngine(@Qualifier("templateResolver") 
+                                               SpringResourceTemplateResolver resolver) {
+        SpringTemplateEngine engine = new SpringTemplateEngine();
+        engine.setTemplateResolver(resolver);
+        return engine;
+    }
+}
+\end{lstlisting}
+\end{frame}
+
+\contentSlideBulletCard{Atenci\'on: Conflicto de Beans de Thymeleaf}
+  {
+    \begin{itemize}
+      \item \textbf{Autoconfiguraci\'on Activa:} El starter crea por defecto el bean \texttt{defaultTemplateResolver}.
+      \item \textbf{El Error:} Si declaras tu propio \texttt{templateResolver} manual sin desambiguar, Spring falla con:
+      \item \textit{``expected single matching bean but found 2: templateResolver, defaultTemplateResolver''}.
+      \item \textbf{Regla de Oro:} Si usas \texttt{application.properties}, no necesitas \texttt{ThymeleafConfig}. Si usas la clase manual, agrega \texttt{@Qualifier} o \texttt{@Primary}.
+    \end{itemize}
+  }
+  {Mejor Pr\'actica}
+  {En Spring Boot se recomienda el enfoque declarativo v\'ia \texttt{application.properties} salvo requerimiento avanzado.}
+
+% ==============================================================================
+% SESIÓN 1 (PARTE 4: SINTAXIS ESENCIAL PARA LISTADOS Y VISTAS)
+% ==============================================================================
+
+\sectionSlideStripe{04}{Sintaxis Esencial de Thymeleaf}{Atributos de Lectura, Expresiones \$\{...\} y @\{...\}, Condicionales e Iteraci\'on}
+
+% SLIDE 1: INTRODUCCION A th:* Y NATURAL TEMPLATING
+\contentSlideBulletCard{El Prefijo th:* y Natural Templating}
+  {
+    \begin{itemize}
+      \item \textbf{Namespace XML:} Se declara en la cabecera como \texttt{xmlns:th="http://www.thymeleaf.org"}.
+      \item \textbf{Filosof\'ia:} Convierte cualquier HTML5 est\'atico en una plantilla viva sin romper su visualizaci\'on en navegadores.
+      \item \textbf{Enfoque Sesi\'on 1 (Lectura y Listados):}
+        \begin{enumerate}
+          \item \textbf{Expresiones \texttt{\$\{...\}} y \texttt{@\{...\}}:} Lectura de datos del \texttt{Model} y construcci\'on de URLs.
+          \item \textbf{Atributos \texttt{th:text}, \texttt{th:each}, \texttt{th:if}} e \texttt{iterStat} para tablas y vistas din\'amicas.
+        \end{enumerate}
+    \end{itemize}
+  }
+  {Ejecuci\'on en el Servidor}
+  {En tiempo de ejecuci\'on, Thymeleaf eval\'ua las expresiones, reemplaza los valores prototipo y elimina los prefijos \texttt{th:}.}
+
+% SLIDE 2: EXPRESIONES FUNDAMENTALES: ${...} y @{...}
+\begin{frame}[fragile]{Expresiones Fundamentales: \$\{...\} (Model) y @\{...\} (URLs)}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \textbf{\$\{...\}: Variables del Model}
+  \begin{itemize}
+    \item Eval\'ua atributos del \texttt{Model}.
+    \item Acceso a campos: \texttt{\$\{u.correo\}}.
+    \item Soporta operadores y ternarios.
+  \end{itemize}
+  \vspace{3pt}
+  \textbf{@\{...\}: Enlaces y URLs}
+  \begin{itemize}
+    \item Resuelve el \textit{context-path}.
+    \item \textbf{Path Vars:} \texttt{@\{/usuarios/\{id\}(id=\$\{u.id\})\}}.
+    \item \textbf{Query Params:} \texttt{@\{/usuarios(rol='DOC')\}}.
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- 1. Variables del Model -->
+<h2 th:text="${titulo}">Titulo</h2>
+<p th:text="${usuario.nombre + ' ' + usuario.apellido}">
+  Juan Perez
+</p>
+
+<!-- 2. Path Variable y Context Path -->
+<a th:href="@{/usuarios/detalle/{id}(id=${u.id})}">
+  Ver Detalle
+</a>
+
+<!-- 3. Query Parameter -->
+<a th:href="@{/usuarios(estado='ACTIVO')}">
+  Filtrar Activos
+</a>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% SLIDE 3: th:text vs th:utext
+\begin{frame}[fragile]{Texto Din\'amico: th:text vs th:utext}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \textbf{th:text (Escapado Seguro)}
+  \begin{itemize}
+    \item Convierte caracteres especiales (\texttt{<}, \texttt{>}, \texttt{\&}, \texttt{"}) en entidades HTML.
+    \item \textbf{Seguridad:} Protege la app contra ataques de inyecci\'on \textit{Cross-Site Scripting} (XSS).
+  \end{itemize}
+  \vspace{4pt}
+  \textbf{th:utext (Unescaped / Crudo)}
+  \begin{itemize}
+    \item Renderiza etiquetas HTML directamente en el DOM.
+    \item \textbf{Precauci\'on:} Usar solo con contenido confiable y previamente sanitizado.
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=SpringCodeStyle]
+// En el Controlador Spring:
+model.addAttribute("msg", 
+    "<strong>Bienvenido</strong>");
+\end{lstlisting}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- En la Plantilla HTML: -->
+
+<!-- 1. Escapado (Muestra texto literal) -->
+<p th:text="${msg}">Prototipo</p>
+<!-- Salida: &lt;strong&gt;Bienvenido... -->
+
+<!-- 2. Sin escapar (Renderiza en negrita) -->
+<p th:utext="${msg}">Prototipo</p>
+<!-- Salida: <strong>Bienvenido</strong> -->
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% SLIDE 4: th:each e iterStat
+\begin{frame}[fragile]{Iteraci\'on de Colecciones: th:each y Objeto iterStat}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \textbf{Iteraci\'on de Colecciones}
+  \begin{itemize}
+    \item Recorre \texttt{List}, \texttt{Set}, arreglos o mapas.
+    \item Sintaxis: \texttt{elem, stat : \$\{lista\}}.
+  \end{itemize}
+  \vspace{4pt}
+  \textbf{Propiedades de \texttt{iterStat}}
+  \begin{itemize}
+    \item \textbf{\texttt{index}:} \'Indice base 0 (0, 1, 2...).
+    \item \textbf{\texttt{count}:} Contador base 1 (1, 2, 3...).
+    \item \textbf{\texttt{size}:} Total de elementos.
+    \item \textbf{\texttt{even / odd}:} Booleano fila par / impar.
+    \item \textbf{\texttt{first / last}:} Booleano primer/\'ultimo elem.
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=ThymeleafStyle]
+<table>
+  <thead>
+    <tr>
+      <th>#</th> <th>Nombre</th> <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="u, stat : ${usuarios}">
+      <td th:text="${stat.count}">1</td>
+      <td th:text="${u.nombre}">Juan</td>
+      <td>
+        <span th:if="${stat.first}">Primero</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% SLIDE 5: th:if, th:unless, th:switch, th:case
+\begin{frame}[fragile]{Condicionales: th:if, th:unless y th:switch/case}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \textbf{Evaluaci\'on Booleana}
+  \begin{itemize}
+    \item \textbf{\texttt{th:if}:} Renderiza la etiqueta si la condici\'on es \texttt{true}, n\'umero no cero o texto no vac\'io.
+    \item \textbf{\texttt{th:unless}:} Opuesto de \texttt{if}; renderiza si la condici\'on es \texttt{false} o \texttt{null}.
+  \end{itemize}
+  \vspace{4pt}
+  \textbf{Bifurcaci\'on M\'ultiple}
+  \begin{itemize}
+    \item \textbf{\texttt{th:switch}} \& \textbf{\texttt{th:case}:} Eval\'ua m\'ultiples opciones.
+    \item \texttt{th:case="*"} act\'ua como la opci\'on por defecto (\textit{default}).
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- Condicionales if / unless -->
+<span th:if="${user.active}">Activo</span>
+<span th:unless="${user.active}">Inactivo</span>
+
+<!-- Evaluacion Switch / Case -->
+<div th:switch="${user.rol}">
+  <p th:case="'ADMIN'">Panel Administrador</p>
+  <p th:case="'DOCENTE'">Gestion de Cursos</p>
+  <p th:case="*">Acceso Estudiante</p>
+</div>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% SLIDE 6: th:href, th:src, th:attr
+\begin{frame}[fragile]{Enlaces, Recursos y Atributos Din\'amicos: th:href, th:src, th:attr}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \textbf{th:href \& th:src}
+  \begin{itemize}
+    \item Gestionan hiperv\'inculos, hojas de estilo e im\'agenes asegurando resoluci\'on context-aware.
+  \end{itemize}
+  \vspace{4pt}
+  \textbf{th:attr}
+  \begin{itemize}
+    \item Permite modificar o crear cualquier atributo HTML gen\'erico (\texttt{data-*}, \texttt{title}, \texttt{alt}, \texttt{target}).
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- Enlace y Recurso Estatico -->
+<a th:href="@{/usuarios}">Volver</a>
+<img th:src="@{/images/logo.png}" alt="Logo">
+
+<!-- Atributos Arbitrarios y HTML5 Data -->
+<button th:attr="data-id=${user.id}, title=${user.nombre}">
+  Ver Detalle
+</button>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% SLIDE 7: #{...} (i18n)
+\begin{frame}[fragile]{Internacionalizaci\'on: Mensajes \#\{...\}}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \textbf{\#\{...\}: Message Expressions (i18n)}
+  \begin{itemize}
+    \item Lee textos externalizados desde \texttt{messages.properties}.
+    \item Permite soporte multi-idioma autom\'atico seg\'un la configuraci\'on regional (\textit{Locale}) del navegador.
+    \item Soporta paso de par\'ametros posicionales: \texttt{\#\{msg.key(param1, param2)\}}.
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=PropertiesStyle]
+# messages.properties
+welcome.banner=Sistema Academico ICESI
+usuarios.titulo=Listado de Usuarios Registrados
+usuarios.total=Total encontrados: {0}
+\end{lstlisting}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- En la Plantilla HTML: -->
+<h1 th:text="#{welcome.banner}">Titulo</h1>
+<p th:text="#{usuarios.total(${usuarios.size()})}">
+  Total encontrados: 5
+</p>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% SLIDE 8: FRAGMENTOS Y MODULARIZACION (SESION 1)
+\contentSlideBulletCard{Modularizaci\'on con Thymeleaf Fragments}
+  {
+    \begin{itemize}
+      \item \textbf{Definici\'on (th:fragment):} Declara un bloque reusable en un archivo parcial (ej. \texttt{layout.html}).
+      \item \textbf{Reutilizaci\'on Global:} Elimina la duplicaci\'on de c\'odigo en cabeceras, men\'us de navegaci\'on y pies de p\'agina.
+      \item \textbf{Mantenimiento Centralizado:} Modificar la barra de navegaci\'on en el fragmento actualiza autom\'aticamente toda la aplicaci\'on.
+    \end{itemize}
+  }
+  {Sintaxis de Invocaci\'on}
+  {\texttt{th:replace="}\\\texttt{\textasciitilde\{fragments/layout :: mainNavbar\}} \texttt{"}}
+
+\begin{frame}[fragile]{Inclusi\'on de Fragmentos: th:replace vs th:insert}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \textbf{th:replace (Sustituto)}
+  \begin{itemize}
+    \item \textbf{Reemplaza por completo} la etiqueta anfitriona por la etiqueta del fragmento.
+    \item Ideal para \texttt{<header>}, \texttt{<nav>} y bloques modulares.
+  \end{itemize}
+  \vspace{4pt}
+  \textbf{th:insert (Hijo)}
+  \begin{itemize}
+    \item \textbf{Inserta} el fragmento dentro de la etiqueta contenedora sin eliminarla.
+  \end{itemize}
+  \vspace{4pt}
+  \textbf{Sintaxis de Fragmento}
+  \begin{itemize}
+    \item \texttt{\textasciitilde\{archivo :: nombreFragmento\}}
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- 1. Definicion en templates/fragments/layout.html -->
+<nav th:fragment="mainNavbar">
+  <a th:href="@{/usuarios}">Portal ICESI</a>
+  <a th:href="@{/usuarios/nuevo}">Nuevo</a>
+</nav>
+
+<!-- 2. Uso en templates/usuarios/lista.html -->
+<!-- th:replace elimina <header> y coloca <nav> -->
+<header th:replace="~{fragments/layout :: mainNavbar}">
+</header>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ==============================================================================
+% SESIÓN 1 (PARTE 5: LIVE CODING 1 - LAYOUT MODULAR Y LISTADO)
+% ==============================================================================
+
+\contentSlideQuoteStat{Cierre Sesi\'on 1}{Listado Modular}{Thymeleaf + Layouts}{``La interfaz cobra vida: fragmentos reusables, controlador desacoplado y renderizado SSR 100\% din\'amico y seguro.''}
+
+% ==============================================================================
+% ==============================================================================
+% SESIÓN 2 (2 HORAS: FORMULARIOS, DATA BINDING, PRG, UTILIDADES Y CRUD COMPLETO)
+% ==============================================================================
+% ==============================================================================
+
+\sectionSlideStripe{05}{Formularios y Data Binding}{Gesti\'on de Estado, Validaci\'on y Patr\'on PRG}
+
+\begin{frame}[fragile]{Formularios y Expresiones de Selecci\'on: th:object y *\{...\}}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \textbf{Objeto Respaldo (th:object)}
+  \begin{itemize}
+    \item Vincula el formulario a una instancia del \texttt{Model} (\texttt{th:object="\$\{usuario\}"}).
+  \end{itemize}
+  \vspace{4pt}
+  \textbf{Selecci\'on Relativa (*\{...\})}
+  \begin{itemize}
+    \item \texttt{*\{nombre\}} equivale a \texttt{\$\{usuario.nombre\}}.
+    \item Simplifica enormemente el c\'odigo en formularios complejos y tarjetas de datos.
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- Formulario con Objeto y Seleccion Relativa -->
+<form th:action="@{/usuarios/guardar}" 
+      th:object="${usuario}" method="post">
+
+  <!-- *{id} accede a ${usuario.id} -->
+  <input type="hidden" th:field="*{id}" />
+
+  <div>
+    <label>Nombre Completo:</label>
+    <input type="text" th:field="*{nombre}" />
+  </div>
+
+  <button type="submit">Guardar</button>
+</form>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Data Binding Bidireccional: th:field}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \textbf{Qu\'e genera th:field="*\{prop\}"?}
+  \begin{itemize}
+    \item \textbf{\texttt{name="prop"}:} Mapeo del \texttt{POST}.
+    \item \textbf{\texttt{id="prop"}:} Asociaci\'on con \texttt{<label>}.
+    \item \textbf{\texttt{value}:} Precarga en edici\'on.
+  \end{itemize}
+  \vspace{3pt}
+  \textbf{Manejo de Controles HTML}
+  \begin{itemize}
+    \item \textbf{\texttt{<input>}:} Asigna atributo \texttt{value}.
+    \item \textbf{\texttt{checkbox}:} Maneja \texttt{checked} y flag.
+    \item \textbf{\texttt{<select>}:} Selecciona la \texttt{<option>}.
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=ThymeleafStyle]
+<form th:object="${usuario}">
+  <!-- Input de Texto -->
+  <input type="text" th:field="*{correoInstitucional}" />
+
+  <!-- Checkbox Booleano -->
+  <label>
+    <input type="checkbox" th:field="*{active}" />
+    Usuario Activo
+  </label>
+
+  <!-- Menu Desplegable -->
+  <select th:field="*{rol}">
+    <option value="ESTUDIANTE">Estudiante</option>
+    <option value="DOCENTE">Docente</option>
+  </select>
+</form>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Validaci\'on y Gesti\'on de Errores: \#fields y th:errors}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \textbf{Integraci\'on con Bean Validation}
+  \begin{itemize}
+    \item Cuando Spring valida con \texttt{@Valid}, los errores se registran en el \texttt{BindingResult}.
+  \end{itemize}
+  \vspace{4pt}
+  \textbf{Atributos de Error en Thymeleaf}
+  \begin{itemize}
+    \item \textbf{\texttt{\#fields.hasErrors('campo')}:} Retorna \texttt{true} si el campo tiene fallos de validaci\'on.
+    \item \textbf{\texttt{th:errors="*\{campo\}"}:} Renderiza autom\'aticamente el mensaje de error definido en las anotaciones Java.
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=ThymeleafStyle]
+<div>
+  <label>Correo Institucional:</label>
+  <input type="email" th:field="*{correoInstitucional}" />
+  
+  <!-- Renderiza solo si hay error de validacion -->
+  <span th:if="${#fields.hasErrors('correoInstitucional')}" 
+        th:errors="*{correoInstitucional}">
+    Error de formato de correo
+  </span>
+</div>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+\contentSlideTwoCols{El Patr\'on Post-Redirect-Get (PRG)}
+  {Problema: Doble Env\'io con F5}
+  {
+    \begin{itemize}
+      \item Si tras un \texttt{POST} se retorna una vista directamente, refrescar el navegador reenv\'ia el formulario duplicando datos.
+      \item Provoca registros dobles o errores de clave duplicada en la base de datos.
+    \end{itemize}
+  }
+  {Soluci\'on con PRG y Flash Attributes}
+  {
+    \begin{itemize}
+      \item El \texttt{POST} procesa la acci\'on y responde con una redirecci\'on HTTP 302: \texttt{redirect:/usuarios}.
+      \item El navegador hace un \texttt{GET} limpio.
+      \item \texttt{RedirectAttributes} con \texttt{addFlashAttribute} env\'ia alertas temporales.
+    \end{itemize}
+  }
+
+% ==============================================================================
+% SESIÓN 2 (PARTE 6: UTILIDADES Y CAPACIDADES AVANZADAS)
+% ==============================================================================
+
+\sectionSlideStripe{06}{Utilidades de Expresi\'on y Scripts}{Objetos \# y JavaScript Inline}
+
+\begin{frame}[fragile]{Objetos de Utilidad de Expresi\'on: \#strings, \#numbers, \#temporals}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \textbf{Objetos Predefinidos de Ayuda}
+  \begin{itemize}
+    \item \textbf{\texttt{\#strings}:} \texttt{toUpperCase}, \texttt{toLowerCase}, \texttt{contains}, \texttt{substring}, \texttt{isEmpty}.
+    \item \textbf{\texttt{\#numbers}:} Formato decimal y moneda (\texttt{formatDecimal}).
+    \item \textbf{\texttt{\#temporals} / \texttt{\#dates}:} Formateo de fechas Java 8 (\texttt{LocalDate}, \texttt{LocalDateTime}).
+    \item \textbf{\texttt{\#lists}:} \texttt{size}, \texttt{isEmpty}, \texttt{contains}.
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- 1. Cadenas de Texto -->
+<p th:text="${#strings.toUpperCase(u.nombre)}"></p>
+<p th:if="${#strings.contains(u.correo, 'icesi.edu.co')}">
+  Institucional
+</p>
+
+<!-- 2. Formato de Fechas Java 8 -->
+<span th:text="${#temporals.format(u.fechaCreacion, 'dd/MM/yyyy')}">
+  01/01/2026
+</span>
+
+<!-- 3. Formato Numerico y Colecciones -->
+<span th:text="${#numbers.formatDecimal(u.promedio, 1, 2)}">
+  4.50
+</span>
+<p th:text="'Total: ' + ${#lists.size(usuarios)}"></p>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Recursos Est\'aticos y JavaScript Inline (th:inline)}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+  \textbf{Recursos Est\'aticos}
+  \begin{itemize}
+    \item Referenciados con \texttt{@\{/css/styles.css\}}, \texttt{@\{/js/app.js\}} garantizando rutas context-aware.
+  \end{itemize}
+  \vspace{4pt}
+  \textbf{JavaScript Inline (\texttt{th:inline})}
+  \begin{itemize}
+    \item \textbf{\texttt{th:inline="javascript"}:} Inyecta objetos Java del \texttt{Model} directamente en c\'odigo JavaScript.
+    \item Thymeleaf serializa strings, n\'umeros y objetos a JSON nativo en el script respetando la sintaxis de prototipo.
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- Enlace a hoja de estilos -->
+<link rel="stylesheet" th:href="@{/css/styles.css}">
+
+<!-- Inyeccion de datos Java en JavaScript -->
+<script th:inline="javascript">
+  /* Thymeleaf evalua la expresion entre comentarios */
+  let nombreUsuario = /*[[${usuario.nombre}]]*/ 'Prototipo';
+  let totalActivos  = /*[[${totalUsuarios}]]*/ 0;
+  
+  console.log("Sesion activa:", nombreUsuario);
+</script>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ==============================================================================
+% SESIÓN 2 (PARTE 7: LIVE CODING 2 - CRUD COMPLETO Y MODULAR)
+% ==============================================================================
+
+\begin{frame}[fragile]{Live Coding 2: Alertas Flash en layout.html}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- En templates/fragments/layout.html agregamos el fragmento alerts -->
+<div th:fragment="alerts">
+    <div th:if="${exito}" class="alert alert-success">
+        <span th:text="${exito}">Operacion exitosa</span>
+    </div>
+    <div th:if="${error}" class="alert alert-danger">
+        <span th:text="${error}">Ha ocurrido un error</span>
+    </div>
+</div>
+
+<!-- Uso en lista.html y formulario.html -->
+<div th:replace="~{fragments/layout :: alerts}"></div>
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Live Coding 2: Extensi\'on de UsuarioService}
+\begin{lstlisting}[style=SpringCodeStyle,basicstyle=\ttfamily\fontsize{5.2pt}{6.5pt}\selectfont\color{codeText}]
+public Optional<Usuario> obtenerPorId(Long id) {
+    return usuarioRepository.findById(id);
+}
+
+public Usuario actualizarUsuario(Long id, Usuario datos) {
+    Usuario db = usuarioRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("No encontrado"));
+    db.setNombre(datos.getNombre());
+    db.setApellido(datos.getApellido());
+    db.setCorreoInstitucional(datos.getCorreoInstitucional());
+    if (datos.getPassword() != null && !datos.getPassword().isBlank()) {
+        db.setPassword(datos.getPassword());
+    }
+    db.setActive(datos.isActive());
+    return usuarioRepository.save(db);
+}
+
+public Usuario alternarEstado(Long id) {
+    Usuario db = usuarioRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("No encontrado"));
+    db.setActive(!db.isActive());
+    return usuarioRepository.save(db);
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Live Coding 2: Formulario con th:object y th:field}
+\begin{lstlisting}[style=ThymeleafStyle]
+<form th:action="@{/usuarios/guardar}" th:object="${usuario}" method="post">
+    <!-- ID oculto para distinguir Crear de Editar -->
+    <input type="hidden" th:field="*{id}" />
+
+    <div>
+        <label>Nombre:</label>
+        <input type="text" th:field="*{nombre}" required />
+    </div>
+    <div>
+        <label>Apellido:</label>
+        <input type="text" th:field="*{apellido}" required />
+    </div>
+    <div>
+        <label>Correo Institucional:</label>
+        <input type="email" th:field="*{correoInstitucional}" required />
+    </div>
+    <div>
+        <label>Rol:</label>
+        <select name="rolNombre">
+            <option value="ESTUDIANTE">Estudiante</option>
+            <option value="PROFESOR">Profesor</option>
+            <option value="ADMINISTRATIVO">Administrativo</option>
+        </select>
+    </div>
+    <button type="submit">Guardar Usuario</button>
+    <a th:href="@{/usuarios}">Cancelar</a>
+</form>
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Live Coding 2: Controller con CRUD Completo y PRG}
+\begin{lstlisting}[style=SpringCodeStyle,basicstyle=\ttfamily\fontsize{5.2pt}{6.4pt}\selectfont\color{codeText}]
+@GetMapping("/nuevo")
+public String mostrarFormularioCreacion(Model model) {
+    model.addAttribute("usuario", new Usuario());
+    return "usuarios/formulario";
+}
+
+@PostMapping("/guardar")
+public String guardarUsuario(@ModelAttribute("usuario") Usuario usuario, 
+                             @RequestParam("rolNombre") String rolNombre,
+                             RedirectAttributes flash) {
+    if (usuario.getId() == null) {
+        usuarioService.registrarUsuario(usuario, rolNombre);
+    } else {
+        usuarioService.actualizarUsuario(usuario.getId(), usuario);
+    }
+    flash.addFlashAttribute("exito", "Usuario guardado exitosamente");
+    return "redirect:/usuarios"; // Patron PRG (HTTP 302)
+}
+
+@GetMapping("/editar/{id}")
+public String mostrarFormularioEdicion(@PathVariable("id") Long id, Model model) {
+    Usuario usuario = usuarioService.obtenerPorId(id).orElseThrow();
+    model.addAttribute("usuario", usuario);
+    return "usuarios/formulario";
+}
+\end{lstlisting}
+\end{frame}
+
+\contentSlideBulletCard{Resumen de Buenas Pr\'acticas en Spring MVC}
+  {
+    \begin{itemize}
+      \item \textbf{Separaci\'on de Responsabilidades:} El Controller solo coordina; la l\'ogica reside en el Service.
+      \item \textbf{Evitar Doble Bean Resolver:} Confiar en la autoconfiguraci\'on de \texttt{spring-boot-starter-thymeleaf}.
+      \item \textbf{Sintaxis Segura:} Preferir siempre \texttt{th:text} sobre \texttt{th:utext}.
+      \item \textbf{Patr\'on PRG:} Redirigir siempre tras un \texttt{POST} y usar \texttt{RedirectAttributes} para mensajes flash.
+    \end{itemize}
+  }
+  {Pr\'oximos Pasos}
+  {En la Semana 9 integraremos \textbf{Spring Security} con Thymeleaf para proteger vistas por roles de usuario.}
+
+\contentSlideQuoteStat{Conclusi\'on y Live Coding Final}{CRUD 100\% Funcional}{Thymeleaf + Spring Boot MVC}{``Hemos construido una aplicaci\'on web robusta, modular y f\'acil de mantener aplicando SSR y buenas pr\'acticas de arquitectura.''}
+
+\end{document}

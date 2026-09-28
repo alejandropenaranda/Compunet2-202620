@@ -69,4 +69,48 @@ public class UsuarioService {
 
         return usuarioRepository.save(usuario);
     }
+
+    /**
+     * Busca un usuario por su identificador único (ID).
+     */
+    public Optional<Usuario> obtenerPorId(Long id) {
+        return usuarioRepository.findById(id);
+    }
+
+    /**
+     * Actualiza los datos de un usuario existente aplicando reglas de negocio.
+     */
+    public Usuario actualizarUsuario(Long id, Usuario usuarioActualizado) {
+        Usuario usuarioDb = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el usuario con ID: " + id));
+
+        // Regla de Negocio: Si cambia el correo institucional, validar que no esté ocupado por otro usuario
+        if (!usuarioDb.getCorreoInstitucional().equalsIgnoreCase(usuarioActualizado.getCorreoInstitucional())
+                && usuarioRepository.existsByCorreoInstitucional(usuarioActualizado.getCorreoInstitucional())) {
+            throw new IllegalArgumentException("El nuevo correo institucional ya se encuentra registrado: "
+                    + usuarioActualizado.getCorreoInstitucional());
+        }
+
+        usuarioDb.setNombre(usuarioActualizado.getNombre());
+        usuarioDb.setApellido(usuarioActualizado.getApellido());
+        usuarioDb.setCorreoInstitucional(usuarioActualizado.getCorreoInstitucional());
+
+        if (usuarioActualizado.getPassword() != null && !usuarioActualizado.getPassword().isBlank()) {
+            usuarioDb.setPassword(usuarioActualizado.getPassword());
+        }
+
+        usuarioDb.setActive(usuarioActualizado.isActive());
+
+        return usuarioRepository.save(usuarioDb);
+    }
+
+    /**
+     * Alterna el estado activo/inactivo de un usuario (Soft delete / Reactivación).
+     */
+    public Usuario alternarEstado(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el usuario con ID: " + id));
+        usuario.setActive(!usuario.isActive());
+        return usuarioRepository.save(usuario);
+    }
 }

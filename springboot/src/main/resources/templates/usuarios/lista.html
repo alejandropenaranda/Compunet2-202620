@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Gestión de Usuarios</title>
+    <!-- Enlace a estilos estáticos con contexto seguro -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+    <!-- 1. Barra de Navegación Modular (Fragmento) -->
+    <header th:replace="~{fragments/layout :: mainNavbar}"></header>
+
+    <!-- 2. Alertas Flash Modulares (Fragmento) -->
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <main>
+        <h1 th:text="${titulo}">Gestión de Usuarios</h1>
+        <p><a th:href="@{/usuarios/nuevo}" class="button">+ Registrar Usuario</a></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre Completo</th>
+                    <th>Correo Institucional</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Mensaje si la lista está vacía -->
+                <tr th:if="${#lists.isEmpty(usuarios)}">
+                    <td colspan="5">No hay usuarios registrados actualmente.</td>
+                </tr>
+
+                <!-- Iteración de Usuarios con iterStat -->
+                <tr th:each="u, stat : ${usuarios}">
+                    <td th:text="${stat.count}">1</td>
+                    <td th:text="${u.nombre + ' ' + u.apellido}">Juan Pérez</td>
+                    <td th:text="${u.correoInstitucional}">jperez@icesi.edu.co</td>
+                    <td>
+                        <span th:if="${u.active}">Activo</span>
+                        <span th:unless="${u.active}">Inactivo</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/usuarios/editar/{id}(id=${u.id})}">Editar</a> |
+                        <a th:href="@{/usuarios/desactivar/{id}(id=${u.id})}" 
+                           onclick="return confirm('¿Está seguro de cambiar el estado de este usuario?');">
+                            Cambiar Estado
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+package com.compunet.springboot.controller;
+
+import java.util.List;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.compunet.springboot.model.Usuario;
+import com.compunet.springboot.service.UsuarioService;
+
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequestMapping("/usuarios")
+@RequiredArgsConstructor
+public class UsuarioController {
+
+    private final UsuarioService usuarioService;
+
+    /**
+     * 1. LISTAR: GET /usuarios
+     */
+    @GetMapping
+    public String listarUsuarios(Model model) {
+        List<Usuario> lista = usuarioService.listarUsuariosActivos();
+        model.addAttribute("titulo", "Gestión de Usuarios Académicos");
+        model.addAttribute("usuarios", lista);
+        return "usuarios/lista";
+    }
+
+    /**
+     * 2. MOSTRAR FORMULARIO CREACIÓN: GET /usuarios/nuevo
+     */
+    @GetMapping("/nuevo")
+    public String mostrarFormularioCreacion(Model model) {
+        Usuario nuevoUsuario = new Usuario();
+        nuevoUsuario.setActive(true);
+        model.addAttribute("titulo", "Registrar Nuevo Usuario");
+        model.addAttribute("usuario", nuevoUsuario);
+        return "usuarios/formulario";
+    }
+
+    /**
+     * 3. GUARDAR (CREAR O EDITAR): POST /usuarios/guardar
+     * Aplica el patrón POST-REDIRECT-GET (PRG)
+     */
+    @PostMapping("/guardar")
+    public String guardarUsuario(@ModelAttribute("usuario") Usuario usuario,
+            @RequestParam(value = "nombreRol", defaultValue = "ESTUDIANTE") String nombreRol,
+            RedirectAttributes flash) {
+        try {
+            if (usuario.getId() == null) {
+                // Modo Creación: Delegado al Servicio
+                usuarioService.registrarUsuario(usuario, nombreRol);
+                flash.addFlashAttribute("exito", "¡Usuario registrado exitosamente!");
+            } else {
+                // Modo Edición: Delegado al Servicio
+                usuarioService.actualizarUsuario(usuario.getId(), usuario);
+                flash.addFlashAttribute("exito", "¡Usuario actualizado exitosamente!");
+            }
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+            return "redirect:/usuarios/nuevo";
+        } catch (Exception e) {
+            flash.addFlashAttribute("error", "Error inesperado al procesar la solicitud.");
+            return "redirect:/usuarios";
+        }
+
+        return "redirect:/usuarios"; // Patrón PRG (HTTP 302)
+    }
+
+    /**
+     * 4. MOSTRAR FORMULARIO EDICIÓN: GET /usuarios/editar/{id}
+     */
+    @GetMapping("/editar/{id}")
+    public String mostrarFormularioEdicion(@PathVariable("id") Long id, Model model, RedirectAttributes flash) {
+        Usuario usuario = usuarioService.obtenerPorId(id).orElse(null);
+        if (usuario == null) {
+            flash.addFlashAttribute("error", "El usuario con ID " + id + " no existe.");
+            return "redirect:/usuarios";
+        }
+        model.addAttribute("titulo", "Editar Usuario: " + usuario.getNombre());
+        model.addAttribute("usuario", usuario);
+        return "usuarios/formulario";
+    }
+
+    /**
+     * 5. CAMBIAR ESTADO (Activar / Desactivar): GET /usuarios/desactivar/{id}
+     */
+    @GetMapping("/desactivar/{id}")
+    public String alternarEstadoUsuario(@PathVariable("id") Long id, RedirectAttributes flash) {
+        try {
+            Usuario u = usuarioService.alternarEstado(id);
+            String estadoStr = u.isActive() ? "activado" : "desactivado";
+            flash.addFlashAttribute("exito", "Usuario " + u.getNombre() + " " + estadoStr + " correctamente.");
+        } catch (IllegalArgumentException e) {
+            flash.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/usuarios";
+    }
+}

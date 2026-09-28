@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+    <!-- 1. Fragmento de Barra de Navegación -->
+    <header th:fragment="mainNavbar">
+        <nav>
+            <a th:href="@{/usuarios}">ICESI Academico</a> |
+            <a th:href="@{/usuarios}">Usuarios</a> |
+            <a th:href="@{/usuarios/nuevo}">Nuevo Usuario</a>
+        </nav>
+    </header>
+
+    <!-- 2. Fragmento de Mensajes Flash (Alertas de Éxito / Error) -->
+    <div th:fragment="alerts">
+        <div th:if="${exito}" class="alert alert-success">
+            <span th:text="${exito}">Operación realizada con exito</span>
+        </div>
+        <div th:if="${error}" class="alert alert-danger">
+            <span th:text="${error}">Ha ocurrido un error</span>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -21,6 +21,7 @@
 \definecolor{codeBoolean}{HTML}{FF6B6B}   % Booleanos y constantes en Coral / Salmón (#FF6B6B)
 \definecolor{codeString}{HTML}{A7F432}    % Cadenas de texto en Lima Neón (#A7F432)
 \definecolor{codeComment}{HTML}{8E9AB0}   % Comentarios en Gris Lavanda (#8E9AB0)
+\definecolor{cbPillBg}{HTML}{2A2D3D}
 
 \definecolor{propKey}{HTML}{00D2FF}       % Claves en Cyan / Sky Blue (#00D2FF)
 \definecolor{propValue}{HTML}{A7F432}     % Valores en Lima Neón (#A7F432)
@@ -29,7 +30,7 @@
 
 \lstdefinestyle{SpringCodeStyle}{
   language=Java,
-  basicstyle=\ttfamily\fontsize{6pt}{7.5pt}\selectfont\color{codeText},
+  basicstyle=\ttfamily\fontsize{5.2pt}{6.4pt}\selectfont\color{codeText},
   deletekeywords=[1]{boolean,int,long,void,double,float,char,byte,true,false,null},
   keywordstyle=[1]\color{codeKeyword}\bfseries,
   keywordstyle=[2]\color{codePrimitive}\bfseries,
@@ -69,7 +70,7 @@
 
 \lstdefinestyle{PropertiesStyle}{
   language=PropertiesLang,
-  basicstyle=\ttfamily\fontsize{5.2pt}{6.6pt}\selectfont\color{codeText},
+  basicstyle=\ttfamily\fontsize{4.8pt}{5.8pt}\selectfont\color{codeText},
   backgroundcolor=\color{codeBg},
   frame=single,
   rulecolor=\color{codeFrame},
@@ -83,7 +84,7 @@
 
 \lstdefinestyle{ThymeleafStyle}{
   language=HTML,
-  basicstyle=\ttfamily\fontsize{5.2pt}{6.6pt}\selectfont\color{codeText},
+  basicstyle=\ttfamily\fontsize{5.2pt}{6.4pt}\selectfont\color{codeText},
   keywordstyle=\color{codeKeyword}\bfseries,
   tagstyle=\color{codeType}\bfseries,
   stringstyle=\color{codeString},
@@ -111,17 +112,17 @@
 % ==============================================================================
 
 \titleSlideMinimalist
-  {Spring Boot MVC \& Thymeleaf}
-  {Arquitectura MVC, SSR, Vistas Din\'amicas, Formularios y Fragmentos}
+  {Spring MVC \& Thymeleaf}
+  {Arquitectura MVC, SSR, Rutas @\{...\}, Formularios y Patr\'on PRG}
   {Prof. Alejandro Pe\~naranda}
   {Universidad ICESI -- Computaci\'on en Internet II}
 
 \agendaSlideNumbered
   {Contenido Semana 8 (4 Horas)}
-  {Sesi\'on 1: Arquitectura MVC, SSR, Thymeleaf, Layouts y Listados}
+  {Sesi\'on 1: Arquitectura MVC, SSR, Sintaxis Base y Layout Modular}
   {Sesi\'on 1 Live Coding: Config UTF-8, Fragmento Navbar y Listado}
-  {Sesi\'on 2: Formularios, Data Binding, Validaci\'on, PRG y CRUD}
-  {Sesi\'on 2 Live Coding: Alertas Flash, Servicio y CRUD Completo}
+  {Sesi\'on 2: Rutas @\{...\}, Formularios, Data Binding, Patr\'on PRG y Controladores}
+  {Sesi\'on 2 Live Coding: Alertas Flash, Servicio, Formulario y CRUD Completo}
 
 % ==============================================================================
 % ==============================================================================
@@ -472,17 +473,15 @@ model.addAttribute("msg",
 \begin{column}{0.48\textwidth}
   \textbf{Iteraci\'on de Colecciones}
   \begin{itemize}
-    \item Recorre \texttt{List}, \texttt{Set}, arreglos o mapas.
-    \item Sintaxis: \texttt{elem, stat : \$\{lista\}}.
+    \item Recorre colecciones: \texttt{elem, stat : \$\{lista\}}.
   \end{itemize}
-  \vspace{4pt}
+  \vspace{2pt}
   \textbf{Propiedades de \texttt{iterStat}}
   \begin{itemize}
-    \item \textbf{\texttt{index}:} \'Indice base 0 (0, 1, 2...).
-    \item \textbf{\texttt{count}:} Contador base 1 (1, 2, 3...).
+    \item \textbf{\texttt{index} / \texttt{count}:} \'Indice base 0 / base 1.
     \item \textbf{\texttt{size}:} Total de elementos.
-    \item \textbf{\texttt{even / odd}:} Booleano fila par / impar.
-    \item \textbf{\texttt{first / last}:} Booleano primer/\'ultimo elem.
+    \item \textbf{\texttt{even / odd}:} Fila par o impar.
+    \item \textbf{\texttt{first / last}:} Primer o \'ultimo elemento.
   \end{itemize}
 \end{column}
 \begin{column}{0.50\textwidth}
@@ -655,38 +654,188 @@ usuarios.total=Total encontrados: {0}
 
 % ==============================================================================
 % ==============================================================================
-% SESIÓN 2 (2 HORAS: FORMULARIOS, DATA BINDING, PRG, UTILIDADES Y CRUD COMPLETO)
+% SESIÓN 2 (2 HORAS: RUTAS DINÁMICAS, FORMULARIOS, PRG, CONTROLADORES Y CRUD)
 % ==============================================================================
 % ==============================================================================
 
-\sectionSlideStripe{05}{Formularios y Data Binding}{Gesti\'on de Estado, Validaci\'on y Patr\'on PRG}
+\sectionSlideStripe{05}{Enlaces Din\'amicos y Rutas con @\{...\}}{Path Variables, Query Params y Context-Path}
 
-\begin{frame}[fragile]{Formularios y Expresiones de Selecci\'on: th:object y *\{...\}}
-\begin{columns}[T]
+% SLIDE: Enlaces Dinámicos: Recursos Estáticos y Path Variables
+\begin{frame}[fragile]{Enlaces Din\'amicos: Recursos Est\'aticos y Path Variables}
+\begin{columns}[c]
 \begin{column}{0.48\textwidth}
-  \textbf{Objeto Respaldo (th:object)}
+  \textbf{Context-Path y Recursos}
   \begin{itemize}
-    \item Vincula el formulario a una instancia del \texttt{Model} (\texttt{th:object="\$\{usuario\}"}).
+    \item \texttt{@\{...\}} antepone autom\'aticamente el \textit{context-path} del servidor.
+    \item Rutas a CSS, JS o im\'agenes siempre funcionales.
   \end{itemize}
-  \vspace{4pt}
-  \textbf{Selecci\'on Relativa (*\{...\})}
+  \vspace{3pt}
+  \textbf{Par\'ametros de Ruta (Path Variables)}
   \begin{itemize}
-    \item \texttt{*\{nombre\}} equivale a \texttt{\$\{usuario.nombre\}}.
-    \item Simplifica enormemente el c\'odigo en formularios complejos y tarjetas de datos.
+    \item Sintaxis: \texttt{@\{/ruta/\{id\}(id=\$\{u.id\})\}}.
+    \item Sustituye \texttt{\{id\}} de forma segura sin concatenar cadenas manualmente.
   \end{itemize}
 \end{column}
 \begin{column}{0.50\textwidth}
 \begin{lstlisting}[style=ThymeleafStyle]
-<!-- Formulario con Objeto y Seleccion Relativa -->
+<!-- 1. Enlace a CSS/JS en /static/css/ -->
+<link rel="stylesheet" th:href="@{/css/styles.css}" />
+
+<!-- 2. Path Variables dinamicas -->
+<!-- Genera: /usuarios/editar/42 -->
+<a th:href="@{/usuarios/editar/{id}(id=${u.id})}">
+  Editar Usuario
+</a>
+
+<!-- Genera: /usuarios/desactivar/42 -->
+<a th:href="@{/usuarios/desactivar/{id}(id=${u.id})}">
+  Cambiar Estado
+</a>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% SLIDE: Parámetros de Consulta (Query Params)
+\begin{frame}[fragile]{Par\'ametros de Consulta (Query Params) con @\{...\}}
+\begin{columns}[c]
+\begin{column}{0.48\textwidth}
+  \textbf{Query Parameters con Tuplas}
+  \begin{itemize}
+    \item Para filtros, b\'usquedas, ordenamiento o paginaci\'on en la URL.
+    \item Sintaxis: \texttt{@\{/ruta(param1=val1, param2=val2)\}}.
+    \item Thymeleaf escapa caracteres autom\'aticamente (\texttt{\%20}).
+  \end{itemize}
+  \vspace{3pt}
+  \textbf{Combinaci\'on Path + Query}
+  \begin{itemize}
+    \item Permite combinar variables de ruta y query params en una misma expresi\'on de tupla.
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- 1. Query Params simples -->
+<!-- Genera: /usuarios?estado=activo&page=1 -->
+<a th:href="@{/usuarios(estado='activo', page=1)}">
+  Ver Usuarios Activos
+</a>
+
+<!-- 2. Path Variable + Query Param combinado -->
+<!-- Genera: /usuarios/42/historial?seccion=cursos -->
+<a th:href="@{/usuarios/{id}/historial(id=${u.id}, seccion='cursos')}">
+  Ver Historial
+</a>
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% SLIDE: Cuándo usar Path Variable vs Query Param
+\begin{frame}{¿Cu\'ando usar Path Variable vs Query Param?}
+\begin{columns}[c]
+\begin{column}{0.48\textwidth}
+  \textbf{Path Variable (\texttt{@PathVariable})}
+  \begin{itemize}
+    \item \textbf{Prop\'osito:} Identificar un recurso \'unico y espec\'ifico en el sistema.
+    \item \textbf{Obligatoriedad:} \underline{Obligatorio}. Si falta, la ruta no existe (HTTP 404).
+    \item \textbf{Sem\'antica REST:} Define jerarqu\'ias:\\
+      \texttt{/cursos/\{cursoId\}/estudiantes/\{id\}}
+    \item \textbf{Ejemplo:} Editar o ver detalle de un usuario (\texttt{/usuarios/42}).
+  \end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+  \textbf{Query Parameter (\texttt{@RequestParam})}
+  \begin{itemize}
+    \item \textbf{Prop\'osito:} Modificar, filtrar, paginar u ordenar una colecci\'on.
+    \item \textbf{Obligatoriedad:} \underline{Opcional}. Soporta valores por defecto (\texttt{defaultValue}).
+    \item \textbf{Sem\'antica REST:} Modificador no can\'onico de la vista:\\
+      \texttt{/usuarios?rol=DOCENTE\&page=2}
+    \item \textbf{Ejemplo:} Filtro por estado o b\'usqueda.
+  \end{itemize}
+\end{column}
+\end{columns}
+\vspace{6pt}
+\centering
+\textbf{Regla de Oro:} ¿Identifica el \textbf{QU\'E} recurso es? $\rightarrow$ \textbf{Path Variable}. ¿Modifica el \textbf{C\'OMO} se presenta la lista? $\rightarrow$ \textbf{Query Param}.
+\end{frame}
+
+% ==============================================================================
+% SESIÓN 2 (PARTE 6: FORMULARIOS Y DATA BINDING)
+% ==============================================================================
+
+\sectionSlideStripe{06}{Formularios y Data Binding}{th:object, @ModelAttribute y los 3 Efectos de th:field}
+
+% SLIDE: Conexión Bidireccional: @ModelAttribute <-> th:object
+\begin{frame}[fragile]{Conexi\'on Bidireccional: @ModelAttribute $\longleftrightarrow$ th:object}
+\begin{columns}[c]
+\begin{column}{0.48\textwidth}
+  \textbf{Ciclo Bidireccional de Datos}
+  \begin{itemize}
+    \item \textbf{1. GET (Backend $\rightarrow$ Vista):}\\
+      Controller inyecta el modelo:\\ \texttt{addAttribute("usuario", u)}.
+    \item \textbf{2. HTML (Plantilla Form):}\\
+      \texttt{th:object="\$\{usuario\}"} vincula el form y \texttt{th:field} mapea controles.
+    \item \textbf{3. POST (Vista $\rightarrow$ Backend):}\\
+      \texttt{@ModelAttribute("usuario")} deserializa y puebla la entidad Java.
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=SpringCodeStyle]
+// 1. GET: Inyecta el objeto en el Model
+@GetMapping("/nuevo")
+public String mostrarForm(Model model) {
+  model.addAttribute("usuario", new Usuario());
+  return "usuarios/formulario";
+}
+
+// 3. POST: Deserializa el objeto enviado
+@PostMapping("/guardar")
+public String guardar(
+    @ModelAttribute("usuario") Usuario usuario) {
+  usuarioService.guardar(usuario);
+  return "redirect:/usuarios";
+}
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% SLIDE: Formularios Web y Binding Bidireccional
+\begin{frame}[fragile]{Formularios Web: th:object y Selecci\'on Relativa *\{...\}}
+\begin{columns}[c]
+\begin{column}{0.48\textwidth}
+  \textbf{Objeto Respaldo (th:object)}
+  \begin{itemize}
+    \item Vincula el \texttt{<form>} a la entidad Java inyectada en el \texttt{Model}.
+  \end{itemize}
+  \vspace{3pt}
+  \textbf{Selecci\'on Relativa (*\{...\})}
+  \begin{itemize}
+    \item \texttt{*\{nombre\}} equivale a \texttt{\$\{usuario.nombre\}}.
+    \item Acceso directo a propiedades del objeto activo en el formulario.
+  \end{itemize}
+  \vspace{3pt}
+  \textbf{Preservaci\'on de ID}
+  \begin{itemize}
+    \item \texttt{type="hidden"} preserva el ID para diferenciar Creaci\'on de Edici\'on.
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=ThymeleafStyle]
 <form th:action="@{/usuarios/guardar}" 
       th:object="${usuario}" method="post">
 
-  <!-- *{id} accede a ${usuario.id} -->
+  <!-- Campo oculto para ID en edicion -->
   <input type="hidden" th:field="*{id}" />
 
   <div>
-    <label>Nombre Completo:</label>
-    <input type="text" th:field="*{nombre}" />
+    <label for="nombre">Nombre:</label>
+    <input type="text" th:field="*{nombre}" required />
+  </div>
+
+  <div>
+    <label for="apellido">Apellido:</label>
+    <input type="text" th:field="*{apellido}" required />
   </div>
 
   <button type="submit">Guardar</button>
@@ -696,102 +845,188 @@ usuarios.total=Total encontrados: {0}
 \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{Data Binding Bidireccional: th:field}
-\begin{columns}[T]
+% SLIDE: Los 3 Efectos Clave de th:field
+\begin{frame}[fragile]{Los 3 Efectos Clave de th:field="*\{propiedad\}"}
+\begin{columns}[c]
 \begin{column}{0.48\textwidth}
-  \textbf{Qu\'e genera th:field="*\{prop\}"?}
+  \textbf{Automatizaci\'on de 3 Atributos}
   \begin{itemize}
-    \item \textbf{\texttt{name="prop"}:} Mapeo del \texttt{POST}.
-    \item \textbf{\texttt{id="prop"}:} Asociaci\'on con \texttt{<label>}.
-    \item \textbf{\texttt{value}:} Precarga en edici\'on.
+    \item \textbf{\texttt{name}:} Clave en el payload \texttt{HTTP POST}.
+    \item \textbf{\texttt{id}:} Vincula sem\'anticamente con \texttt{<label for="...">}.
+    \item \textbf{\texttt{value}:} Precarga el valor en modo edici\'on.
   \end{itemize}
   \vspace{3pt}
-  \textbf{Manejo de Controles HTML}
+  \textbf{Soporte Multi-Control}
   \begin{itemize}
-    \item \textbf{\texttt{<input>}:} Asigna atributo \texttt{value}.
-    \item \textbf{\texttt{checkbox}:} Maneja \texttt{checked} y flag.
-    \item \textbf{\texttt{<select>}:} Selecciona la \texttt{<option>}.
+    \item \textbf{Checkbox:} Gestiona booleanos (\texttt{checked}).
+    \item \textbf{Select:} Asigna el \texttt{selected} autom\'atico.
   \end{itemize}
 \end{column}
 \begin{column}{0.50\textwidth}
 \begin{lstlisting}[style=ThymeleafStyle]
-<form th:object="${usuario}">
-  <!-- Input de Texto -->
-  <input type="text" th:field="*{correoInstitucional}" />
+<!-- 1. Input de Texto y Correo -->
+<label for="correoInstitucional">Email:</label>
+<input type="email" th:field="*{correoInstitucional}" />
 
-  <!-- Checkbox Booleano -->
-  <label>
-    <input type="checkbox" th:field="*{active}" />
-    Usuario Activo
-  </label>
+<!-- 2. Checkbox Booleano -->
+<label for="active">
+  <input type="checkbox" th:field="*{active}" />
+  Usuario Activo
+</label>
 
-  <!-- Menu Desplegable -->
-  <select th:field="*{rol}">
-    <option value="ESTUDIANTE">Estudiante</option>
-    <option value="DOCENTE">Docente</option>
-  </select>
-</form>
+<!-- 3. Parametro Separado para Relaciones (Roles) -->
+<label for="rol">Rol Inicial:</label>
+<select id="rol" name="nombreRol">
+  <option value="ESTUDIANTE" selected>Estudiante</option>
+  <option value="PROFESOR">Profesor</option>
+  <option value="ADMIN">Administrador</option>
+</select>
 \end{lstlisting}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}[fragile]{Validaci\'on y Gesti\'on de Errores: \#fields y th:errors}
-\begin{columns}[T]
+% ==============================================================================
+% SESIÓN 2 (PARTE 7: CONTROLADORES WEB Y PATRÓN PRG)
+% ==============================================================================
+
+\sectionSlideStripe{07}{Controladores Web y Patr\'on PRG}{Par\'ametros, Procesamiento POST y Redirecci\'on 302}
+
+% SLIDE: Captura de Parámetros: @PathVariable y @RequestParam
+\begin{frame}[fragile]{Captura de Par\'ametros en Controller: @PathVariable y @RequestParam}
+\begin{columns}[c]
 \begin{column}{0.48\textwidth}
-  \textbf{Integraci\'on con Bean Validation}
+  \textbf{@PathVariable (Rutas RESTful)}
   \begin{itemize}
-    \item Cuando Spring valida con \texttt{@Valid}, los errores se registran en el \texttt{BindingResult}.
+    \item Variables embebidas en el path (ej. \texttt{/usuarios/editar/\{id\}}).
+    \item Operaciones individuales sobre un recurso por su ID primario.
   \end{itemize}
-  \vspace{4pt}
-  \textbf{Atributos de Error en Thymeleaf}
+  \vspace{3pt}
+  \textbf{@RequestParam (Query Strings)}
   \begin{itemize}
-    \item \textbf{\texttt{\#fields.hasErrors('campo')}:} Retorna \texttt{true} si el campo tiene fallos de validaci\'on.
-    \item \textbf{\texttt{th:errors="*\{campo\}"}:} Renderiza autom\'aticamente el mensaje de error definido en las anotaciones Java.
+    \item Par\'ametros de consulta (\texttt{?clave=valor}).
+    \item Soporta \texttt{defaultValue} y par\'ametros opcionales (\texttt{required=false}).
+  \end{itemize}
+\end{column}
+\begin{column}{0.50\textwidth}
+\begin{lstlisting}[style=SpringCodeStyle]
+// 1. Path Variable: GET /usuarios/editar/42
+@GetMapping("/editar/{id}")
+public String mostrarFormularioEditar(
+    @PathVariable("id") Long id, Model model) {
+  Usuario usuario = usuarioService.obtenerPorId(id);
+  model.addAttribute("usuario", usuario);
+  return "usuarios/formulario";
+}
+
+// 2. Query Param: GET /usuarios/filtrar?estado=activo
+@GetMapping("/filtrar")
+public String filtrarUsuarios(
+    @RequestParam(value = "estado", 
+                  defaultValue = "todos") String est,
+    Model model) {
+  model.addAttribute("usuarios", 
+                     usuarioService.filtrarPorEstado(est));
+  return "usuarios/lista";
+}
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% SLIDE: El Patrón Post / Redirect / Get (PRG)
+\begin{frame}[fragile]{El Patr\'on Post / Redirect / Get (PRG)}
+\begin{columns}[c]
+\begin{column}{0.48\textwidth}
+  \textbf{Peligro de Reenv\'io (F5)}
+  \begin{itemize}
+    \item Retornar HTML directo tras un \texttt{POST} causa que F5 repita la mutaci\'on, duplicando registros en la base de datos.
+  \end{itemize}
+  \vspace{2pt}
+  \textbf{Fase 1 (POST: Mutaci\'on)}
+  \begin{itemize}
+    \item Guarda en BD y retorna \textbf{HTTP 302} (\texttt{redirect:/usuarios}).
+  \end{itemize}
+  \vspace{2pt}
+  \textbf{Fase 2 (GET: Lectura Segura)}
+  \begin{itemize}
+    \item Solicita \texttt{GET /usuarios} (idempotente). Al presionar F5, s\'olo se repite la lectura segura.
   \end{itemize}
 \end{column}
 \begin{column}{0.50\textwidth}
 \begin{lstlisting}[style=ThymeleafStyle]
-<div>
-  <label>Correo Institucional:</label>
-  <input type="email" th:field="*{correoInstitucional}" />
-  
-  <!-- Renderiza solo si hay error de validacion -->
-  <span th:if="${#fields.hasErrors('correoInstitucional')}" 
-        th:errors="*{correoInstitucional}">
-    Error de formato de correo
-  </span>
+<!-- CICLO DEL PATRON PRG -->
+
+1. POST /usuarios/guardar
+   -> Service guarda en BD
+   -> Retorna: "redirect:/usuarios" (HTTP 302)
+
+2. NAVEGADOR recibe 302
+   -> Solicita automaticamente GET /usuarios
+
+3. GET /usuarios (Lectura Segura)
+   -> Service.listarUsuariosActivos()
+   -> Retorna: "usuarios/lista" (HTTP 200 OK)
+
+[!] Al presionar F5 en el navegador:
+    Solo se reejecuta GET /usuarios.
+    El POST NUNCA se repite.
+\end{lstlisting}
+\end{column}
+\end{columns}
+\end{frame}
+
+% SLIDE: Mensajes Flash con RedirectAttributes
+\begin{frame}[fragile]{Mensajes Flash con RedirectAttributes}
+\begin{columns}[c]
+\begin{column}{0.48\textwidth}
+  \textbf{1. Controller: \texttt{addFlashAttribute}}
+  \begin{itemize}
+    \item Tras un HTTP 302, los datos del \texttt{Model} se pierden.
+    \item \texttt{addFlashAttribute} viaja en \texttt{HttpSession} temporalmente y se auto-elimina tras el \texttt{GET}.
+  \end{itemize}
+\begin{lstlisting}[style=SpringCodeStyle]
+@PostMapping("/guardar")
+public String guardar(
+    @ModelAttribute("usuario") Usuario u,
+    RedirectAttributes flash) {
+  usuarioService.guardar(u);
+  flash.addFlashAttribute(
+      "exito", "Usuario guardado!");
+  return "redirect:/usuarios";
+}
+\end{lstlisting}
+\end{column}
+\begin{column}{0.50\textwidth}
+  \textbf{2. Plantilla: Fragmento de Alertas}
+\begin{lstlisting}[style=ThymeleafStyle]
+<!-- templates/fragments/layout.html -->
+<div th:fragment="alerts">
+  <div th:if="${exito}">
+    <span th:text="${exito}">Exito</span>
+  </div>
+  <div th:if="${error}">
+    <span th:text="${error}">Error</span>
+  </div>
+</div>
+
+<!-- Uso en lista.html o formulario.html -->
+<div th:replace="~{fragments/layout :: alerts}">
 </div>
 \end{lstlisting}
 \end{column}
 \end{columns}
 \end{frame}
 
-\contentSlideTwoCols{El Patr\'on Post-Redirect-Get (PRG)}
-  {Problema: Doble Env\'io con F5}
-  {
-    \begin{itemize}
-      \item Si tras un \texttt{POST} se retorna una vista directamente, refrescar el navegador reenv\'ia el formulario duplicando datos.
-      \item Provoca registros dobles o errores de clave duplicada en la base de datos.
-    \end{itemize}
-  }
-  {Soluci\'on con PRG y Flash Attributes}
-  {
-    \begin{itemize}
-      \item El \texttt{POST} procesa la acci\'on y responde con una redirecci\'on HTTP 302: \texttt{redirect:/usuarios}.
-      \item El navegador hace un \texttt{GET} limpio.
-      \item \texttt{RedirectAttributes} con \texttt{addFlashAttribute} env\'ia alertas temporales.
-    \end{itemize}
-  }
-
 % ==============================================================================
-% SESIÓN 2 (PARTE 6: UTILIDADES Y CAPACIDADES AVANZADAS)
+% SESIÓN 2 (PARTE 8: UTILIDADES DE EXPRESIÓN Y JAVASCRIPT INLINE)
 % ==============================================================================
 
-\sectionSlideStripe{06}{Utilidades de Expresi\'on y Scripts}{Objetos \# y JavaScript Inline}
+\sectionSlideStripe{08}{Utilidades de Expresi\'on y Scripts}{Objetos \# y JavaScript Inline}
 
+% SLIDE: Objetos de Utilidad
 \begin{frame}[fragile]{Objetos de Utilidad de Expresi\'on: \#strings, \#numbers, \#temporals}
-\begin{columns}[T]
+\begin{columns}[c]
 \begin{column}{0.48\textwidth}
   \textbf{Objetos Predefinidos de Ayuda}
   \begin{itemize}
@@ -805,8 +1040,8 @@ usuarios.total=Total encontrados: {0}
 \begin{lstlisting}[style=ThymeleafStyle]
 <!-- 1. Cadenas de Texto -->
 <p th:text="${#strings.toUpperCase(u.nombre)}"></p>
-<p th:if="${#strings.contains(u.correo, 'icesi.edu.co')}">
-  Institucional
+<p th:if="${#strings.contains(u.correoInstitucional, 'icesi.edu.co')}">
+  Usuario Institucional
 </p>
 
 <!-- 2. Formato de Fechas Java 8 -->
@@ -818,24 +1053,25 @@ usuarios.total=Total encontrados: {0}
 <span th:text="${#numbers.formatDecimal(u.promedio, 1, 2)}">
   4.50
 </span>
-<p th:text="'Total: ' + ${#lists.size(usuarios)}"></p>
+<p th:if="${#lists.isEmpty(usuarios)}">Sin registros</p>
 \end{lstlisting}
 \end{column}
 \end{columns}
 \end{frame}
 
+% SLIDE: JavaScript Inline
 \begin{frame}[fragile]{Recursos Est\'aticos y JavaScript Inline (th:inline)}
-\begin{columns}[T]
+\begin{columns}[c]
 \begin{column}{0.48\textwidth}
   \textbf{Recursos Est\'aticos}
   \begin{itemize}
-    \item Referenciados con \texttt{@\{/css/styles.css\}}, \texttt{@\{/js/app.js\}} garantizando rutas context-aware.
+    \item Referenciados con \texttt{@\{/css/styles.css\}}, \texttt{@\{/js/app.js\}} garantizando resoluci\'on context-aware.
   \end{itemize}
   \vspace{4pt}
   \textbf{JavaScript Inline (\texttt{th:inline})}
   \begin{itemize}
-    \item \textbf{\texttt{th:inline="javascript"}:} Inyecta objetos Java del \texttt{Model} directamente en c\'odigo JavaScript.
-    \item Thymeleaf serializa strings, n\'umeros y objetos a JSON nativo en el script respetando la sintaxis de prototipo.
+    \item \textbf{\texttt{th:inline="javascript"}:} Inyecta variables del \texttt{Model} en scripts cliente.
+    \item Sintaxis \texttt{/*[[\$\{...\}]]*/ 'fallback'} asegura compatibilidad como prototipo est\'atico en navegador.
   \end{itemize}
 \end{column}
 \begin{column}{0.50\textwidth}
@@ -849,7 +1085,7 @@ usuarios.total=Total encontrados: {0}
   let nombreUsuario = /*[[${usuario.nombre}]]*/ 'Prototipo';
   let totalActivos  = /*[[${totalUsuarios}]]*/ 0;
   
-  console.log("Sesion activa:", nombreUsuario);
+  console.log("Usuario activo:", nombreUsuario);
 </script>
 \end{lstlisting}
 \end{column}
@@ -857,128 +1093,21 @@ usuarios.total=Total encontrados: {0}
 \end{frame}
 
 % ==============================================================================
-% SESIÓN 2 (PARTE 7: LIVE CODING 2 - CRUD COMPLETO Y MODULAR)
+% SESIÓN 2 (PARTE 9: RESUMEN Y BUENAS PRÁCTICAS)
 % ==============================================================================
 
-\begin{frame}[fragile]{Live Coding 2: Alertas Flash en layout.html}
-\begin{lstlisting}[style=ThymeleafStyle]
-<!-- En templates/fragments/layout.html agregamos el fragmento alerts -->
-<div th:fragment="alerts">
-    <div th:if="${exito}" class="alert alert-success">
-        <span th:text="${exito}">Operacion exitosa</span>
-    </div>
-    <div th:if="${error}" class="alert alert-danger">
-        <span th:text="${error}">Ha ocurrido un error</span>
-    </div>
-</div>
-
-<!-- Uso en lista.html y formulario.html -->
-<div th:replace="~{fragments/layout :: alerts}"></div>
-\end{lstlisting}
-\end{frame}
-
-\begin{frame}[fragile]{Live Coding 2: Extensi\'on de UsuarioService}
-\begin{lstlisting}[style=SpringCodeStyle,basicstyle=\ttfamily\fontsize{5.2pt}{6.5pt}\selectfont\color{codeText}]
-public Optional<Usuario> obtenerPorId(Long id) {
-    return usuarioRepository.findById(id);
-}
-
-public Usuario actualizarUsuario(Long id, Usuario datos) {
-    Usuario db = usuarioRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("No encontrado"));
-    db.setNombre(datos.getNombre());
-    db.setApellido(datos.getApellido());
-    db.setCorreoInstitucional(datos.getCorreoInstitucional());
-    if (datos.getPassword() != null && !datos.getPassword().isBlank()) {
-        db.setPassword(datos.getPassword());
-    }
-    db.setActive(datos.isActive());
-    return usuarioRepository.save(db);
-}
-
-public Usuario alternarEstado(Long id) {
-    Usuario db = usuarioRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("No encontrado"));
-    db.setActive(!db.isActive());
-    return usuarioRepository.save(db);
-}
-\end{lstlisting}
-\end{frame}
-
-\begin{frame}[fragile]{Live Coding 2: Formulario con th:object y th:field}
-\begin{lstlisting}[style=ThymeleafStyle]
-<form th:action="@{/usuarios/guardar}" th:object="${usuario}" method="post">
-    <!-- ID oculto para distinguir Crear de Editar -->
-    <input type="hidden" th:field="*{id}" />
-
-    <div>
-        <label>Nombre:</label>
-        <input type="text" th:field="*{nombre}" required />
-    </div>
-    <div>
-        <label>Apellido:</label>
-        <input type="text" th:field="*{apellido}" required />
-    </div>
-    <div>
-        <label>Correo Institucional:</label>
-        <input type="email" th:field="*{correoInstitucional}" required />
-    </div>
-    <div>
-        <label>Rol:</label>
-        <select name="rolNombre">
-            <option value="ESTUDIANTE">Estudiante</option>
-            <option value="PROFESOR">Profesor</option>
-            <option value="ADMINISTRATIVO">Administrativo</option>
-        </select>
-    </div>
-    <button type="submit">Guardar Usuario</button>
-    <a th:href="@{/usuarios}">Cancelar</a>
-</form>
-\end{lstlisting}
-\end{frame}
-
-\begin{frame}[fragile]{Live Coding 2: Controller con CRUD Completo y PRG}
-\begin{lstlisting}[style=SpringCodeStyle,basicstyle=\ttfamily\fontsize{5.2pt}{6.4pt}\selectfont\color{codeText}]
-@GetMapping("/nuevo")
-public String mostrarFormularioCreacion(Model model) {
-    model.addAttribute("usuario", new Usuario());
-    return "usuarios/formulario";
-}
-
-@PostMapping("/guardar")
-public String guardarUsuario(@ModelAttribute("usuario") Usuario usuario, 
-                             @RequestParam("rolNombre") String rolNombre,
-                             RedirectAttributes flash) {
-    if (usuario.getId() == null) {
-        usuarioService.registrarUsuario(usuario, rolNombre);
-    } else {
-        usuarioService.actualizarUsuario(usuario.getId(), usuario);
-    }
-    flash.addFlashAttribute("exito", "Usuario guardado exitosamente");
-    return "redirect:/usuarios"; // Patron PRG (HTTP 302)
-}
-
-@GetMapping("/editar/{id}")
-public String mostrarFormularioEdicion(@PathVariable("id") Long id, Model model) {
-    Usuario usuario = usuarioService.obtenerPorId(id).orElseThrow();
-    model.addAttribute("usuario", usuario);
-    return "usuarios/formulario";
-}
-\end{lstlisting}
-\end{frame}
-
-\contentSlideBulletCard{Resumen de Buenas Pr\'acticas en Spring MVC}
+\contentSlideBulletCard{Resumen de Buenas Pr\'acticas en Spring MVC (4 Pilares)}
   {
     \begin{itemize}
-      \item \textbf{Separaci\'on de Responsabilidades:} El Controller solo coordina; la l\'ogica reside en el Service.
-      \item \textbf{Evitar Doble Bean Resolver:} Confiar en la autoconfiguraci\'on de \texttt{spring-boot-starter-thymeleaf}.
-      \item \textbf{Sintaxis Segura:} Preferir siempre \texttt{th:text} sobre \texttt{th:utext}.
-      \item \textbf{Patr\'on PRG:} Redirigir siempre tras un \texttt{POST} y usar \texttt{RedirectAttributes} para mensajes flash.
+      \item \textbf{1. Seguridad XSS por Defecto:} Emplear siempre \texttt{th:text}; reservar \texttt{th:utext} s\'olo para HTML sanitizado.
+      \item \textbf{2. Natural Templating:} Dise\~nar plantillas v\'alidas est\'aticamente en navegador y din\'amicamente en Spring Boot.
+      \item \textbf{3. Separaci\'on MVC:} El Controller s\'olo orquesta; el Service gestiona el negocio y la vista presenta datos.
+      \item \textbf{4. Idempotencia y Patr\'on PRG:} Todo \texttt{@PostMapping} debe redirigir con HTTP 302 y usar mensajes flash.
     \end{itemize}
   }
   {Pr\'oximos Pasos}
-  {En la Semana 9 integraremos \textbf{Spring Security} con Thymeleaf para proteger vistas por roles de usuario.}
+  {En la Semana 9 integraremos \textbf{Spring Security} con Thymeleaf para proteger vistas y botones seg\'un el rol autenticado.}
 
-\contentSlideQuoteStat{Conclusi\'on y Live Coding Final}{CRUD 100\% Funcional}{Thymeleaf + Spring Boot MVC}{``Hemos construido una aplicaci\'on web robusta, modular y f\'acil de mantener aplicando SSR y buenas pr\'acticas de arquitectura.''}
+\contentSlideQuoteStat{Conclusi\'on y Live Coding Final}{CRUD 100\% Funcional}{Thymeleaf + Spring Boot MVC}{``Hemos construido una aplicaci\'on web robusta, modular, segura y f\'acil de mantener aplicando SSR y buenas pr\'acticas de arquitectura.''}
 
 \end{document}

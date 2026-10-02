@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Formulario de Curso</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: mainNavbar}"></header>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <main>
+        <h2 th:text="${titulo}">Registrar Curso</h2>
+
+        <form th:action="@{/cursos-mvc/guardar}" th:object="${curso}" method="post">
+            
+            <input type="hidden" th:field="*{id}" />
+
+            <div>
+                <label for="nombre">Nombre del Curso:</label>
+                <input type="text" id="nombre" th:field="*{nombre}" required />
+            </div>
+
+            <div>
+                <label for="creditos">Créditos:</label>
+                <input type="number" id="creditos" th:field="*{creditos}" min="1" max="10" required />
+            </div>
+
+            <div>
+                <label for="departamento">Departamento:</label>
+                <input type="text" id="departamento" th:field="*{departamento}" placeholder="Ej: TIC" required />
+            </div>
+
+            <div>
+                <label for="profesorId">Profesor Responsable:</label>
+                <select id="profesorId" name="profesorId" required>
+                    <option value="" disabled th:selected="${curso.profesor == null}">Seleccione un docente...</option>
+                    <option th:each="prof : ${profesores}" 
+                            th:value="${prof.id}" 
+                            th:text="${prof.usuario.nombre + ' ' + prof.usuario.apellido + ' (' + prof.departamento + ' - ' + prof.especialidad + ')'}"
+                            th:selected="${curso.profesor != null and curso.profesor.id == prof.id}">
+                        Profesor
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <button type="submit">Guardar Curso</button>
+                <a th:href="@{/cursos-mvc}" class="button button-secondary">Cancelar</a>
+            </div>
+
+        </form>
+    </main>
+
+</body>
+</html>

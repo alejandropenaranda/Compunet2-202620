@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Formulario de Docente</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: mainNavbar}"></header>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <main>
+        <h2 th:text="${titulo}">Registrar Perfil Docente</h2>
+
+        <form th:action="@{/profesores-mvc/guardar}" method="post">
+            
+            <input type="hidden" name="profesorId" th:value="${profesor.id}" />
+
+            <!-- Selección de Usuario (Solo en modo creación) -->
+            <div th:if="${profesor.id == null}">
+                <label for="usuarioId">Seleccionar Usuario del Sistema:</label>
+                <select id="usuarioId" name="usuarioId" required>
+                    <option value="" disabled selected>Seleccione el usuario que desempeñará el rol docente...</option>
+                    <option th:each="u : ${usuarios}" 
+                            th:value="${u.id}" 
+                            th:text="${u.nombre + ' ' + u.apellido + ' (' + u.correoInstitucional + ')'}">
+                        Usuario
+                    </option>
+                </select>
+            </div>
+
+            <!-- Vista informativa de Usuario (En modo edición) -->
+            <div th:if="${profesor.id != null}">
+                <label>Usuario Asociado:</label>
+                <p><strong th:text="${profesor.usuario.nombre + ' ' + profesor.usuario.apellido + ' (' + profesor.usuario.correoInstitucional + ')'}">Usuario</strong></p>
+            </div>
+
+            <div>
+                <label for="especialidad">Especialidad Académica:</label>
+                <input type="text" id="especialidad" name="especialidad" th:value="${profesor.especialidad}" placeholder="Ej: Redes, Bases de Datos, Ciberseguridad" required />
+            </div>
+
+            <div>
+                <label for="departamento">Departamento Académico:</label>
+                <input type="text" id="departamento" name="departamento" th:value="${profesor.departamento}" placeholder="Ej: TIC, Ingenierías" required />
+            </div>
+
+            <div>
+                <button type="submit">Guardar Perfil Docente</button>
+                <a th:href="@{/profesores-mvc}" class="button button-secondary">Cancelar</a>
+            </div>
+
+        </form>
+    </main>
+
+</body>
+</html>

@@ -5,21 +5,21 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.compunet.springboot.model.EstudianteCurso;
-import com.compunet.springboot.model.EstudianteCursoId;
+import com.compunet.springboot.model.Matricula;
+import com.compunet.springboot.model.MatriculaId;
 
 @Repository
-public interface EstudianteCursoRepository extends JpaRepository<EstudianteCurso, EstudianteCursoId> {
+public interface MatriculaRepository extends JpaRepository<Matricula, MatriculaId> {
 
-    List<EstudianteCurso> findByIdEstudianteId(Long estudianteId);
+    List<Matricula> findById_UsuarioId(Long usuarioId);
 
-    List<EstudianteCurso> findByIdCursoId(Long cursoId);
+    List<Matricula> findById_CursoId(Long cursoId);
 
     // Ejercicio 12: Verificar matrícula en tabla intermedia
-    boolean existsById_EstudianteIdAndId_CursoId(Long estudianteId, Long cursoId);
+    boolean existsById_UsuarioIdAndId_CursoId(Long usuarioId, Long cursoId);
 
     // Ejercicio difícil #3 - Parte A: Verificación de existencia cruzada
-    boolean existsByEstudiante_ActiveTrueAndCurso_DepartamentoIgnoreCaseAndCurso_Profesor_Id(
+    boolean existsByUsuario_ActiveTrueAndCurso_DepartamentoIgnoreCaseAndCurso_Profesor_Id(
         String departamentoCurso, 
         Long profesorId
     );
@@ -30,5 +30,4 @@ public interface EstudianteCursoRepository extends JpaRepository<EstudianteCurso
         int minCreditos, 
         int maxCreditos
     );
-
 }

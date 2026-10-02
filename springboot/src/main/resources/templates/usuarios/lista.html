@@ -48,6 +48,10 @@
                         <a th:href="@{/usuarios/desactivar/{id}(id=${u.id})}" 
                            onclick="return confirm('¿Está seguro de cambiar el estado de este usuario?');">
                             Cambiar Estado
+                        </a> |
+                        <a th:href="@{/usuarios/eliminar/{id}(id=${u.id})}" 
+                           onclick="return confirm('¿Está seguro de eliminar definitivamente este usuario?');">
+                            Eliminar
                         </a>
                     </td>
                 </tr>

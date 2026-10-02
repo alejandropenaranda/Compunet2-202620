@@ -1,7 +1,5 @@
 package com.compunet.springboot.controller;
 
-import com.compunet.springboot.repository.EstudianteRepository;
-import com.compunet.springboot.repository.UsuarioRepository;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,14 +7,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.compunet.springboot.model.Curso;
-import com.compunet.springboot.model.Estudiante;
 import com.compunet.springboot.model.Permiso;
 import com.compunet.springboot.model.Profesor;
 import com.compunet.springboot.model.Usuario;
 import com.compunet.springboot.repository.CursoRepository;
 import com.compunet.springboot.repository.ProfesorRepository;
+import com.compunet.springboot.repository.UsuarioRepository;
 import com.compunet.springboot.service.CursoService;
-import com.compunet.springboot.service.EstudianteService;
 import com.compunet.springboot.service.MatriculaService;
 import com.compunet.springboot.service.PermisoService;
 import com.compunet.springboot.service.ProfesorService;
@@ -26,13 +23,11 @@ import com.compunet.springboot.service.UsuarioService;
 public class Controller {
 
     private final UsuarioRepository usuarioRepository;
-    private final EstudianteRepository estudianteRepository;
     private final CursoRepository cursoRepository;
     private final ProfesorRepository profesorRepository;
     private final UsuarioService usuarioService;
     private final ProfesorService profesorService;
     private final CursoService cursoService;
-    private final EstudianteService estudianteService;
     private final MatriculaService matriculaService;
     private final PermisoService permisoService;
 
@@ -41,18 +36,16 @@ public class Controller {
             UsuarioService usuarioService,
             ProfesorService profesorService,
             CursoService cursoService,
-            EstudianteService estudianteService,
             MatriculaService matriculaService,
-            PermisoService permisoService, EstudianteRepository estudianteRepository, UsuarioRepository usuarioRepository) {
+            PermisoService permisoService,
+            UsuarioRepository usuarioRepository) {
         this.cursoRepository = cursoRepo;
         this.profesorRepository = profesorRepo;
         this.usuarioService = usuarioService;
         this.profesorService = profesorService;
         this.cursoService = cursoService;
-        this.estudianteService = estudianteService;
         this.matriculaService = matriculaService;
         this.permisoService = permisoService;
-        this.estudianteRepository = estudianteRepository;
         this.usuarioRepository = usuarioRepository;
     }
 
@@ -127,16 +120,18 @@ public class Controller {
         return profesorService.listarPorEspecialidadOrdenados("Software");
     }
 
-    // Ejercicio 7: Estudiantes por dominio de correo
+    // Ejercicio 7: Estudiantes (usuarios con rol estudiante) por dominio de correo
     @GetMapping("/ejercicio7")
-    public List<Estudiante> ejercicio7EstudiantesPorDominio() {
-        return estudianteService.filtrarPorDominio("@icesi.edu.co");
+    public List<Usuario> ejercicio7EstudiantesPorDominio() {
+        return usuarioService.listarUsuariosActivosPorRol("ESTUDIANTE").stream()
+                .filter(u -> u.getCorreoInstitucional().toLowerCase().endsWith("@icesi.edu.co"))
+                .toList();
     }
 
-    // Ejercicio 8: Conteo de estudiantes activos
+    // Ejercicio 8: Conteo de estudiantes (usuarios activos con rol estudiante)
     @GetMapping("/ejercicio8")
     public long ejercicio8ConteoEstudiantesActivos() {
-        return estudianteService.contarEstudiantesActivos();
+        return usuarioService.listarUsuariosActivosPorRol("ESTUDIANTE").size();
     }
 
     // Ejercicio 9: Cursos asignados a un profesor (ManyToOne)
@@ -175,48 +170,23 @@ public class Controller {
         return permisoService.listarPermisosDeRol("ADMIN");
     }
 
-    // Ejercicio 15: Estudiantes de un curso con @Query (JPQL)
-    @GetMapping("/ejercicio15-jpql")
-    public List<Estudiante> ejercicio15EstudiantesCursoJPQL() {
-        return estudianteService.listarEstudiantesDeCursoJPQL(1L);
-    }
-
-    // Ejercicio 15: Estudiantes de un curso con @Query (Native SQL)
-    @GetMapping("/ejercicio15-nativo")
-    public List<Estudiante> ejercicio15EstudiantesCursoNativo() {
-        return estudianteService.listarEstudiantesDeCursoNativo(1L);
-    }
-
-
-    // Ejercicio dificil 1 
+    // Ejercicio difícil 1 
     @GetMapping("/ejercicio/dificil1")
     public List<Profesor> dificil1() {
         return profesorService.ejercicioDificil1("Computación y Sistemas Inteligentes", 3);
     }
 
-    // Ejercicio dificil 1 
-    @GetMapping("/ejercicio/dificil2")
-    public List<Estudiante> dificil2() {
-        return estudianteRepository.findDistinctByActiveTrueAndCorreoInstitucionalEndingWithAndEstudianteCursos_Curso_Profesor_EspecialidadIgnoreCaseOrderByApellidoAscNombreAsc("icesi.edu.co", "telematica");
-    }
-
-    // Ejercicio dificil 3 
-    @GetMapping("/ejercicio/dificil3")
-    public List<Profesor> dificil3() {
-        return profesorService.ejercicioDificil1("Computación y Sistemas Inteligentes", 3);
-    }
-
-    // Ejercicio dificil 4 
+    // Ejercicio difícil 4 
     @GetMapping("/ejercicio/dificil4")
     public List<Curso> dificil4() {
-        return cursoRepository.findTop5ByDepartamentoInAndProfesor_ApellidoIgnoreCaseAndEstudianteCursos_Estudiante_IdInOrderByCreditosDesc(List.of("Computación y Sistemas Inteligentes"), "Rincon", List.of(1L, 2L, 3L));
+        return cursoRepository.findTop5ByDepartamentoInAndProfesor_Usuario_ApellidoIgnoreCaseAndMatriculas_Usuario_IdInOrderByCreditosDesc(
+                List.of("Computación y Sistemas Inteligentes"), "Rincon", List.of(1L, 2L, 3L));
     }
 
-    // Ejercicio dificil 5
+    // Ejercicio difícil 5
     @GetMapping("/ejercicio/dificil5")
     public List<Usuario> dificil5() {
-        return usuarioRepository.findDistinctByActiveTrueAndRoles_NombreInAndRoles_Permisos_NombreIgnoreCaseOrderByApellidoAscNombreAsc(List.of("ADMIN", "ESTUDIANTE"), "COURSE_READ");
+        return usuarioRepository.findDistinctByActiveTrueAndRoles_NombreInAndRoles_Permisos_NombreIgnoreCaseOrderByApellidoAscNombreAsc(
+                List.of("ADMIN", "ESTUDIANTE"), "COURSE_READ");
     }
-
-
 }

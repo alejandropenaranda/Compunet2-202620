@@ -1,5 +1,7 @@
 package com.compunet.springboot.model;
 
+import java.io.Serializable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;
@@ -8,17 +10,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Embeddable 
-@Getter 
-@Setter 
-@NoArgsConstructor 
-@AllArgsConstructor 
-@EqualsAndHashCode // Fundamental para que JPA pueda comparar las llaves
-public class EstudianteCursoId {
+@Embeddable
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+public class MatriculaId implements Serializable {
 
-    @Column (name = "estudiante_id")
-    private Long estudianteId;
+    @Column(name = "usuario_id")
+    private Long usuarioId;
 
-    @Column (name = "curso_id")
+    @Column(name = "curso_id")
     private Long cursoId;
 }

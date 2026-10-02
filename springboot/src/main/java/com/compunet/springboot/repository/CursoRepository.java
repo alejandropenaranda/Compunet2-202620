@@ -13,7 +13,7 @@ import com.compunet.springboot.model.Curso;
 @Repository 
 public interface CursoRepository extends JpaRepository<Curso, Long> {
 
-// 1. Búsqueda exacta por departamento
+    // 1. Búsqueda exacta por departamento
     List<Curso> findByDepartamento(String departamento);
 
     // 2. Búsqueda por rango de créditos
@@ -28,11 +28,7 @@ public interface CursoRepository extends JpaRepository<Curso, Long> {
     // 5. Verificación de existencia
     boolean existsByNombreIgnoreCase(String nombre);
 
-
-
-    // PAGIONACIÓN Y ORDENAMIENTO
-
-     // Spring Data inyecta automáticamente LIMIT y OFFSET según el Pageable
+    // Paginación y ordenamiento
     Page<Curso> findByDepartamento(String departamento, Pageable pageable);
 
     // Ejercicio 9: Cursos asignados a un profesor (ManyToOne)
@@ -44,6 +40,6 @@ public interface CursoRepository extends JpaRepository<Curso, Long> {
     // Ejercicio 13: Cursos por créditos mínimos ordenados descendentemente
     List<Curso> findByCreditosGreaterThanEqualOrderByCreditosDesc(int creditosMinimos);
 
-    //Ejercicio difil # 4
-    List <Curso> findTop5ByDepartamentoInAndProfesor_ApellidoIgnoreCaseAndEstudianteCursos_Estudiante_IdInOrderByCreditosDesc(Collection<String> Deptos, String apellido, Collection<Long> Ids);
+    // Ejercicio difícil #4
+    List<Curso> findTop5ByDepartamentoInAndProfesor_Usuario_ApellidoIgnoreCaseAndMatriculas_Usuario_IdInOrderByCreditosDesc(Collection<String> Deptos, String apellido, Collection<Long> Ids);
 }

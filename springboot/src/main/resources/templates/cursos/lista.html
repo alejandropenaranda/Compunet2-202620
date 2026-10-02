@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Gestión de Cursos</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: mainNavbar}"></header>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <main>
+        <h1 th:text="${titulo}">Gestión de Cursos Académicos</h1>
+        <p><a th:href="@{/cursos-mvc/nuevo}" class="button">+ Registrar Curso</a></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre del Curso</th>
+                    <th>Créditos</th>
+                    <th>Departamento</th>
+                    <th>Profesor Responsable</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(cursos)}">
+                    <td colspan="6">No hay cursos registrados actualmente.</td>
+                </tr>
+                <tr th:each="c, stat : ${cursos}">
+                    <td th:text="${stat.count}">1</td>
+                    <td th:text="${c.nombre}">Computación en Red II</td>
+                    <td th:text="${c.creditos}">3</td>
+                    <td th:text="${c.departamento}">TIC</td>
+                    <td th:text="${c.profesor != null and c.profesor.usuario != null ? c.profesor.usuario.nombre + ' ' + c.profesor.usuario.apellido : 'Sin asignar'}">Profesor</td>
+                    <td>
+                        <a th:href="@{/cursos-mvc/editar/{id}(id=${c.id})}">Editar</a> |
+                        <a th:href="@{/cursos-mvc/eliminar/{id}(id=${c.id})}" 
+                           onclick="return confirm('¿Está seguro de eliminar este curso?');">
+                            Eliminar
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Formulario de Permiso</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: mainNavbar}"></header>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <main>
+        <h2 th:text="${titulo}">Registrar Permiso</h2>
+
+        <form th:action="@{/permisos-mvc/guardar}" th:object="${permiso}" method="post">
+            
+            <input type="hidden" th:field="*{id}" />
+
+            <div>
+                <label for="nombre">Nombre del Permiso:</label>
+                <input type="text" id="nombre" th:field="*{nombre}" placeholder="Ej: VER_CURSOS, CREAR_USUARIOS" required />
+            </div>
+
+            <div>
+                <label for="descripcion">Descripción:</label>
+                <input type="text" id="descripcion" th:field="*{descripcion}" placeholder="Ej: Permite la creación y actualización de recursos" />
+            </div>
+
+            <div>
+                <button type="submit">Guardar Permiso</button>
+                <a th:href="@{/permisos-mvc}" class="button button-secondary">Cancelar</a>
+            </div>
+
+        </form>
+    </main>
+
+</body>
+</html>

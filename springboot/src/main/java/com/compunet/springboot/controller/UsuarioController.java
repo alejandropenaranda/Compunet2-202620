@@ -105,4 +105,18 @@ public class UsuarioController {
         }
         return "redirect:/usuarios";
     }
+
+    /**
+     * 6. ELIMINAR FÍSICAMENTE: GET /usuarios/eliminar/{id}
+     */
+    @GetMapping("/eliminar/{id}")
+    public String eliminarUsuario(@PathVariable("id") Long id, RedirectAttributes flash) {
+        try {
+            usuarioService.eliminarUsuario(id);
+            flash.addFlashAttribute("exito", "Usuario eliminado correctamente del sistema.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error", "No se pudo eliminar el usuario: " + e.getMessage());
+        }
+        return "redirect:/usuarios";
+    }
 }

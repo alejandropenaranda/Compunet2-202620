@@ -3,11 +3,14 @@ package com.compunet.springboot.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.stereotype.Service;
+
 import com.compunet.springboot.model.Rol;
 import com.compunet.springboot.model.Usuario;
 import com.compunet.springboot.repository.RolRepository;
 import com.compunet.springboot.repository.UsuarioRepository;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -18,10 +21,17 @@ public class UsuarioService {
     private final RolRepository rolRepository;
 
     /**
-     * Consulta todos los usuarios activos del sistema.
+     * Consulta todos los usuarios del sistema.
      */
     public List<Usuario> listarUsuariosActivos() {
         return usuarioRepository.findAll();
+    }
+
+    /**
+     * Busca un usuario por su identificador único (ID).
+     */
+    public Optional<Usuario> obtenerPorId(Long id) {
+        return usuarioRepository.findById(id);
     }
 
     /**
@@ -46,17 +56,14 @@ public class UsuarioService {
     }
 
     /**
-     * Registra un nuevo usuario validando que el correo no se encuentre registrado
-     * previamente.
+     * Registra un nuevo usuario validando que el correo no se encuentre registrado previamente.
      */
     public Usuario registrarUsuario(Usuario usuario, String nombreRolInicial) {
-        // Regla de Negocio 1: Correo único
         if (usuarioRepository.existsByCorreoInstitucional(usuario.getCorreoInstitucional())) {
             throw new IllegalArgumentException("El correo institucional ya se encuentra registrado: "
                     + usuario.getCorreoInstitucional());
         }
 
-        // Regla de Negocio 2: Asignación de rol base
         Rol rol = rolRepository.findByNombre(nombreRolInicial)
                 .orElseThrow(() -> new IllegalStateException("El rol especificado no existe: " + nombreRolInicial));
 
@@ -68,13 +75,6 @@ public class UsuarioService {
         usuario.setActive(true);
 
         return usuarioRepository.save(usuario);
-    }
-
-    /**
-     * Busca un usuario por su identificador único (ID).
-     */
-    public Optional<Usuario> obtenerPorId(Long id) {
-        return usuarioRepository.findById(id);
     }
 
     /**
@@ -112,5 +112,15 @@ public class UsuarioService {
                 .orElseThrow(() -> new IllegalArgumentException("No se encontró el usuario con ID: " + id));
         usuario.setActive(!usuario.isActive());
         return usuarioRepository.save(usuario);
+    }
+
+    /**
+     * Eliminar físicamente un usuario por ID.
+     */
+    public void eliminarUsuario(Long id) {
+        if (!usuarioRepository.existsById(id)) {
+            throw new IllegalArgumentException("No se encontró el usuario con ID: " + id);
+        }
+        usuarioRepository.deleteById(id);
     }
 }

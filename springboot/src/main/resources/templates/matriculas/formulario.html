@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Formulario de Matrícula</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: mainNavbar}"></header>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <main>
+        <h2 th:text="${titulo}">Matricular Estudiante en Curso</h2>
+
+        <form th:action="@{/matriculas-mvc/guardar}" method="post">
+            
+            <div>
+                <label for="usuarioId">Estudiante (Usuario):</label>
+                <select id="usuarioId" name="usuarioId" required>
+                    <option value="" disabled selected>Seleccione un estudiante...</option>
+                    <option th:each="u : ${estudiantes}" 
+                            th:value="${u.id}" 
+                            th:text="${u.nombre + ' ' + u.apellido + ' (' + u.correoInstitucional + ')'}">
+                        Estudiante
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <label for="cursoId">Curso Académico:</label>
+                <select id="cursoId" name="cursoId" required>
+                    <option value="" disabled selected>Seleccione un curso...</option>
+                    <option th:each="cur : ${cursos}" 
+                            th:value="${cur.id}" 
+                            th:text="${cur.nombre + ' (' + cur.creditos + ' créditos - Depto: ' + cur.departamento + ')'}">
+                        Curso
+                    </option>
+                </select>
+            </div>
+
+            <div>
+                <button type="submit">Completar Matrícula</button>
+                <a th:href="@{/matriculas-mvc}" class="button button-secondary">Cancelar</a>
+            </div>
+
+        </form>
+    </main>
+
+</body>
+</html>

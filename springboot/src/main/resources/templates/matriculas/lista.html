@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Gestión de Matrículas</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: mainNavbar}"></header>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <main>
+        <h1 th:text="${titulo}">Gestión de Matrículas Académicas</h1>
+        <p><a th:href="@{/matriculas-mvc/nueva}" class="button">+ Realizar Matrícula</a></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Estudiante (Usuario)</th>
+                    <th>Correo Institucional</th>
+                    <th>Curso</th>
+                    <th>Departamento</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(matriculas)}">
+                    <td colspan="6">No hay registros de matrículas en el sistema.</td>
+                </tr>
+                <tr th:each="mat, stat : ${matriculas}">
+                    <td th:text="${stat.count}">1</td>
+                    <td th:text="${mat.usuario.nombre + ' ' + mat.usuario.apellido}">Estudiante</td>
+                    <td th:text="${mat.usuario.correoInstitucional}">correo@icesi.edu.co</td>
+                    <td th:text="${mat.curso.nombre}">Curso</td>
+                    <td th:text="${mat.curso.departamento}">Departamento</td>
+                    <td>
+                        <a th:href="@{/matriculas-mvc/eliminar/{uId}/{curId}(uId=${mat.usuario.id}, curId=${mat.curso.id})}" 
+                           onclick="return confirm('¿Está seguro de cancelar esta matrícula?');">
+                            Cancelar Matrícula
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+</body>
+</html>

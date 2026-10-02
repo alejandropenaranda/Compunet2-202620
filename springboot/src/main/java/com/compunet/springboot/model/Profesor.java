@@ -11,7 +11,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,32 +25,26 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Profesor")
+@Table(name = "profesor")
 public class Profesor {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "nombre", nullable = false)
-    private String nombre;
 
-    @Column (name = "apellido", nullable = false)
-    private String apellido;
-    
-    @Column (name = "correo_institucional", nullable = false, unique = true, length = 50)
-    private String correoInstitucional;
-    
-    @Column (name = "especialidad", nullable = false)
+    @OneToOne
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    @JsonIgnoreProperties("profesor")
+    private Usuario usuario;
+
+    @Column(name = "especialidad", nullable = false)
     private String especialidad;
 
-    @Column (name = "departamento", nullable = false)
+    @Column(name = "departamento", nullable = false)
     private String departamento;
 
-    @Column (name = "active", nullable = false)
-    private boolean active;
-
-    @JsonIgnoreProperties (value = "profesor")
+    @JsonIgnoreProperties(value = "profesor")
     @OneToMany(mappedBy = "profesor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Curso> cursos = new ArrayList<>();
-    
+
 }

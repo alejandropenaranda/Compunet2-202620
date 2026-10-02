@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Gestión de Roles</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: mainNavbar}"></header>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <main>
+        <h1 th:text="${titulo}">Gestión de Roles y Seguridad</h1>
+        <p><a th:href="@{/roles-mvc/nuevo}" class="button">+ Registrar Rol</a></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre del Rol</th>
+                    <th>Descripción</th>
+                    <th>Permisos Asignados</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(roles)}">
+                    <td colspan="5">No hay roles registrados en el sistema.</td>
+                </tr>
+                <tr th:each="r, stat : ${roles}">
+                    <td th:text="${stat.count}">1</td>
+                    <td><strong th:text="${r.nombre}">ROL_ADMIN</strong></td>
+                    <td th:text="${r.descripcion}">Descripción del rol</td>
+                    <td>
+                        <span th:if="${#lists.isEmpty(r.permisos)}"><em>Sin permisos</em></span>
+                        <span th:each="p, pStat : ${r.permisos}" 
+                              th:text="${p.nombre + (pStat.last ? '' : ', ')}">
+                            PERMISO
+                        </span>
+                    </td>
+                    <td>
+                        <a th:href="@{/roles-mvc/editar/{id}(id=${r.id})}">Editar / Permisos</a> |
+                        <a th:href="@{/roles-mvc/eliminar/{id}(id=${r.id})}" 
+                           onclick="return confirm('¿Está seguro de eliminar este rol?');">
+                            Eliminar
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+</body>
+</html>

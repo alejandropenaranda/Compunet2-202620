@@ -19,27 +19,27 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "estudiante_curso")
-public class EstudianteCurso {
+@Table(name = "matricula")
+public class Matricula {
 
     @EmbeddedId
-    private EstudianteCursoId id = new EstudianteCursoId();
+    private MatriculaId id = new MatriculaId();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("estudianteId")
-    @JsonIgnoreProperties("estudianteCursos")
-    @JoinColumn(name = "estudiante_id", nullable = false)
-    private Estudiante estudiante;
+    @MapsId("usuarioId")
+    @JsonIgnoreProperties("matriculas")
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("cursoId")
-    @JsonIgnoreProperties("estudianteCursos")
+    @JsonIgnoreProperties("matriculas")
     @JoinColumn(name = "curso_id", nullable = false)
     private Curso curso;
 
-    public EstudianteCurso(Estudiante estudiante, Curso curso){
-        this.estudiante = estudiante;
+    public Matricula(Usuario usuario, Curso curso) {
+        this.usuario = usuario;
         this.curso = curso;
-        this.id = new EstudianteCursoId(estudiante.getId(),curso.getId());
+        this.id = new MatriculaId(usuario.getId(), curso.getId());
     }
 }

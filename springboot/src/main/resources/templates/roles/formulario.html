@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Formulario de Rol</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: mainNavbar}"></header>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <main>
+        <h2 th:text="${titulo}">Registrar Rol</h2>
+
+        <form th:action="@{/roles-mvc/guardar}" th:object="${rol}" method="post">
+            
+            <input type="hidden" th:field="*{id}" />
+
+            <div>
+                <label for="nombre">Nombre del Rol:</label>
+                <input type="text" id="nombre" th:field="*{nombre}" placeholder="Ej: ESTUDIANTE, PROFESOR, ADMINISTRADOR" required />
+            </div>
+
+            <div>
+                <label for="descripcion">Descripción:</label>
+                <input type="text" id="descripcion" th:field="*{descripcion}" placeholder="Ej: Rol con acceso a consulta y matrícula" />
+            </div>
+
+            <div>
+                <button type="submit">Guardar Datos del Rol</button>
+                <a th:href="@{/roles-mvc}" class="button button-secondary">Volver al Listado</a>
+            </div>
+
+        </form>
+
+        <!-- Sección de Gestión de Permisos (Solo visible al editar un Rol existente) -->
+        <section th:if="${rol.id != null}" style="margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
+            <h3>Permisos Asociados al Rol</h3>
+
+            <table style="margin-bottom: 20px;">
+                <thead>
+                    <tr>
+                        <th>Permiso</th>
+                        <th>Descripción</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(rol.permisos)}">
+                        <td colspan="3">Este rol aún no tiene permisos asignados.</td>
+                    </tr>
+                    <tr th:each="perm : ${rol.permisos}">
+                        <td th:text="${perm.nombre}">PERMISO</td>
+                        <td th:text="${perm.descripcion}">Descripción</td>
+                        <td>
+                            <a th:href="@{/roles-mvc/{rId}/permisos/remover/{pId}(rId=${rol.id}, pId=${perm.id})}"
+                               onclick="return confirm('¿Remover este permiso del rol?');">
+                                Quitar Permiso
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Formulario para asociar un nuevo permiso -->
+            <form th:action="@{/roles-mvc/{rId}/permisos/asignar(rId=${rol.id})}" method="post" style="display: flex; gap: 10px; align-items: flex-end;">
+                <div style="flex-grow: 1; margin-bottom: 0;">
+                    <label for="permisoId">Agregar Permiso Disponible:</label>
+                    <select id="permisoId" name="permisoId" required>
+                        <option value="" disabled selected>Seleccione un permiso...</option>
+                        <option th:each="p : ${todosLosPermisos}" 
+                                th:value="${p.id}" 
+                                th:text="${p.nombre + ' - ' + p.descripcion}">
+                            Permiso
+                        </option>
+                    </select>
+                </div>
+                <button type="submit">+ Asignar Permiso</button>
+            </form>
+        </section>
+
+    </main>
+
+</body>
+</html>

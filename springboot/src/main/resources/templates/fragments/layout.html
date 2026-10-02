@@ -5,19 +5,23 @@
 </head>
 <body>
 
-    <!-- 1. Fragmento de Barra de Navegación -->
+    <!-- 1. Fragmento de Barra de Navegación Global -->
     <header th:fragment="mainNavbar">
         <nav>
-            <a th:href="@{/usuarios}">ICESI Academico</a> |
+            <a th:href="@{/usuarios}"><strong>ICESI Académico</strong></a> |
             <a th:href="@{/usuarios}">Usuarios</a> |
-            <a th:href="@{/usuarios/nuevo}">Nuevo Usuario</a>
+            <a th:href="@{/profesores-mvc}">Cuerpo Docente</a> |
+            <a th:href="@{/cursos-mvc}">Cursos</a> |
+            <a th:href="@{/matriculas-mvc}">Matrículas</a> |
+            <a th:href="@{/roles-mvc}">Roles</a> |
+            <a th:href="@{/permisos-mvc}">Permisos</a>
         </nav>
     </header>
 
     <!-- 2. Fragmento de Mensajes Flash (Alertas de Éxito / Error) -->
     <div th:fragment="alerts">
         <div th:if="${exito}" class="alert alert-success">
-            <span th:text="${exito}">Operación realizada con exito</span>
+            <span th:text="${exito}">Operación realizada con éxito</span>
         </div>
         <div th:if="${error}" class="alert alert-danger">
             <span th:text="${error}">Ha ocurrido un error</span>

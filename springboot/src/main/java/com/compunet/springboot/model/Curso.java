@@ -27,7 +27,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "Curso")
+@Table(name = "curso")
 public class Curso {
 
     @Id
@@ -45,11 +45,11 @@ public class Curso {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profesor_id", nullable = false)
-    @JsonIgnoreProperties (value = "cursos")
+    @JsonIgnoreProperties(value = "cursos")
     private Profesor profesor;
-    
+
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private List<EstudianteCurso> estudianteCursos = new ArrayList<>();
+    private List<Matricula> matriculas = new ArrayList<>();
 
 }

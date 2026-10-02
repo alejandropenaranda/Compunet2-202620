@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Gestión de Profesores</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: mainNavbar}"></header>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <main>
+        <h1 th:text="${titulo}">Gestión de Profesores (Cuerpo Docente)</h1>
+        <p><a th:href="@{/profesores-mvc/nuevo}" class="button">+ Registrar Perfil Docente</a></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Docente</th>
+                    <th>Correo Institucional</th>
+                    <th>Especialidad</th>
+                    <th>Departamento</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(profesores)}">
+                    <td colspan="7">No hay profesores registrados actualmente.</td>
+                </tr>
+                <tr th:each="prof, stat : ${profesores}">
+                    <td th:text="${stat.count}">1</td>
+                    <td th:text="${prof.usuario.nombre + ' ' + prof.usuario.apellido}">Ana Gómez</td>
+                    <td th:text="${prof.usuario.correoInstitucional}">profesor@icesi.edu.co</td>
+                    <td th:text="${prof.especialidad}">Ingeniería de Software</td>
+                    <td th:text="${prof.departamento}">TIC</td>
+                    <td>
+                        <span th:if="${prof.usuario.active}">Activo</span>
+                        <span th:unless="${prof.usuario.active}">Inactivo</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/profesores-mvc/editar/{id}(id=${prof.id})}">Editar Perfil</a> |
+                        <a th:href="@{/profesores-mvc/eliminar/{id}(id=${prof.id})}" 
+                           onclick="return confirm('¿Está seguro de eliminar el perfil docente asignado a este usuario?');">
+                            Remover Perfil
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+</body>
+</html>

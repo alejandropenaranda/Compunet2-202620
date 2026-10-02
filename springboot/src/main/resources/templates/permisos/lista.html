@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Gestión de Permisos</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+    <header th:replace="~{fragments/layout :: mainNavbar}"></header>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <main>
+        <h1 th:text="${titulo}">Gestión de Permisos</h1>
+        <p><a th:href="@{/permisos-mvc/nuevo}" class="button">+ Registrar Permiso</a></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre del Permiso</th>
+                    <th>Descripción</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(permisos)}">
+                    <td colspan="4">No hay permisos registrados en el sistema.</td>
+                </tr>
+                <tr th:each="p, stat : ${permisos}">
+                    <td th:text="${stat.count}">1</td>
+                    <td><strong th:text="${p.nombre}">PERMISO_VER_CURSOS</strong></td>
+                    <td th:text="${p.descripcion}">Permite consultar listados</td>
+                    <td>
+                        <a th:href="@{/permisos-mvc/editar/{id}(id=${p.id})}">Editar</a> |
+                        <a th:href="@{/permisos-mvc/eliminar/{id}(id=${p.id})}" 
+                           onclick="return confirm('¿Está seguro de eliminar este permiso?');">
+                            Eliminar
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+</body>
+</html>

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.compunet.springboot.model.Usuario;
+import com.compunet.springboot.service.RolService;
 import com.compunet.springboot.service.UsuarioService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final RolService rolService;
 
     /**
      * 1. LISTAR: GET /usuarios
@@ -42,8 +44,10 @@ public class UsuarioController {
     public String mostrarFormularioCreacion(Model model) {
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setActive(true);
+        rolService.obtenerPorNombre("ESTUDIANTE").ifPresent(r -> nuevoUsuario.getRoles().add(r));
         model.addAttribute("titulo", "Registrar Nuevo Usuario");
         model.addAttribute("usuario", nuevoUsuario);
+        model.addAttribute("roles", rolService.listarTodos());
         return "usuarios/formulario";
     }
 
@@ -53,16 +57,16 @@ public class UsuarioController {
      */
     @PostMapping("/guardar")
     public String guardarUsuario(@ModelAttribute("usuario") Usuario usuario,
-            @RequestParam(value = "nombreRol", defaultValue = "ESTUDIANTE") String nombreRol,
+            @RequestParam(value = "rolIds", required = false) List<Long> rolIds,
             RedirectAttributes flash) {
         try {
             if (usuario.getId() == null) {
                 // Modo Creación: Delegado al Servicio
-                usuarioService.registrarUsuario(usuario, nombreRol);
+                usuarioService.registrarUsuario(usuario, rolIds);
                 flash.addFlashAttribute("exito", "¡Usuario registrado exitosamente!");
             } else {
                 // Modo Edición: Delegado al Servicio
-                usuarioService.actualizarUsuario(usuario.getId(), usuario);
+                usuarioService.actualizarUsuario(usuario.getId(), usuario, rolIds);
                 flash.addFlashAttribute("exito", "¡Usuario actualizado exitosamente!");
             }
         } catch (IllegalArgumentException | IllegalStateException e) {
@@ -86,8 +90,10 @@ public class UsuarioController {
             flash.addFlashAttribute("error", "El usuario con ID " + id + " no existe.");
             return "redirect:/usuarios";
         }
+
         model.addAttribute("titulo", "Editar Usuario: " + usuario.getNombre());
         model.addAttribute("usuario", usuario);
+        model.addAttribute("roles", rolService.listarTodos());
         return "usuarios/formulario";
     }
 

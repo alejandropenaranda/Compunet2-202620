@@ -71,10 +71,4 @@ public class MatriculaService {
         matriculaRepository.deleteById(idCompuesto);
     }
 
-    /**
-     * Ejercicio 12: Comprobar si existe un registro de matrícula para un usuario y un curso.
-     */
-    public boolean estaMatriculado(Long usuarioId, Long cursoId) {
-        return matriculaRepository.existsById_UsuarioIdAndId_CursoId(usuarioId, cursoId);
-    }
 }

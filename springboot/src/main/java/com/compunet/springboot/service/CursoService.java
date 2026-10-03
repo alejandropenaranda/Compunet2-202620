@@ -72,43 +72,5 @@ public class CursoService {
         }
         cursoRepository.deleteById(id);
     }
-
-    // ==========================================
-    // MÉTODOS DE CONSULTA Y EJERCICIOS ACADÉMICOS
-    // ==========================================
-
-    /**
-     * Ejercicio 4: Obtener cursos dentro de un rango de créditos.
-     */
-    public List<Curso> listarPorRangoCreditos(int min, int max) {
-        return cursoRepository.findByCreditosBetween(min, max);
-    }
-
-    /**
-     * Ejercicio 5: Buscar cursos por coincidencia en el nombre (ignore case).
-     */
-    public List<Curso> buscarCursosPorNombre(String texto) {
-        return cursoRepository.findByNombreContainingIgnoreCase(texto);
-    }
-
-    /**
-     * Ejercicio 9: Obtener cursos asignados a un profesor a partir de su ID.
-     */
-    public List<Curso> listarCursosDeProfesor(Long profesorId) {
-        return cursoRepository.findByProfesor_Id(profesorId);
-    }
-
-    /**
-     * Ejercicio 10: Obtener cursos según el departamento del profesor.
-     */
-    public List<Curso> listarCursosPorDepartamentoDelProfesor(String depto) {
-        return cursoRepository.findByProfesor_DepartamentoIgnoreCase(depto);
-    }
-
-    /**
-     * Ejercicio 13: Obtener cursos con créditos mayores o iguales a un mínimo, ordenados de mayor a menor.
-     */
-    public List<Curso> obtenerCursosPorCreditosMinimos(int creditosMin) {
-        return cursoRepository.findByCreditosGreaterThanEqualOrderByCreditosDesc(creditosMin);
-    }
 }
+

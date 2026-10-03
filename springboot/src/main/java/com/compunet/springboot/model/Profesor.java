@@ -34,7 +34,6 @@ public class Profesor {
 
     @OneToOne
     @JoinColumn(name = "usuario_id", nullable = false, unique = true)
-    @JsonIgnoreProperties("profesor")
     private Usuario usuario;
 
     @Column(name = "especialidad", nullable = false)

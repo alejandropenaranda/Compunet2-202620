@@ -68,14 +68,5 @@ public class PermisoService {
         permisoRepository.deleteById(id);
     }
 
-    // ==========================================
-    // MÉTODOS DE CONSULTA Y EJERCICIOS ACADÉMICOS
-    // ==========================================
-
-    /**
-     * Ejercicio 14: Obtener todos los permisos asignados a un rol buscando por nombre del rol.
-     */
-    public List<Permiso> listarPermisosDeRol(String rol) {
-        return permisoRepository.findByRoles_NombreIgnoreCase(rol);
-    }
 }
+

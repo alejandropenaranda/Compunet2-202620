@@ -81,29 +81,5 @@ public class ProfesorService {
         }
         profesorRepository.deleteById(id);
     }
-
-    // ==========================================
-    // MÉTODOS DE CONSULTA Y EJERCICIOS ACADÉMICOS
-    // ==========================================
-
-    /**
-     * Ejercicio 3: Obtener profesores activos por departamento.
-     */
-    public List<Profesor> listarProfesoresActivosPorDepartamento(String depto) {
-        return profesorRepository.findByDepartamentoIgnoreCaseAndUsuario_ActiveTrue(depto);
-    }
-
-    /**
-     * Ejercicio 6: Obtener profesores por especialidad ordenados por apellido ascendente.
-     */
-    public List<Profesor> listarPorEspecialidadOrdenados(String especialidad) {
-        return profesorRepository.findByEspecialidadIgnoreCaseOrderByUsuario_ApellidoAsc(especialidad);
-    }
-
-    /**
-     * Ejercicio difícil 1: Profesores por depto y cursos con créditos mínimos.
-     */
-    public List<Profesor> ejercicioDificil1(String depto, Integer creditos) {
-        return profesorRepository.findDistinctByDepartamentoIgnoreCaseAndCursos_CreditosGreaterThanEqualAndUsuario_ActiveTrueOrderByUsuario_ApellidoAscUsuario_NombreAsc(depto, creditos);
-    }
 }
+

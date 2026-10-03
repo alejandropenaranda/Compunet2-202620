@@ -24,6 +24,7 @@
                     <th>#</th>
                     <th>Nombre Completo</th>
                     <th>Correo Institucional</th>
+                    <th>Roles</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
@@ -31,7 +32,7 @@
             <tbody>
                 <!-- Mensaje si la lista está vacía -->
                 <tr th:if="${#lists.isEmpty(usuarios)}">
-                    <td colspan="5">No hay usuarios registrados actualmente.</td>
+                    <td colspan="6">No hay usuarios registrados actualmente.</td>
                 </tr>
 
                 <!-- Iteración de Usuarios con iterStat -->
@@ -39,6 +40,11 @@
                     <td th:text="${stat.count}">1</td>
                     <td th:text="${u.nombre + ' ' + u.apellido}">Juan Pérez</td>
                     <td th:text="${u.correoInstitucional}">jperez@icesi.edu.co</td>
+                    <td>
+                        <span th:each="rol, rStat : ${u.roles}"
+                              th:text="${rol.nombre + (!rStat.last ? ', ' : '')}">
+                        </span>
+                    </td>
                     <td>
                         <span th:if="${u.active}">Activo</span>
                         <span th:unless="${u.active}">Inactivo</span>

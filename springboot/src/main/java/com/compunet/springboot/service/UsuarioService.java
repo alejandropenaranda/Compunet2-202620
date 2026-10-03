@@ -34,19 +34,6 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
 
-    /**
-     * Ejercicio 1: Buscar usuario por correo institucional exacto.
-     */
-    public Optional<Usuario> obtenerPorCorreo(String correo) {
-        return usuarioRepository.findByCorreoInstitucional(correo);
-    }
-
-    /**
-     * Ejercicio 2: Verificar si existe un usuario por correo institucional.
-     */
-    public boolean existeCorreo(String correo) {
-        return usuarioRepository.existsByCorreoInstitucional(correo);
-    }
 
     /**
      * Ejercicio 11: Listar usuarios activos por nombre de rol.
@@ -56,7 +43,36 @@ public class UsuarioService {
     }
 
     /**
-     * Registra un nuevo usuario validando que el correo no se encuentre registrado previamente.
+     * Registra un nuevo usuario en el sistema con una lista de IDs de roles.
+     */
+    public Usuario registrarUsuario(Usuario usuario, List<Long> rolIds) {
+        if (usuarioRepository.existsByCorreoInstitucional(usuario.getCorreoInstitucional())) {
+            throw new IllegalArgumentException("El correo institucional ya se encuentra registrado: "
+                    + usuario.getCorreoInstitucional());
+        }
+
+        if (rolIds != null && !rolIds.isEmpty()) {
+            List<Rol> roles = rolRepository.findAllById(rolIds);
+            usuario.setRoles(roles);
+        } else if (usuario.getRoles() == null || usuario.getRoles().isEmpty()) {
+            Rol rolDefault = rolRepository.findByNombre("ESTUDIANTE")
+                    .orElseThrow(() -> new IllegalStateException("El rol por defecto no existe."));
+            usuario.setRoles(new ArrayList<>(List.of(rolDefault)));
+        }
+
+        usuario.setActive(true);
+        return usuarioRepository.save(usuario);
+    }
+
+    /**
+     * Registra un nuevo usuario en el sistema.
+     */
+    public Usuario registrarUsuario(Usuario usuario) {
+        return registrarUsuario(usuario, (List<Long>) null);
+    }
+
+    /**
+     * Registra un nuevo usuario con un rol inicial opcional por nombre.
      */
     public Usuario registrarUsuario(Usuario usuario, String nombreRolInicial) {
         if (usuarioRepository.existsByCorreoInstitucional(usuario.getCorreoInstitucional())) {
@@ -64,23 +80,22 @@ public class UsuarioService {
                     + usuario.getCorreoInstitucional());
         }
 
-        Rol rol = rolRepository.findByNombre(nombreRolInicial)
-                .orElseThrow(() -> new IllegalStateException("El rol especificado no existe: " + nombreRolInicial));
-
-        if (usuario.getRoles() == null) {
-            usuario.setRoles(new ArrayList<>());
+        if (usuario.getRoles() == null || usuario.getRoles().isEmpty()) {
+            String rolABuscar = (nombreRolInicial != null && !nombreRolInicial.isBlank()) ? nombreRolInicial : "ESTUDIANTE";
+            Rol rol = rolRepository.findByNombre(rolABuscar)
+                    .orElseThrow(() -> new IllegalStateException("El rol especificado no existe: " + rolABuscar));
+            usuario.setRoles(new ArrayList<>(List.of(rol)));
         }
 
-        usuario.getRoles().add(rol);
         usuario.setActive(true);
-
         return usuarioRepository.save(usuario);
     }
 
     /**
-     * Actualiza los datos de un usuario existente aplicando reglas de negocio.
+     * Actualiza los datos de un usuario existente aplicando reglas de negocio y asignando sus roles por IDs.
+     * Nota: El estado (active) se gestiona exclusivamente a través de alternarEstado.
      */
-    public Usuario actualizarUsuario(Long id, Usuario usuarioActualizado) {
+    public Usuario actualizarUsuario(Long id, Usuario usuarioActualizado, List<Long> rolIds) {
         Usuario usuarioDb = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("No se encontró el usuario con ID: " + id));
 
@@ -99,9 +114,21 @@ public class UsuarioService {
             usuarioDb.setPassword(usuarioActualizado.getPassword());
         }
 
-        usuarioDb.setActive(usuarioActualizado.isActive());
+        if (rolIds != null && !rolIds.isEmpty()) {
+            List<Rol> roles = rolRepository.findAllById(rolIds);
+            usuarioDb.setRoles(roles);
+        } else if (usuarioActualizado.getRoles() != null) {
+            usuarioDb.setRoles(new ArrayList<>(usuarioActualizado.getRoles()));
+        }
 
         return usuarioRepository.save(usuarioDb);
+    }
+
+    /**
+     * Actualiza los datos de un usuario existente aplicando reglas de negocio.
+     */
+    public Usuario actualizarUsuario(Long id, Usuario usuarioActualizado) {
+        return actualizarUsuario(id, usuarioActualizado, null);
     }
 
     /**

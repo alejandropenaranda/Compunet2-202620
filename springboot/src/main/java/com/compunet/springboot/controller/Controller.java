@@ -31,7 +31,7 @@ public class Controller {
     public String home() {
         return "!Proyecto Spring boot funcionando correctamente¡";
     }
-
+    
     @GetMapping("/cursos")
     public List<Curso> getCursos() {
         return cursoRepository.findAll();

@@ -23,8 +23,6 @@ import com.compunet.springboot.model.Rol;
 import com.compunet.springboot.model.Usuario;
 import com.compunet.springboot.repository.RolRepository;
 import com.compunet.springboot.repository.UsuarioRepository;
-import com.compunet.springboot.service.UsuarioService;
-
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Pruebas Unitarias - UsuarioService - Mockito")
 public class UsuarioServiceTest {

@@ -7,10 +7,9 @@ import com.compunet.springboot.model.Usuario;
 
 import org.springframework.ui.Model;
 
-
-@Controller 
+@Controller
 public class TemplateController {
-    
+
     @GetMapping("/saludo")
     public String saludo(Model model) {
         model.addAttribute("title", "¡Hola, mundo!");
@@ -23,5 +22,4 @@ public class TemplateController {
         model.addAttribute("usuario", user);
         return "saludo";
     }
-    
 }

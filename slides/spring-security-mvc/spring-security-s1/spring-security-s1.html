@@ -1,0 +1,1864 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Spring Security MVC — Sesión 1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Reveal.js Themes & Highlights -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css" id="theme">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+  <!-- ICESI Beamer Stylesheet -->
+  <link rel="stylesheet" href="../../dist/main.css?v=28">
+
+  <style>
+    /* Strict 16:9 1280x720 Base Dimensions */
+    .reveal .slides {
+      width: 1280px !important;
+      height: 720px !important;
+      text-align: left;
+    }
+    .reveal section.slide {
+      width: 1280px !important;
+      height: 720px !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+      background: #ffffff;
+    }
+
+    /* Global Brand & Logo adjustments: logo placed at top: 32px, height: ~45px (ends at ~77px) */
+    .slide .logo-positive,
+    .slide .logo-negative {
+      position: absolute !important;
+      top: 32px !important;
+      left: 60px !important;
+      width: 160px !important;
+      height: auto !important;
+      z-index: 20 !important;
+    }
+
+    /* REGLA 1: PADDING DE AL MENOS 1 CM DESDE EL LOGO Y EL CONTENIDO */
+    /* Header title starts at top: 125px (48px / >1.2cm padding below logo) */
+    .slide.standard .slide-header,
+    .slide.two-cols .slide-header,
+    .slide.three-cols .slide-header,
+    .slide.four-cards .slide-header {
+      position: absolute !important;
+      left: 60px !important;
+      top: 125px !important;
+      width: 1160px !important;
+      height: 48px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      z-index: 10 !important;
+    }
+    .slide.standard .slide-header h2,
+    .slide.two-cols .slide-header h2,
+    .slide.three-cols .slide-header h2,
+    .slide.four-cards .slide-header h2 {
+      position: relative !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      font-size: 29px !important;
+      line-height: 36px !important;
+      font-weight: 700 !important;
+      color: var(--icesi-blue) !important;
+      margin: 0 !important;
+    }
+
+    /* Defined Content Box (Top 190px to 675px = 485px height) Vertically Centered */
+    .slide.standard .slide-content {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+    }
+
+    .slide.two-cols .cols-container {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 36px !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.two-cols .col {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+
+    .slide.three-cols .cols-container {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 20px !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.three-cols .col {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+
+    /* Cards Grids Vertically Centered */
+    .slide.four-cards .cards-grid {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      align-content: center !important;
+      gap: 16px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.four-cards .cards-grid.cards-grid-3 {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 24px !important;
+      align-content: center !important;
+    }
+    .slide.four-cards .cards-grid.cards-grid-2 {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 28px !important;
+      align-content: center !important;
+    }
+
+    .slide.four-cards .card {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 8px !important;
+      background: #FFFFFF !important;
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
+    }
+    .slide.four-cards .card-header {
+      font-size: 13.5px !important;
+      font-weight: 700 !important;
+      padding: 10px 14px !important;
+      letter-spacing: 0.03em !important;
+      text-transform: uppercase !important;
+    }
+    .slide.four-cards .card-body {
+      font-size: 13px !important;
+      line-height: 1.42 !important;
+      padding: 14px !important;
+      flex: 1 !important;
+    }
+
+    /* Sidebar Layout Vertically Centered */
+    .slide.sidebar-left .sidebar {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 420px !important;
+      height: 720px !important;
+    }
+    .slide.sidebar-left .sidebar .logo-negative {
+      top: 32px !important;
+      left: 45px !important;
+    }
+    .slide.sidebar-left .sidebar-title {
+      position: absolute !important;
+      left: 465px !important;
+      top: 125px !important;
+      width: 755px !important;
+      height: 48px !important;
+      margin: 0 !important;
+    }
+    .slide.sidebar-left .sidebar-title h2 {
+      position: relative !important;
+      left: 0 !important;
+      top: 0 !important;
+      margin: 0 !important;
+      font-size: 29px !important;
+      line-height: 36px !important;
+      font-weight: 700 !important;
+      color: var(--icesi-blue) !important;
+    }
+    .slide.sidebar-left .sidebar-content {
+      position: absolute !important;
+      left: 465px !important;
+      top: 190px !important;
+      width: 755px !important;
+      height: 485px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* Stripe Slides Vertically Centered */
+    .slide.stripe-top-left .slide-title,
+    .slide.stripe-top-right .slide-title {
+      position: absolute !important;
+      top: 172px !important;
+      height: 45px !important;
+      font-size: 26px !important;
+      line-height: 34px !important;
+      font-weight: 700 !important;
+      color: #ffffff !important;
+      margin: 0 !important;
+    }
+    .slide.stripe-top-left .slide-title {
+      left: 55px !important;
+      width: 720px !important;
+    }
+    .slide.stripe-top-right .slide-title {
+      left: 510px !important;
+      width: 710px !important;
+    }
+    .slide.stripe-top-left .slide-content,
+    .slide.stripe-top-right .slide-content {
+      position: absolute !important;
+      left: 55px !important;
+      top: 250px !important;
+      width: 1170px !important;
+      height: 425px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* ========================================================================= */
+    /* REGLA 2: SEPARADORES DE TEMAS FULL COLOR CON TEXTO CENTRADO VERTICALMENTE */
+    /* ========================================================================= */
+    .slide.section-e {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      text-align: center !important;
+      padding: 0 100px !important;
+      box-sizing: border-box !important;
+      width: 1280px !important;
+      height: 720px !important;
+    }
+    .slide.section-e .section-title {
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      width: 1080px !important;
+      font-size: 46px !important;
+      line-height: 1.25 !important;
+      font-weight: 700 !important;
+      margin: 0 0 20px 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+      color: #ffffff !important;
+      hyphens: none !important;
+    }
+    .slide.section-e .section-content {
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      width: 1080px !important;
+      height: auto !important;
+      font-size: 23px !important;
+      line-height: 1.45 !important;
+      font-weight: 400 !important;
+      color: rgba(255, 255, 255, 0.95) !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+    }
+    .slide.section-e.bg-yellow .section-content {
+      color: rgba(30, 41, 59, 0.95) !important;
+    }
+    .slide.section-e.bg-purple {
+      background: var(--icesi-purple) !important;
+      color: #ffffff !important;
+    }
+
+    /* Code styling enhancements */
+    pre {
+      margin: 0 !important;
+      width: 100% !important;
+    }
+    pre code {
+      font-size: 12.5px !important;
+      line-height: 1.35 !important;
+      border-radius: 8px !important;
+      padding: 12px 14px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      background: #1e1e2e !important;
+      color: #cdd6f4 !important;
+      box-sizing: border-box !important;
+      max-height: 460px !important;
+    }
+    
+    .hljs-meta { color: #79c0ff !important; font-weight: bold; }
+    .hljs-keyword { color: #ff7b72 !important; font-weight: bold; }
+    .hljs-type, .hljs-title.class_ { color: #ffa657 !important; }
+    .hljs-title.function_ { color: #d2a8ff !important; }
+    .hljs-string { color: #7ee787 !important; }
+    .hljs-number, .hljs-literal { color: #f2cc60 !important; }
+    .hljs-comment { color: #8b949e !important; font-style: italic; }
+    .hljs-attr { color: #f472b6 !important; }
+    
+    /* Horizontal Card Item Pattern */
+    .h-item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      padding: 8px 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .h-item-icon {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+    }
+    .h-item-blue { border-left: 4px solid var(--icesi-blue); }
+    .h-item-blue .h-item-icon { background: rgba(84,84,233,0.12); color: var(--icesi-blue); }
+    .h-item-green { border-left: 4px solid var(--icesi-green); }
+    .h-item-green .h-item-icon { background: rgba(76,185,121,0.12); color: var(--icesi-green); }
+    .h-item-orange { border-left: 4px solid var(--icesi-orange); }
+    .h-item-orange .h-item-icon { background: rgba(233,104,59,0.12); color: var(--icesi-orange); }
+    .h-item-purple { border-left: 4px solid var(--icesi-purple); }
+    .h-item-purple .h-item-icon { background: rgba(134,92,240,0.12); color: var(--icesi-purple); }
+    
+    .h-item-title { font-size: 14px; font-weight: 700; color: #1e293b; line-height: 1.2; margin-bottom: 2px; }
+    .h-item-desc { font-size: 12px; color: #475569; line-height: 1.35; }
+
+    /* Callout Card */
+    .callout-box {
+      background: #f8fafc;
+      border: 1px solid #CBD5E1;
+      border-left: 5px solid var(--icesi-blue);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    /* Hide Navigation Controls / Arrows */
+    .reveal .controls,
+    .reveal aside.controls {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides" id="icesi-slides"></div>
+</div>
+
+<!-- Reveal.js & Plugins -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/highlight/highlight.min.js"></script>
+
+<!-- ICESI Beamer Library -->
+<script src="../../dist/main.js?v=28"></script>
+
+<script>
+  icesi.setBasePath('../../');
+
+  const slides = [
+
+    icesi.titleSlideA(
+      'Spring Security en Spring MVC',
+      'Sesión 1: Autenticación, Criptografía, Cookies, Sesiones y Filter Chain<br><span class="slide-footer-tag">Computación en Internet II — Universidad Icesi</span>'
+    ),
+
+    icesi.slideTwoCols(
+      'Ruta de Aprendizaje — Sesión 1',
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Bloque 1: Identidad & Criptografía</div>
+    <div class="h-item h-item-orange" style="margin-bottom:14px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">01. Autenticación & Criptografía</div>
+        <div class="h-item-desc">AuthN vs AuthZ, Encoding vs Encryption vs Hashing, Rainbow Tables y BCrypt.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-blue" style="margin-bottom:14px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/><circle cx="8.5" cy="15.5" r="1.5"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">02. Cookies, Sesiones & DevTools</div>
+        <div class="h-item-desc">Protocolo Stateless, cabeceras Set-Cookie, flags de seguridad, Tomcat RAM y Maven.</div>
+      </div>
+    </div>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-blue); margin-top:8px;">
+      <p style="margin:0; font-size:12px; color:#334155; line-height:1.35;">
+        <strong>Live Demo 1:</strong> Inspección de Cookies, flags de seguridad y JSESSIONID en DevTools.
+      </p>
+    </div>
+    `,
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-green); margin-bottom:10px;">Bloque 2: Filtros & Login Propio</div>
+    <div class="h-item h-item-green" style="margin-bottom:14px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">03. Cadena de Filtros (Filter Chain)</div>
+        <div class="h-item-desc">DelegatingFilterProxy, FilterChainProxy, filtros cardinales y ExceptionTranslation.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-purple" style="margin-bottom:14px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">04. UserDetails & Custom Login</div>
+        <div class="h-item-desc">Contratos UserDetails/UserDetailsService, SecurityConfig, LoginController y login.html.</div>
+      </div>
+    </div>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-green); margin-top:8px;">
+      <p style="margin:0; font-size:12px; color:#334155; line-height:1.35;">
+        <strong>Live Demo 2:</strong> Configuración de SecurityFilterChain, login personalizado y depuración en consola.
+      </p>
+    </div>
+    `
+    ),
+
+    icesi.sectionSlideEBlue(
+      '01. Autenticación, Criptografía y Hash de Contraseñas',
+      'Fundamentos teóricos, modelos de seguridad, codificación, encriptación y hashes.'
+    ),
+
+    icesi.slideTwoCols(
+      'Fundamento: Autenticación vs. Autorización',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">Autenticación (AuthN — ¿Quién eres?)</div>
+    <p style="font-size:13px; line-height:1.45; color:#334155; margin-bottom:10px;">
+      Es el proceso de <strong>verificar la identidad proclamada</strong> por el usuario a través de credenciales (correo, contraseña, OTP o biometría).
+    </p>
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Primer Muro de Control</div>
+        <div class="h-item-desc">Si las credenciales no son válidas, el usuario no ingresa al sistema.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Punto de Falla: 401 Unauthorized</div>
+        <div class="h-item-desc">Redirige automáticamente al formulario <code>/login</code> o devuelve error 401.</div>
+      </div>
+    </div>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-blue); margin-top:6px;">
+      <p style="margin:0; font-size:12px; color:#1e293b;"><strong>Metáfora:</strong> El <em>pasaporte digital</em> verificado por la autoridad migratoria.</p>
+    </div>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-purple); margin-bottom:8px;">Autorización (AuthZ — ¿Qué puedes hacer?)</div>
+    <p style="font-size:13px; line-height:1.45; color:#334155; margin-bottom:10px;">
+      Es la <strong>comprobación de privilegios, roles y permisos</strong> sobre un recurso específico (ej. <code>/roles-mvc</code>).
+    </p>
+    <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 2.5 2.5"/><path d="m18 5 2.5 2.5"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Ocurre Tras la Autenticación</div>
+        <div class="h-item-desc">Sólo un usuario ya autenticado puede someterse a evaluación de permisos.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-green" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Punto de Falla: 403 Forbidden</div>
+        <div class="h-item-desc">Acceso denegado si el usuario no posee el rol requerido (ej. estudiante vs admin).</div>
+      </div>
+    </div>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-purple); margin-top:6px;">
+      <p style="margin:0; font-size:12px; color:#1e293b;"><strong>Metáfora:</strong> La <em>tarjeta llave</em> que abre únicamente ciertas puertas autorizadas.</p>
+    </div>
+    `
+    ),
+
+    icesi.slideStandard(
+      'Modelo Conceptual: Pasaporte vs Llave de Acceso',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 460" width="100%" height="460" style="max-width:920px; display:block; margin:0 auto;">
+  <defs>
+    <style>
+      .title { font-family: system-ui, -apple-system, sans-serif; font-size: 20px; font-weight: 700; fill: #0f172a; }
+      .sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; fill: #64748b; }
+      .label { font-family: system-ui, -apple-system, sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+      .h-card{ font-family: system-ui, -apple-system, sans-serif; font-size: 16px; font-weight: 700; fill: #1e293b; }
+      .body  { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; fill: #475569; }
+      .mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+    </style>
+    <filter id="authn-shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="objectBoundingBox">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="920" height="460" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <text class="title" x="32" y="36">Autenticación vs. Autorización</text>
+  <text class="sub" x="32" y="56">Los dos pilares fundamentales de la seguridad a nivel de aplicación (Application-Level Security)</text>
+
+  <!-- ========================================================================= -->
+  <!-- COLUMNA 1: AUTENTICACIÓN -->
+  <!-- ========================================================================= -->
+  <g transform="translate(32, 78)">
+    <rect width="395" height="345" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#authn-shadow)"/>
+    <rect x="0" y="0" width="395" height="5" rx="2.5" fill="#2563eb"/>
+
+    <!-- Badge & Header -->
+    <rect x="20" y="18" width="115" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+    <text class="label" x="77" y="33" fill="#2563eb" text-anchor="middle">FASE 1: IDENTIDAD</text>
+
+    <text class="h-card" x="20" y="66">Autenticación (Authentication)</text>
+    <text class="body" x="20" y="86">Pregunta clave: <tspan fill="#2563eb" font-weight="700">¿Quién eres? (Who are you?)</tspan></text>
+
+    <!-- Visual Metaphor: Digital ID Card / Passport -->
+    <g transform="translate(20, 102)">
+      <rect x="0" y="0" width="355" height="110" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+      <!-- Photo Avatar Placeholder -->
+      <rect x="16" y="16" width="70" height="78" rx="6" fill="#334155"/>
+      <circle cx="51" cy="46" r="16" fill="#64748b"/>
+      <path d="M30,86 C30,72 72,72 72,86 Z" fill="#64748b"/>
+      <!-- ID Details -->
+      <text class="mono" x="102" y="36" fill="#38bdf8" font-weight="700">USER IDENTITY</text>
+      <text class="mono" x="102" y="54" fill="#e2e8f0">Principal: <tspan fill="#4ade80">miUsuario</tspan></text>
+      <text class="mono" x="102" y="72" fill="#94a3b8">Credentials: <tspan fill="#facc15">•••••••• (Verificado)</tspan></text>
+      <rect x="102" y="80" width="95" height="18" rx="3" fill="#166534"/>
+      <text class="mono" x="149" y="93" fill="#86efac" font-size="9.5px" font-weight="700" text-anchor="middle">AUTHENTICATED</text>
+    </g>
+
+    <!-- Mechanisms & Output -->
+    <g transform="translate(20, 230)">
+      <text class="label" x="0" y="10" fill="#64748b">MECANISMOS DE VALIDACIÓN</text>
+      <g transform="translate(0, 20)">
+        <rect x="0" y="0" width="105" height="28" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+        <text class="mono" x="52" y="18" fill="#1e293b" text-anchor="middle">HTTP Basic</text>
+
+        <rect x="115" y="0" width="115" height="28" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+        <text class="mono" x="172" y="18" fill="#1e293b" text-anchor="middle">Form Login</text>
+
+        <rect x="240" y="0" width="115" height="28" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+        <text class="mono" x="297" y="18" fill="#1e293b" text-anchor="middle">JWT / OAuth2</text>
+      </g>
+      <text class="body" x="0" y="78" font-size="11.5px">Resultado: Se crea el objeto <tspan font-family="monospace" fill="#1e293b" font-weight="700">Authentication</tspan> en memoria.</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- CONECTOR CENTRAL -->
+  <!-- ========================================================================= -->
+  <g transform="translate(433, 235)">
+    <path d="M4,0 L48,0" fill="none" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrow-blue)"/>
+    <rect x="13" y="-12" width="28" height="22" rx="4" fill="#ffffff" stroke="#bfdbfe" stroke-width="1"/>
+    <text class="label" x="27" y="3" fill="#2563eb" text-anchor="middle" font-size="9px">OK</text>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- COLUMNA 2: AUTORIZACIÓN -->
+  <!-- ========================================================================= -->
+  <g transform="translate(492, 78)">
+    <rect width="395" height="345" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#authn-shadow)"/>
+    <rect x="0" y="0" width="395" height="5" rx="2.5" fill="#7c3aed"/>
+
+    <!-- Badge & Header -->
+    <rect x="20" y="18" width="115" height="22" rx="6" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1"/>
+    <text class="label" x="77" y="33" fill="#7c3aed" text-anchor="middle">FASE 2: PERMISOS</text>
+
+    <text class="h-card" x="20" y="66">Autorización (Authorization)</text>
+    <text class="body" x="20" y="86">Pregunta clave: <tspan fill="#7c3aed" font-weight="700">¿Qué puedes hacer? (What can you do?)</tspan></text>
+
+    <!-- Visual Metaphor: Access Turnstile / Keycard Lock -->
+    <g transform="translate(20, 102)">
+      <rect x="0" y="0" width="355" height="110" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+
+      <!-- Granted Authorities Branch 1: Roles -->
+      <g transform="translate(14, 14)">
+        <rect x="0" y="0" width="155" height="82" rx="6" fill="#0f172a" stroke="#475569" stroke-width="1"/>
+        <text class="label" x="12" y="18" fill="#c084fc">ROLES (Who you ARE)</text>
+        <text class="mono" x="12" y="38" fill="#a855f7">&#8226; ROLE_ADMIN</text>
+        <text class="mono" x="12" y="54" fill="#e2e8f0">&#8226; ROLE_MANAGER</text>
+        <text class="mono" x="12" y="70" fill="#94a3b8">&#8226; ROLE_CLIENT</text>
+      </g>
+
+      <!-- Granted Authorities Branch 2: Permissions -->
+      <g transform="translate(186, 14)">
+        <rect x="0" y="0" width="155" height="82" rx="6" fill="#0f172a" stroke="#475569" stroke-width="1"/>
+        <text class="label" x="12" y="18" fill="#38bdf8">AUTHORITIES (Can DO)</text>
+        <text class="mono" x="12" y="38" fill="#4ade80">&#8226; READ_PRODUCTS</text>
+        <text class="mono" x="12" y="54" fill="#38bdf8">&#8226; WRITE_ORDER</text>
+        <text class="mono" x="12" y="70" fill="#f87171">&#8226; DELETE_RECORD</text>
+      </g>
+    </g>
+
+    <!-- Enforcement Level -->
+    <g transform="translate(20, 230)">
+      <text class="label" x="0" y="10" fill="#64748b">PUNTOS DE VERIFICACIÓN</text>
+      <g transform="translate(0, 20)">
+        <rect x="0" y="0" width="168" height="28" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+        <text class="mono" x="84" y="18" fill="#1e293b" text-anchor="middle">Filtros HTTP (Web)</text>
+
+        <rect x="180" y="0" width="175" height="28" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+        <text class="mono" x="267" y="18" fill="#1e293b" text-anchor="middle">@PreAuthorize (Métodos)</text>
+      </g>
+      <text class="body" x="0" y="78" font-size="11.5px">Resultado: Permite (<tspan fill="#16a34a" font-weight="700">200 OK</tspan>) o deniega (<tspan fill="#dc2626" font-weight="700">403 Forbidden</tspan>).</text>
+    </g>
+  </g>
+</svg>
+
+    </div>
+    `
+    ),
+
+    icesi.slideThreeCards(
+      'Tres Paradigmas de Transformación de Datos',
+      'Codificación (Encoding)', `
+    <p style='font-size:12.5px; line-height:1.4;'><strong>1. Codificación (Encoding)</strong><br>
+    <strong>Propósito:</strong> Adaptar datos a formatos seguros para transporte en protocolos (ej. <code>Base64</code>, <code>URL-Encode</code>, <code>Hex</code>).<br>
+    <strong>Reversibilidad:</strong> <span style='color:#dc2626; font-weight:700;'>100% Reversible sin secreto</span>.<br>
+    <strong>Seguridad:</strong> Cero confidencialidad. Nunca usar para proteger contraseñas.</p>
+    `,
+      'Cifrado (Encryption)', `
+    <p style='font-size:12.5px; line-height:1.4;'><strong>2. Cifrado (Encryption)</strong><br>
+    <strong>Propósito:</strong> Proteger confidencialidad en tránsito/reposo con algoritmos simétricos/asimétricos (ej. <code>AES</code>, <code>RSA</code>).<br>
+    <strong>Reversibilidad:</strong> <span style='color:#2563eb; font-weight:700;'>Reversible con clave secreta</span>.<br>
+    <strong>Seguridad:</strong> Si la clave se filtra, todos los datos quedan expuestos.</p>
+    `,
+      'Hashing Criptográfico', `
+    <p style='font-size:12.5px; line-height:1.4;'><strong>3. Hashing Criptográfico</strong><br>
+    <strong>Propósito:</strong> Generar un resumen matemático irreversible de longitud fija (ej. <code>BCrypt</code>, <code>SHA-256</code>).<br>
+    <strong>Reversibilidad:</strong> <span style='color:#059669; font-weight:700;'>Estrictamente Unidireccional</span>.<br>
+    <strong>Seguridad:</strong> Estándar de oro para persistir contraseñas de usuarios.</p>
+    `
+    ),
+
+    icesi.slideStandard(
+      'Comparación Visual: Encoding vs Encryption vs Hashing',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" width="100%" height="520" style="max-width:960px; display:block; margin:0 auto;">
+  <defs>
+    <style>
+      .title { font-family: system-ui, -apple-system, sans-serif; font-size: 20px; font-weight: 700; fill: #0f172a; }
+      .sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; fill: #64748b; }
+      .badge-txt { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+      .h-row { font-family: system-ui, -apple-system, sans-serif; font-size: 15px; font-weight: 700; }
+      .body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; fill: #475569; }
+      .body-bold { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; font-weight: 700; }
+      .mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+      .pill  { rx: 6px; }
+    </style>
+    <filter id="enc-shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="objectBoundingBox">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#0284c7"/>
+    </marker>
+    <marker id="arr-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="arr-emerald" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="520" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <text class="title" x="32" y="36">Codificación, Encriptación y Hashing</text>
+  <text class="sub" x="32" y="56">Comparativa de los 3 procesos de transformación de datos (Laurentiu Spilca — Spring Security)</text>
+
+  <!-- ========================================================================= -->
+  <!-- FILA 1: CODIFICACIÓN (ENCODING) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(30, 75)">
+    <rect width="900" height="132" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#enc-shadow)"/>
+    <rect x="0" y="0" width="6" height="132" rx="3" fill="#0284c7"/>
+
+    <!-- Left Column: Title & Info -->
+    <g transform="translate(24, 18)">
+      <rect class="pill" x="0" y="0" width="88" height="20" fill="#e0f2fe" stroke="#bae6fd" stroke-width="1"/>
+      <text class="badge-txt" x="44" y="14" fill="#0284c7" text-anchor="middle">FORMATO</text>
+      <text class="h-row" x="0" y="42" fill="#0369a1">1. Codificación (Encoding)</text>
+      <text class="body" x="0" y="62">Cambio de formato para transporte / lectura.</text>
+      <text class="mono" x="0" y="80" fill="#0284c7">Ej: Base64, ASCII, URL Encoding</text>
+      <text class="body" x="0" y="98" fill="#64748b">Sin secretos: utiliza estándares públicos.</text>
+    </g>
+
+    <!-- Center Column: Visual Pipeline -->
+    <g transform="translate(305, 16)">
+      <!-- Input Box -->
+      <rect x="0" y="0" width="118" height="54" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+      <text class="badge-txt" x="10" y="18" fill="#64748b">INPUT (ORIGEN)</text>
+      <text class="mono" x="10" y="38" fill="#1e293b" font-weight="700">"admin:123"</text>
+
+      <!-- Forward Arrow -->
+      <path d="M126,27 L174,27" fill="none" stroke="#0284c7" stroke-width="2" marker-end="url(#arr-blue)"/>
+      <text class="badge-txt" x="150" y="20" fill="#0284c7" text-anchor="middle">BASE64</text>
+
+      <!-- Output Box (Correctly offset to x=194) -->
+      <rect x="182" y="0" width="144" height="54" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+      <text class="badge-txt" x="194" y="18" fill="#64748b">OUTPUT (ENCODED)</text>
+      <text class="mono" x="194" y="38" fill="#0369a1" font-weight="700">"YWRtaW46MTIz"</text>
+
+      <!-- Reversibility Flow -->
+      <path d="M254,58 L254,78 L70,78 L70,58" fill="none" stroke="#0284c7" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arr-blue)"/>
+      <rect x="102" y="69" width="120" height="18" rx="4" fill="#e0f2fe" stroke="#bae6fd" stroke-width="1"/>
+      <text class="mono" x="162" y="82" fill="#0369a1" font-size="9.5px" font-weight="700" text-anchor="middle">100% REVERSIBLE</text>
+    </g>
+
+    <!-- Right Column: Key Takeaway Box -->
+    <g transform="translate(680, 16)">
+      <rect x="0" y="0" width="196" height="100" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1"/>
+      <text class="badge-txt" x="14" y="20" fill="#0369a1">PROPIEDAD CLAVE</text>
+      <text class="body-bold" x="14" y="40" fill="#0c4a6e">Cero Confidencialidad</text>
+      <text class="body" x="14" y="58" fill="#0369a1">
+        <tspan x="14" dy="0">No protege el secreto.</tspan>
+        <tspan x="14" dy="17">Cualquiera puede decodificarlo</tspan>
+        <tspan x="14" dy="17">de manera inmediata sin claves.</tspan>
+      </text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- FILA 2: ENCRIPTACIÓN (ENCRYPTION) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(30, 222)">
+    <rect width="900" height="132" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#enc-shadow)"/>
+    <rect x="0" y="0" width="6" height="132" rx="3" fill="#ea580c"/>
+
+    <!-- Left Column: Title & Info -->
+    <g transform="translate(24, 18)">
+      <rect class="pill" x="0" y="0" width="112" height="20" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+      <text class="badge-txt" x="56" y="14" fill="#ea580c" text-anchor="middle">CONFIDENCIALIDAD</text>
+      <text class="h-row" x="0" y="42" fill="#c2410c">2. Encriptación (Encryption)</text>
+      <text class="body" x="0" y="62">Cifrado reversible protegido por una clave.</text>
+      <text class="mono" x="0" y="80" fill="#ea580c">Ej: AES-256, RSA, TLS/HTTPS</text>
+      <text class="body" x="0" y="98" fill="#64748b">Protege datos en tránsito y en reposo.</text>
+    </g>
+
+    <!-- Center Column: Visual Pipeline -->
+    <g transform="translate(305, 16)">
+      <!-- Input Box -->
+      <rect x="0" y="0" width="118" height="54" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+      <text class="badge-txt" x="10" y="18" fill="#64748b">PLAINTEXT</text>
+      <text class="mono" x="10" y="38" fill="#1e293b" font-weight="700">"Tarjeta 4509"</text>
+
+      <!-- Forward Arrow -->
+      <path d="M126,27 L174,27" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#arr-orange)"/>
+      <text class="badge-txt" x="150" y="20" fill="#ea580c" text-anchor="middle">+ CLAVE</text>
+
+      <!-- Output Box (Correctly offset to x=194) -->
+      <rect x="182" y="0" width="144" height="54" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+      <text class="badge-txt" x="194" y="18" fill="#64748b">CIPHERTEXT (HEX)</text>
+      <text class="mono" x="194" y="38" fill="#c2410c" font-weight="700">"8f4e2a1b9c..."</text>
+
+      <!-- Reversibility Flow -->
+      <path d="M254,58 L254,78 L70,78 L70,58" fill="none" stroke="#ea580c" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arr-orange)"/>
+      <rect x="92" y="69" width="140" height="18" rx="4" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+      <text class="mono" x="162" y="82" fill="#c2410c" font-size="9.5px" font-weight="700" text-anchor="middle">REQUIERE SECRET KEY</text>
+    </g>
+
+    <!-- Right Column: Key Takeaway Box -->
+    <g transform="translate(680, 16)">
+      <rect x="0" y="0" width="196" height="100" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+      <text class="badge-txt" x="14" y="20" fill="#c2410c">PROPIEDAD CLAVE</text>
+      <text class="body-bold" x="14" y="40" fill="#9a3412">Bidireccional con Llave</text>
+      <text class="body" x="14" y="58" fill="#c2410c">
+        <tspan x="14" dy="0">Existe función inversa.</tspan>
+        <tspan x="14" dy="17">Solo quien posee la clave</tspan>
+        <tspan x="14" dy="17">secreta puede recuperar el dato.</tspan>
+      </text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- FILA 3: HASHING (HASH FUNCTIONS) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(30, 369)">
+    <rect width="900" height="132" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#enc-shadow)"/>
+    <rect x="0" y="0" width="6" height="132" rx="3" fill="#059669"/>
+
+    <!-- Left Column: Title & Info -->
+    <g transform="translate(24, 18)">
+      <rect class="pill" x="0" y="0" width="98" height="20" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+      <text class="badge-txt" x="49" y="14" fill="#059669" text-anchor="middle">UNIDIRECCIONAL</text>
+      <text class="h-row" x="0" y="42" fill="#047857">3. Funciones Hash (Hashing)</text>
+      <text class="body" x="0" y="62">Trampa matemática: irreversible por diseño.</text>
+      <text class="mono" x="0" y="80" fill="#059669">Ej: BCrypt, Argon2, PBKDF2</text>
+      <text class="body" x="0" y="98" fill="#64748b">Uso obligatorio para contraseñas.</text>
+    </g>
+
+    <!-- Center Column: Visual Pipeline -->
+    <g transform="translate(305, 16)">
+      <!-- Input Box -->
+      <rect x="0" y="0" width="118" height="54" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+      <text class="badge-txt" x="10" y="18" fill="#64748b">PASSWORD PLANA</text>
+      <text class="mono" x="10" y="34" fill="#1e293b" font-weight="700">"miClave123"</text>
+      <text class="mono" x="10" y="47" fill="#059669" font-size="9px">+ Salt Aleatorio</text>
+
+      <!-- Forward Arrow -->
+      <path d="M126,27 L174,27" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#arr-emerald)"/>
+      <text class="badge-txt" x="150" y="20" fill="#059669" text-anchor="middle">HASH</text>
+
+      <!-- Output Box (Correctly offset to x=194) -->
+      <rect x="182" y="0" width="144" height="54" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+      <text class="badge-txt" x="194" y="18" fill="#64748b">DIGEST (60 CHAR)</text>
+      <text class="mono" x="194" y="34" fill="#047857" font-weight="700" font-size="10px">"$2a$10$wK...9xZ"</text>
+      <text class="mono" x="194" y="47" fill="#64748b" font-size="9px">Longitud siempre fija</text>
+
+      <!-- Irreversible Flow Blocked with perfectly sized badge -->
+      <path d="M254,58 L254,78 L70,78 L70,58" fill="none" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="4 3"/>
+      <rect x="92" y="69" width="140" height="18" rx="4" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+      <text class="mono" x="162" y="82" fill="#b91c1c" font-size="9.5px" font-weight="700" text-anchor="middle">IRREVERSIBLE (-X-)</text>
+    </g>
+
+    <!-- Right Column: Key Takeaway Box -->
+    <g transform="translate(680, 16)">
+      <rect x="0" y="0" width="196" height="100" rx="8" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+      <text class="badge-txt" x="14" y="20" fill="#047857">VERIFICACIÓN SEGURA</text>
+      <text class="body-bold" x="14" y="40" fill="#065f46">Nunca se desencripta</text>
+      <text class="body" x="14" y="58" fill="#047857">
+        <tspan x="14" dy="0">Se calcula el hash de la</tspan>
+        <tspan x="14" dy="17">contraseña ingresada y se</tspan>
+        <tspan x="14" dy="17">compara con matches().</tspan>
+      </text>
+    </g>
+  </g>
+</svg>
+
+    </div>
+    `
+    ),
+
+    icesi.slideTwoCols(
+      'La Amenaza: Rainbow Tables y Fuerza Bruta',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-orange); margin-bottom:8px;">Vulnerabilidad de Hashes Simples</div>
+    <p style="font-size:13px; line-height:1.45; color:#334155; margin-bottom:10px;">
+      En un hashing determinista tradicional (ej. <code>MD5</code> o <code>SHA-256</code> puro), la misma clave produce siempre el mismo hash: <code>hash("123456") = e10adc394...</code>
+    </p>
+    <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Tablas Arcoíris (Rainbow Tables)</div>
+        <div class="h-item-desc">Tablas masivas de búsqueda precalculadas con millones de pares contraseña ➔ hash. Un atacante busca el hash robado y obtiene la clave en milisegundos sin calcular nada.</div>
+      </div>
+    </div>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-purple); margin-bottom:8px;">Fuerza Bruta Acelerada con GPU</div>
+    <p style="font-size:13px; line-height:1.45; color:#334155; margin-bottom:10px;">
+      Los algoritmos SHA fueron diseñados para ser <em>extremadamente veloces</em> al validar gigabytes de datos, haciéndolos letales para contraseñas.
+    </p>
+    <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">> 50.000 Millones de Hashes/seg</div>
+        <div class="h-item-desc">Un cluster moderno de GPUs puede probar miles de millones de combinaciones por segundo, crackeando claves de 8 caracteres en minutos.</div>
+      </div>
+    </div>
+    `
+    ),
+
+    icesi.slideTwoCols(
+      'Defensas: Salt Aleatorio y Costo Adaptativo',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">Defensa 1: Salt Criptográfico Aleatorio</div>
+    <p style="font-size:13px; line-height:1.45; color:#334155; margin-bottom:10px;">
+      Secuencia aleatoria de 16+ bytes (128 bits) generada dinámicamente y concatenada con la contraseña: <code>Hash(password + salt)</code>.
+    </p>
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Hashes Únicos por Usuario</div>
+        <div class="h-item-desc">Dos usuarios con la misma contraseña ("admin123") tendrán hashes completamente distintos en la BD.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-green" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Inmunidad Total a Rainbow Tables</div>
+        <div class="h-item-desc">Hace que las tablas precalculadas sean 100% inútiles, obligando al atacante a crackear usuario por usuario.</div>
+      </div>
+    </div>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-green); margin-bottom:8px;">Defensa 2: Costo Adaptativo (Work Factor)</div>
+    <p style="font-size:13px; line-height:1.45; color:#334155; margin-bottom:10px;">
+      Uso de funciones <em>deliberadamente lentas</em> e intensivas en CPU/RAM (ej. <strong>BCrypt</strong>, <strong>Argon2</strong>).
+    </p>
+    <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Parámetro de Costo (2^cost)</div>
+        <div class="h-item-desc">Con costo 10 (2¹⁰ = 1,024 rondas), calcular un hash toma ~100 ms en CPU.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Ataque Inviable en Tiempo</div>
+        <div class="h-item-desc">Para un usuario 100 ms es instantáneo; para un atacante probando mil millones de claves equivale a <strong>siglos de cómputo</strong>.</div>
+      </div>
+    </div>
+    `
+    ),
+
+    icesi.slideStandard(
+      'Anatomía del Hash BCrypt (RFC 2898)',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
+  <defs>
+    <style>
+      .b-title { font-family: system-ui, -apple-system, sans-serif; font-size: 20px; font-weight: 700; fill: #0f172a; }
+      .b-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; fill: #64748b; }
+      .b-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+      .b-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; }
+      .b-card  { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 10px; }
+      .b-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; fill: #475569; line-height: 1.4; }
+    </style>
+    <filter id="b-shadow" x="-3%" y="-4%" width="106%" height="110%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.05"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <text class="b-title" x="32" y="34">Anatomía del Hash BCrypt (60 Caracteres)</text>
+  <text class="b-sub" x="32" y="54">Estructura interna generada y verificada automáticamente por BCryptPasswordEncoder</text>
+
+  <!-- Central Visual String Display -->
+  <g transform="translate(32, 74)">
+    <rect width="896" height="95" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1.5" filter="url(#b-shadow)"/>
+
+    <!-- Segment 1: Algorithm Identifier -->
+    <rect x="20" y="16" width="65" height="38" rx="6" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5"/>
+    <text class="b-mono" x="52" y="40" fill="#c2410c" font-weight="700" font-size="16px" text-anchor="middle">$2a$</text>
+
+    <!-- Segment 2: Cost / Work Factor -->
+    <rect x="95" y="16" width="55" height="38" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text class="b-mono" x="122" y="40" fill="#1e40af" font-weight="700" font-size="16px" text-anchor="middle">10$</text>
+
+    <!-- Segment 3: Salt (22 chars) -->
+    <rect x="160" y="16" width="310" height="38" rx="6" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.5"/>
+    <text class="b-mono" x="315" y="40" fill="#6b21a8" font-weight="700" font-size="14px" text-anchor="middle">wK5W3yC3yF15D1nB.vN7te</text>
+
+    <!-- Segment 4: Ciphertext Hash (31 chars) -->
+    <rect x="480" y="16" width="396" height="38" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+    <text class="b-mono" x="678" y="40" fill="#047857" font-weight="700" font-size="14px" text-anchor="middle">I0wL/y6V5t1oB97GgD4aAefXkK/Zl9G</text>
+
+    <!-- Labels below boxes -->
+    <text class="b-label" x="52" y="74" fill="#ea580c" text-anchor="middle">ALGORITMO</text>
+    <text class="b-label" x="122" y="74" fill="#2563eb" text-anchor="middle">COSTO (2¹⁰)</text>
+    <text class="b-label" x="315" y="74" fill="#7c3aed" text-anchor="middle">SALT CRIPTOGRÁFICO (22 CARACT)</text>
+    <text class="b-label" x="678" y="74" fill="#059669" text-anchor="middle">HASH DE LA CONTRASEÑA (31 CARACTERES)</text>
+  </g>
+
+  <!-- 3 Descriptive Breakdown Cards -->
+  <g transform="translate(32, 195)">
+    <!-- Card 1: Algoritmo & Costo -->
+    <g transform="translate(0, 0)">
+      <rect class="b-card" width="285" height="175" stroke="#fed7aa" filter="url(#b-shadow)"/>
+      <rect width="285" height="4" rx="2" fill="#ea580c"/>
+      <text class="b-label" x="16" y="24" fill="#ea580c">1. ALGORITMO &amp; WORK FACTOR</text>
+      <text class="b-mono" x="16" y="48" fill="#0f172a" font-weight="700">$2a$ / $2b$ / Costo 10</text>
+      <text class="b-body" x="16" y="72">
+        <tspan x="16" dy="0">&#8226; <tspan font-weight="700">$2a$:</tspan> Versión de BCrypt.</tspan>
+        <tspan x="16" dy="20">&#8226; <tspan font-weight="700">Work Factor (10):</tspan> 2¹⁰ = 1,024 rondas</tspan>
+        <tspan x="16" dy="18">de cálculo en la función Blowfish.</tspan>
+        <tspan x="16" dy="20">&#8226; Ralentiza ataques de fuerza bruta</tspan>
+        <tspan x="16" dy="18">incluso con GPUs masivas.</tspan>
+      </text>
+    </g>
+
+    <!-- Card 2: Salt Aleatorio -->
+    <g transform="translate(305, 0)">
+      <rect class="b-card" width="285" height="175" stroke="#d8b4fe" filter="url(#b-shadow)"/>
+      <rect width="285" height="4" rx="2" fill="#7c3aed"/>
+      <text class="b-label" x="16" y="24" fill="#7c3aed">2. SALT CRIPTOGRÁFICO (128 BITS)</text>
+      <text class="b-mono" x="16" y="48" fill="#0f172a" font-weight="700">22 Chars Base64 Custom</text>
+      <text class="b-body" x="16" y="72">
+        <tspan x="16" dy="0">&#8226; Se genera de forma <tspan font-weight="700">100% aleatoria</tspan></tspan>
+        <tspan x="16" dy="18">en cada codificación.</tspan>
+        <tspan x="16" dy="20">&#8226; Dos usuarios con la misma clave</tspan>
+        <tspan x="16" dy="18">(ej. "123456") tendrán hashes distintos.</tspan>
+        <tspan x="16" dy="20">&#8226; <tspan font-weight="700">Inmunidad total</tspan> a Rainbow Tables.</tspan>
+      </text>
+    </g>
+
+    <!-- Card 3: Digest & Verificación -->
+    <g transform="translate(611, 0)">
+      <rect class="b-card" width="285" height="175" stroke="#a7f3d0" filter="url(#b-shadow)"/>
+      <rect width="285" height="4" rx="2" fill="#059669"/>
+      <text class="b-label" x="16" y="24" fill="#059669">3. COMPARACIÓN EN LOGIN</text>
+      <text class="b-mono" x="16" y="48" fill="#0f172a" font-weight="700">matches(raw, hash)</text>
+      <text class="b-body" x="16" y="72">
+        <tspan x="16" dy="0">&#8226; BCrypt extrae el Salt del hash BD.</tspan>
+        <tspan x="16" dy="20">&#8226; Hashea la clave enviada con ese Salt.</tspan>
+        <tspan x="16" dy="20">&#8226; Compara los 31 caracteres finales</tspan>
+        <tspan x="16" dy="18">en <tspan font-weight="700">tiempo constante</tspan> para evitar</tspan>
+        <tspan x="16" dy="18">ataques de temporización (timing attacks).</tspan>
+      </text>
+    </g>
+  </g>
+
+  <!-- Bottom Banner -->
+  <g transform="translate(32, 390)">
+    <rect width="896" height="40" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <circle cx="18" cy="20" r="5" fill="#2563eb"/>
+    <text class="b-body" x="34" y="24">
+      <tspan font-weight="700" fill="#1e293b">Regla de Oro:</tspan>
+      <tspan fill="#475569"> El hash almacenado </tspan>
+      <tspan font-weight="700" fill="#7c3aed">ya incluye su propio Salt y Costo</tspan>
+      <tspan fill="#475569">; por eso la base de datos no requiere una columna adicional para guardar el Salt.</tspan>
+    </text>
+  </g>
+</svg>
+    </div>
+    `
+    ),
+
+    icesi.sectionSlideEOrange(
+      '02. Cookies, Sesiones HTTP y Seguridad Web',
+      'Protocolo stateless, cabeceras Set-Cookie, flags de seguridad, Tomcat RAM y dependencias Maven.'
+    ),
+
+    icesi.slideSidebarLeftBlue(
+      'HTTP es Stateless por Diseño',
+      `
+    <div>
+      <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">El Protocolo HTTP es Sin Estado (Stateless)</div>
+        <div class="h-item-desc">Por diseño original, cada petición Request/Response es completamente aislada. El servidor procesa el request y olvida al cliente de inmediato.</div>
+      </div>
+    </div>
+      <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">El Gran Desafío de las Aplicaciones Web</div>
+        <div class="h-item-desc">Si un usuario se autentica en la Petición 1 (/login), ¿cómo sabe el servidor que la Petición 2 (/usuarios) proviene exactamente del mismo usuario?</div>
+      </div>
+    </div>
+      <div class="h-item h-item-green" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">La Solución: Estado Gestionado en la Capa Web</div>
+        <div class="h-item-desc">Se requiere un mecanismo en las cabeceras HTTP para transportar un testigo o identificador en cada transacción.</div>
+      </div>
+    </div>
+    </div>
+    `,
+      {
+      type: 'icons',
+      items: [
+        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`, label: 'HTTP Sin Estado' },
+        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`, label: 'Reto de Identidad' },
+        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/><circle cx="8.5" cy="15.5" r="1.5"/></svg>`, label: 'Cookies & Headers' }
+      ]
+    }
+    ),
+
+    icesi.slideTwoCols(
+      'Anatomía y Flujo de una Cookie HTTP',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Flujo de Cabeceras HTTP</div>
+    <p style="font-size:13px; line-height:1.45; color:#334155; margin-bottom:14px;">
+      Una <strong>Cookie</strong> es un par clave=valor enviado por el servidor que el navegador almacena y adjunta automáticamente en cada request futuro al mismo dominio.
+    </p>
+    <div class="h-item h-item-green" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Set-Cookie (Servidor ➔ Cliente)</div>
+        <div class="h-item-desc">El servidor responde ordenando al navegador guardar la cookie en su almacén local.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="7" x2="22" y2="7"/><circle cx="5" cy="5" r="1"/><circle cx="8" cy="5" r="1"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Cookie (Cliente ➔ Servidor)</div>
+        <div class="h-item-desc">En cada request posterior, el navegador inyecta el header automáticamente sin intervención de JS.</div>
+      </div>
+    </div>
+    `,
+      `
+    <div style="display:flex; justify-content:center; align-items:center;">
+      <svg width="580" height="360" viewBox="0 0 580 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="580" height="360" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- Actors -->
+  <rect x="20" y="16" width="150" height="42" rx="6" fill="#2563eb"/>
+  <text x="95" y="42" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="700" font-size="12">Navegador (Cliente)</text>
+
+  <rect x="410" y="16" width="150" height="42" rx="6" fill="#0f172a"/>
+  <text x="485" y="42" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, sans-serif" font-weight="700" font-size="12">Spring Boot (Servidor)</text>
+
+  <!-- Lifelines -->
+  <line x1="95" y1="58" x2="95" y2="340" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <line x1="485" y1="58" x2="485" y2="340" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5 4"/>
+
+  <!-- Step 1: POST Login -->
+  <path d="M 100 85 L 480 85" stroke="#ea580c" stroke-width="2" marker-end="url(#c-arrow-orange)"/>
+  <rect x="160" y="72" width="260" height="24" rx="4" fill="#FFF7ED" stroke="#ea580c" stroke-width="1"/>
+  <text x="290" y="88" text-anchor="middle" fill="#c2410c" font-family="system-ui, sans-serif" font-weight="700" font-size="10.5">1. POST /login (user, password)</text>
+
+  <!-- Step 2: Set-Cookie -->
+  <path d="M 480 150 L 100 150" stroke="#059669" stroke-width="2" marker-end="url(#c-arrow-green)"/>
+  <rect x="125" y="130" width="330" height="36" rx="5" fill="#ECFDF5" stroke="#059669" stroke-width="1"/>
+  <text x="290" y="145" text-anchor="middle" fill="#065f46" font-family="system-ui, sans-serif" font-weight="700" font-size="11">2. 200 OK + Header Set-Cookie</text>
+  <text x="290" y="159" text-anchor="middle" fill="#047857" font-family="monospace" font-weight="700" font-size="9.5">JSESSIONID=E84F1; HttpOnly; SameSite=Lax</text>
+
+  <!-- Step 3: GET with Cookie -->
+  <path d="M 100 225 L 480 225" stroke="#2563eb" stroke-width="2" marker-end="url(#c-arrow-blue)"/>
+  <rect x="145" y="207" width="290" height="34" rx="5" fill="#EFF6FF" stroke="#2563eb" stroke-width="1"/>
+  <text x="290" y="222" text-anchor="middle" fill="#1e40af" font-family="system-ui, sans-serif" font-weight="700" font-size="11">3. GET /usuarios + Header Cookie</text>
+  <text x="290" y="235" text-anchor="middle" fill="#2563eb" font-family="monospace" font-weight="700" font-size="9.5">Cookie: JSESSIONID=E84F1</text>
+
+  <!-- Step 4: Protected Response -->
+  <path d="M 480 295 L 100 295" stroke="#7c3aed" stroke-width="2" marker-end="url(#c-arrow-purple)"/>
+  <rect x="160" y="282" width="260" height="24" rx="4" fill="#FAF5FF" stroke="#7c3aed" stroke-width="1"/>
+  <text x="290" y="298" text-anchor="middle" fill="#6b21a8" font-family="system-ui, sans-serif" font-weight="700" font-size="10.5">4. 200 OK (Sesión OK ➔ Retorna HTML)</text>
+
+  <defs>
+    <marker id="c-arrow-orange" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ea580c"/></marker>
+    <marker id="c-arrow-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#059669"/></marker>
+    <marker id="c-arrow-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#2563eb"/></marker>
+    <marker id="c-arrow-purple" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#7c3aed"/></marker>
+  </defs>
+</svg>
+    </div>
+    `
+    ),
+
+    icesi.slideFourCards(
+      'Atributos Críticos de Seguridad en Cookies',
+      'HttpOnly', `<p style='font-size:13px; line-height:1.4;'><strong>HttpOnly</strong><br>Impide que scripts de JavaScript (ej. <code>document.cookie</code>) lean la cookie. Es la <em>defensa primordial contra ataques XSS</em>.</p>`,
+      'Secure', `<p style='font-size:13px; line-height:1.4;'><strong>Secure</strong><br>Instruye al navegador a transmitir la cookie <em>únicamente sobre conexiones HTTPS cifradas</em>, previniendo intercepciones Man-in-the-Middle.</p>`,
+      'SameSite', `<p style='font-size:13px; line-height:1.4;'><strong>SameSite (Strict / Lax)</strong><br>Controla si la cookie se envía en peticiones cross-site iniciadas desde otros dominios. <em>Protege contra ataques CSRF</em>.</p>`,
+      'Max-Age & Path', `<p style='font-size:13px; line-height:1.4;'><strong>Max-Age & Path</strong><br><strong>Max-Age / Expires</strong> define el tiempo de vida en segundos antes de expirar. <strong>Path</strong> restringe qué rutas del servidor reciben la cookie.</p>`
+    ),
+
+    icesi.slideSidebarLeftPurple(
+      'Arquitectura de HttpSession y JSESSIONID',
+      `
+    <div>
+      <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Almacén de Estado en Memoria (RAM)</div>
+        <div class="h-item-desc">El contenedor de Servlets (Tomcat) reserva un objeto en memoria (<code>HttpSession</code>) para guardar la información del usuario autenticado (roles, username, atributos).</div>
+      </div>
+    </div>
+      <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 2.5 2.5"/><path d="m18 5 2.5 2.5"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">El Identificador de Sesión (JSESSIONID)</div>
+        <div class="h-item-desc">Para asociar peticiones al usuario correcto, el servidor genera un ID aleatorio de alta entropía (<code>JSESSIONID</code>) y se lo entrega al cliente en una cookie.</div>
+      </div>
+    </div>
+      <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Seguridad por Ocultación de Datos</div>
+        <div class="h-item-desc">El navegador nunca almacena los datos sensibles ni los roles; solo posee la clave de acceso (el Session ID).</div>
+      </div>
+    </div>
+    </div>
+    `,
+      {
+      type: 'icons',
+      items: [
+        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>`, label: 'Tomcat RAM' },
+        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 2.5 2.5"/><path d="m18 5 2.5 2.5"/></svg>`, label: 'JSESSIONID' },
+        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`, label: 'Datos Protegidos' }
+      ]
+    }
+    ),
+
+    icesi.slideTwoCols(
+      'Dependencias Maven del Proyecto',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Starters de Seguridad para Spring Boot</div>
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">spring-boot-starter-security</div>
+        <div class="h-item-desc">Activa automáticamente la infraestructura de seguridad, la cadena de filtros por defecto, generador de claves y protección CSRF.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-green" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">thymeleaf-extras-springsecurity6</div>
+        <div class="h-item-desc">Dialecto de Thymeleaf para evaluar atributos <code>sec:authorize</code> y <code>sec:authentication</code> en el HTML.</div>
+      </div>
+    </div>
+    <div class="callout-box" style="margin-top:10px;">
+      <strong style="color:var(--icesi-blue);">Configuración:</strong> Agrega estas dos dependencias en el archivo <code>pom.xml</code> del proyecto <code>springboot/</code> antes de ejecutar los Live Demos.
+    </div>
+    `,
+      `
+    <div style="display:flex; justify-content:center; align-items:center;">
+      <pre><code class="language-xml">&lt;!-- springboot/pom.xml --&gt;
+&lt;dependencies&gt;
+  &lt;!-- Starter Núcleo de Seguridad --&gt;
+  &lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-security&lt;/artifactId&gt;
+  &lt;/dependency&gt;
+
+  &lt;!-- Integración con Vistas Thymeleaf --&gt;
+  &lt;dependency&gt;
+    &lt;groupId&gt;org.thymeleaf.extras&lt;/groupId&gt;
+    &lt;artifactId&gt;thymeleaf-extras-springsecurity6&lt;/artifactId&gt;
+  &lt;/dependency&gt;
+&lt;/dependencies&gt;</code></pre>
+    </div>
+    `
+    ),
+
+    icesi.slideStripeTopLeft(
+      'Live Demo 1: Inspección de Cookies en DevTools',
+      `
+    <div style="display: flex; gap: 24px; align-items: center;">
+      <div style="flex: 1.15;">
+        <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Actividad en Vivo: Explorando el Almacén Web</div>
+        <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="7" x2="22" y2="7"/><circle cx="5" cy="5" r="1"/><circle cx="8" cy="5" r="1"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">1. Abrir Herramientas de Desarrollador</div>
+        <div class="h-item-desc">Presiona <code>F12</code> o <code>Ctrl + Shift + I</code> en tu navegador web.</div>
+      </div>
+    </div>
+        <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/><circle cx="8.5" cy="15.5" r="1.5"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">2. Navegar a Application > Storage > Cookies</div>
+        <div class="h-item-desc">Selecciona el origen (<code>http://localhost:8080</code>) para inspeccionar la tabla de cookies.</div>
+      </div>
+    </div>
+        <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">3. Analizar las Banderas de Seguridad</div>
+        <div class="h-item-desc">Verifica si las columnas <code>HttpOnly</code>, <code>Secure</code> y <code>SameSite</code> tienen checks activos.</div>
+      </div>
+    </div>
+        <div class="h-item h-item-green" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">4. Experimento: Borrar JSESSIONID</div>
+        <div class="h-item-desc">Elimina la cookie manualmente y recarga la página. El servidor pierde la sesión y redirige al login.</div>
+      </div>
+    </div>
+      </div>
+      <div style="flex: 0.85; background:#1e1e2e; color:#cdd6f4; border-radius:10px; padding:18px; font-family:'Courier New', monospace; font-size:12px; line-height:1.4; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+        <div style="color:#79c0ff; font-weight:bold; margin-bottom:8px;">// Headers en DevTools Network</div>
+        <div style="color:#ff7b72;">HTTP/1.1 200 OK</div>
+        <div style="color:#ffa657;">Set-Cookie:</div>
+        <div style="color:#7ee787; padding-left:12px;">JSESSIONID=8A5C1E9D4B2...;</div>
+        <div style="color:#7ee787; padding-left:12px;">Path=/springboot-api;</div>
+        <div style="color:#7ee787; padding-left:12px;">HttpOnly;</div>
+        <div style="color:#7ee787; padding-left:12px;">SameSite=Lax</div>
+      </div>
+    </div>
+    `
+    ),
+
+    icesi.sectionSlideEGreen(
+      '03. Cadena de Filtros, UserDetails y Login Personalizado',
+      'DelegatingFilterProxy, SecurityFilterChain, contratos UserDetails/UserDetailsService, LoginController y vista custom.'
+    ),
+
+    icesi.slideTwoCols(
+      'Del Contenedor Servlet a Spring Context',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">El Puente: DelegatingFilterProxy</div>
+    <p style="font-size:13px; line-height:1.4; color:#334155; margin-bottom:12px;">
+      Los servlets y filtros tradicionales son gestionados por el contenedor web (Tomcat), que <em>no conoce el ApplicationContext de Spring</em>.
+    </p>
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">DelegatingFilterProxy</div>
+        <div class="h-item-desc">Filtro estándar registrado en el Servlet Container. Su único propósito es interceptar la petición y delegarla a un Bean de Spring.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">FilterChainProxy</div>
+        <div class="h-item-desc">Bean maestro de Spring Security. Coordina y ejecuta una o más listas ordenadas de filtros de seguridad (<code>SecurityFilterChain</code>).</div>
+      </div>
+    </div>
+    `,
+      `
+    <div class="callout-box">
+      <div style="font-weight:700; color:var(--icesi-blue); font-size:13.5px; margin-bottom:4px;">¿Por qué este diseño desacoplado?</div>
+      <p style="margin:0; font-size:12.5px; line-height:1.4; color:#334155;">
+        Permite que todos los filtros de seguridad se beneficien de la inyección de dependencias de Spring (IoC), accediendo a servicios, repositorios y configuraciones de forma nativa.
+      </p>
+    </div>
+    <div style="margin-top: 12px;">
+      <div class="h-item h-item-green" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">El Primer Muro de Defensa</div>
+        <div class="h-item-desc">Toda petición debe superar la cadena de filtros en orden estricto. Si es rechazada (401/403), <strong>jamás toca los controladores de tu aplicación</strong>.</div>
+      </div>
+    </div>
+    </div>
+    `
+    ),
+
+    icesi.slideStandard(
+      'Arquitectura de la Security Filter Chain',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 530" width="100%" height="530" style="max-width:1000px; display:block; margin:0 auto;">
+  <defs>
+    <style>
+      .title { font-family: system-ui, -apple-system, sans-serif; font-size: 20px; font-weight: 700; fill: #0f172a; }
+      .sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; fill: #64748b; }
+      .label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+      .h-box { font-family: system-ui, -apple-system, sans-serif; font-size: 13.5px; font-weight: 700; fill: #0f172a; }
+      .body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; fill: #475569; }
+      .mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 10px; }
+    </style>
+    <filter id="fc-shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="objectBoundingBox">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+    <marker id="fc-arr-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#64748b"/>
+    </marker>
+    <marker id="fc-arr-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="fc-arr-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#7c3aed"/>
+    </marker>
+    <marker id="fc-arr-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#ea580c"/>
+    </marker>
+    <marker id="fc-arr-emerald" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1000" height="530" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <text class="title" x="30" y="34">Arquitectura Interna de Spring Security</text>
+  <text class="sub" x="30" y="54">Flujo de autenticaci&#243;n: SecurityFilterChain, AuthenticationManager, Providers y UserDetails</text>
+
+  <!-- ========================================================================= -->
+  <!-- ZONA SUPERIOR: HTTP REQUEST & SECURITY FILTER CHAIN -->
+  <!-- ========================================================================= -->
+  <g transform="translate(30, 68)">
+    <!-- External HTTP Request Source -->
+    <g transform="translate(0, 10)">
+      <rect x="0" y="0" width="105" height="54" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+      <text class="label" x="52" y="20" fill="#38bdf8" text-anchor="middle">HTTP CLIENT</text>
+      <text class="mono" x="52" y="35" fill="#e2e8f0" text-anchor="middle">Browser / API</text>
+      <text class="mono" x="52" y="47" fill="#94a3b8" font-size="9px" text-anchor="middle">POST /login</text>
+    </g>
+
+    <!-- Arrow into FilterChain -->
+    <path d="M108,37 L138,37" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#fc-arr-blue)"/>
+
+    <!-- Security Filter Chain Boundary Container -->
+    <rect x="142" y="0" width="550" height="74" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="6 5"/>
+    <rect x="152" y="6" width="145" height="16" rx="4" fill="#2563eb"/>
+    <text class="mono" x="224" y="18" fill="#ffffff" font-weight="700" font-size="8.5px" text-anchor="middle">SECURITY FILTER CHAIN</text>
+
+    <!-- Filters Sequence Cards -->
+    <g transform="translate(152, 25)">
+      <!-- Filter 1: Cors/Csrf -->
+      <rect x="0" y="0" width="120" height="42" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#fc-shadow)"/>
+      <text class="mono" x="60" y="18" fill="#1e293b" font-weight="700" text-anchor="middle">Cors/CsrfFilter</text>
+      <text class="body" x="60" y="32" font-size="9.5px" text-anchor="middle">Cabeceras y CSRF</text>
+
+      <path d="M122,21 L142,21" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#fc-arr-gray)"/>
+
+      <!-- Filter 2: Authentication Filter (Highlighted) -->
+      <rect x="146" y="0" width="200" height="42" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="2" filter="url(#fc-shadow)"/>
+      <text class="mono" x="246" y="18" fill="#1e40af" font-weight="700" text-anchor="middle">UsernamePasswordFilter</text>
+      <text class="body" x="246" y="32" font-size="9.5px" fill="#2563eb" text-anchor="middle">Extrae Credenciales</text>
+
+      <path d="M348,21 L368,21" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#fc-arr-gray)"/>
+
+      <!-- Filter 3: Authorization Filter -->
+      <rect x="372" y="0" width="158" height="42" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#fc-shadow)"/>
+      <text class="mono" x="451" y="18" fill="#1e293b" font-weight="700" text-anchor="middle">AuthorizationFilter</text>
+      <text class="body" x="451" y="32" font-size="9.5px" text-anchor="middle">Verifica Authorities</text>
+    </g>
+
+    <!-- Arrow to DispatcherServlet -->
+    <path d="M694,37 L724,37" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#fc-arr-emerald)"/>
+
+    <!-- Spring MVC Destination -->
+    <g transform="translate(730, 2)">
+      <rect x="0" y="0" width="210" height="70" rx="8" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5"/>
+      <text class="label" x="105" y="21" fill="#047857" text-anchor="middle">DISPATCHER SERVLET</text>
+      <text class="mono" x="105" y="40" fill="#065f46" font-weight="700" text-anchor="middle">@Controller (MVC)</text>
+      <text class="body" x="105" y="56" font-size="10px" fill="#047857" text-anchor="middle">Petici&#243;n Autorizada (200 OK)</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- ZONA INTERMEDIA: CONECTORES Y FLECHAS PRINCIPALES -->
+  <!-- ========================================================================= -->
+
+  <!-- Green Dashed Arrow: Leaves directly below AuthFilter at (350, 142) -->
+  <path d="M350,142 C260,146 132,166 132,216" fill="none" stroke="#059669" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#fc-arr-emerald)"/>
+  <rect x="155" y="152" width="144" height="22" rx="4" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.2"/>
+  <text class="mono" x="227" y="167" fill="#047857" font-weight="700" font-size="9px" text-anchor="middle">Guarda Authentication</text>
+
+  <!-- Blue Arrow down from AuthFilter to AuthenticationManager -->
+  <path d="M428,142 L410,216" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#fc-arr-blue)"/>
+  <rect x="330" y="162" width="168" height="22" rx="4" fill="#ffffff" stroke="#93c5fd" stroke-width="1.2"/>
+  <text class="mono" x="414" y="177" fill="#1e40af" font-weight="700" font-size="9px" text-anchor="middle">authenticate(unauth_token)</text>
+
+  <!-- ========================================================================= -->
+  <!-- ZONA INFERIOR: 3 COLUMNAS MODULARES (WHITE PAPER CARDS) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(30, 220)">
+
+    <!-- ========================================== -->
+    <!-- COLUMNA 1 (IZQ): SecurityContextHolder -->
+    <!-- ========================================== -->
+    <g transform="translate(0, 0)">
+      <rect width="205" height="222" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.8" filter="url(#fc-shadow)"/>
+      <rect x="0" y="0" width="205" height="4" rx="2" fill="#059669"/>
+      <text class="label" x="14" y="22" fill="#047857">SESI&#211;N Y CONTEXTO</text>
+      <text class="h-box" x="14" y="42" fill="#065f46">SecurityContextHolder</text>
+      <text class="mono" x="14" y="64" fill="#1e293b">&gt; Almac&#233;n: ThreadLocal</text>
+      <text class="mono" x="14" y="86" fill="#047857">&gt; SecurityContext</text>
+      <text class="mono" x="24" y="108" fill="#059669">&#8226; Authentication (OK)</text>
+      <text class="mono" x="24" y="128" fill="#475569">&#8226; Principal (Usuario)</text>
+      <text class="mono" x="24" y="148" fill="#475569">&#8226; GrantedAuthorities</text>
+
+      <rect x="12" y="170" width="181" height="38" rx="6" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+      <text class="body" x="102" y="186" font-size="9.5px" fill="#047857" font-weight="700" text-anchor="middle">Disponible en toda la app</text>
+      <text class="mono" x="102" y="200" font-size="8px" fill="#059669" text-anchor="middle">SecurityContextHolder.getContext()</text>
+    </g>
+
+    <!-- ========================================== -->
+    <!-- COLUMNA 2 (CENTRAL): Manager y Provider -->
+    <!-- ========================================== -->
+
+    <!-- Card 1: AuthenticationManager -->
+    <g transform="translate(245, 0)">
+      <rect width="270" height="92" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.8" filter="url(#fc-shadow)"/>
+      <rect x="0" y="0" width="270" height="4" rx="2" fill="#2563eb"/>
+      <text class="label" x="14" y="20" fill="#2563eb">1. COORDINADOR CENTRAL</text>
+      <text class="h-box" x="14" y="40">AuthenticationManager</text>
+      <text class="mono" x="14" y="58" fill="#1e40af">Impl: ProviderManager</text>
+      <text class="body" x="14" y="76">Consulta la lista de proveedores registrados</text>
+    </g>
+
+    <!-- Arrow Manager -> Provider (Clean vertical connector) -->
+    <path d="M380,94 L380,126" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#fc-arr-purple)"/>
+    <rect x="330" y="101" width="100" height="18" rx="4" fill="#ffffff" stroke="#d8b4fe" stroke-width="1"/>
+    <text class="mono" x="380" y="114" fill="#7c3aed" font-size="8.5px" font-weight="700" text-anchor="middle">Delega validaci&#243;n</text>
+
+    <!-- Card 2: DaoAuthenticationProvider -->
+    <g transform="translate(245, 130)">
+      <rect width="270" height="92" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.8" filter="url(#fc-shadow)"/>
+      <rect x="0" y="0" width="270" height="4" rx="2" fill="#7c3aed"/>
+      <text class="label" x="14" y="20" fill="#7c3aed">2. PROVEEDOR DE AUTENTICACI&#211;N</text>
+      <text class="h-box" x="14" y="38">DaoAuthenticationProvider</text>
+      <text class="body" x="14" y="56">Carga datos v&#237;a UserDetailsService y valida</text>
+      <text class="body" x="14" y="74">la contrase&#241;a ingresada contra el hash BCrypt.</text>
+    </g>
+
+    <!-- ========================================== -->
+    <!-- CONEXIONES ENTRE PROVEEDOR Y COLUMNA DERECHA -->
+    <!-- ========================================== -->
+
+    <!-- Purple Arrow Provider -> UserDetailsService (Smooth S-curve) -->
+    <path d="M515,138 C560,138 565,46 656,46" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#fc-arr-purple)"/>
+    <!-- Purple Badge: Placed gracefully above arrival at (546, 18) -->
+    <rect x="542" y="18" width="114" height="22" rx="4" fill="#ffffff" stroke="#c084fc" stroke-width="1.2"/>
+    <text class="mono" x="599" y="32" fill="#7c3aed" font-size="8.5px" font-weight="700" text-anchor="middle">loadUserByUsername</text>
+
+    <!-- Orange Arrow Provider -> PasswordEncoder (Horizontal Connection Centered at Y=185) -->
+    <path d="M515,185 L656,185" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#fc-arr-orange)"/>
+    <!-- Orange Badge: Placed directly above the line at (542, 158) -->
+    <rect x="542" y="157" width="114" height="22" rx="4" fill="#ffffff" stroke="#fed7aa" stroke-width="1.2"/>
+    <text class="mono" x="599" y="171" fill="#ea580c" font-size="8.5px" font-weight="700" text-anchor="middle">matches(raw, hash)</text>
+
+    <!-- ========================================== -->
+    <!-- COLUMNA 3 (DER): Identidad y BCrypt -->
+    <!-- ========================================== -->
+
+    <!-- Card 3A: UserDetailsService con Integración JPA / BD -->
+    <g transform="translate(662, 0)">
+      <rect width="308" height="92" rx="8" fill="#ffffff" stroke="#c084fc" stroke-width="1.8" filter="url(#fc-shadow)"/>
+      <rect x="0" y="0" width="308" height="4" rx="2" fill="#7c3aed"/>
+      <text class="label" x="14" y="20" fill="#7c3aed">3A. CARGA DE IDENTIDAD Y DATOS</text>
+      <text class="h-box" x="14" y="38">UserDetailsService</text>
+      <text class="mono" x="14" y="54" fill="#475569">loadUserByUsername(username)</text>
+
+      <!-- Sub-chip: Acceso a Persistencia JPA -->
+      <rect x="14" y="62" width="280" height="22" rx="4" fill="#0f172a"/>
+      <ellipse cx="28" cy="73" rx="7" ry="3.5" fill="#38bdf8"/>
+      <text class="mono" x="42" y="77" fill="#38bdf8" font-size="9px" font-weight="700">JPA Repository:</text>
+      <text class="mono" x="126" y="77" fill="#e2e8f0" font-size="8.5px">findByUsername &#8594; UserDetails</text>
+    </g>
+
+    <!-- Card 3B: PasswordEncoder (BCrypt) -->
+    <g transform="translate(662, 130)">
+      <rect width="308" height="92" rx="8" fill="#ffffff" stroke="#fdba74" stroke-width="1.8" filter="url(#fc-shadow)"/>
+      <rect x="0" y="0" width="308" height="4" rx="2" fill="#ea580c"/>
+      <text class="label" x="14" y="20" fill="#ea580c">3B. VERIFICACI&#211;N CRIPTOGR&#193;FICA</text>
+      <text class="h-box" x="14" y="38">PasswordEncoder</text>
+      <text class="mono" x="14" y="54" fill="#c2410c" font-weight="700">matches(rawPassword, encodedPassword)</text>
+
+      <!-- Sub-chip: Algoritmo BCrypt -->
+      <rect x="14" y="62" width="280" height="22" rx="4" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+      <text class="mono" x="22" y="77" fill="#9a3412" font-size="8.5px">BCrypt (Salting autom&#225;tico + Work Factor = 12)</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- BARRA INFERIOR: RESUMEN DEL FLUJO COMPLETO -->
+  <!-- ========================================================================= -->
+  <g transform="translate(30, 475)">
+    <rect x="0" y="0" width="940" height="34" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <circle cx="16" cy="17" r="5" fill="#2563eb"/>
+    <text class="mono" x="28" y="21" fill="#1e293b" font-size="10px">
+      <tspan fill="#2563eb" font-weight="700">Flujo:</tspan>
+      <tspan> HTTP &#8594; </tspan>
+      <tspan fill="#2563eb">AuthFilter</tspan>
+      <tspan> &#8594; </tspan>
+      <tspan fill="#1e40af">AuthManager</tspan>
+      <tspan> &#8594; </tspan>
+      <tspan fill="#7c3aed">DaoAuthProvider</tspan>
+      <tspan> &#8594; </tspan>
+      <tspan fill="#7c3aed">UserDetailsService (BD)</tspan>
+      <tspan> &#8594; </tspan>
+      <tspan fill="#ea580c">PasswordEncoder (BCrypt)</tspan>
+      <tspan> &#8594; </tspan>
+      <tspan fill="#059669">SecurityContext</tspan>
+      <tspan> &#8594; </tspan>
+      <tspan fill="#047857" font-weight="700">DispatcherServlet (OK)</tspan>
+    </text>
+  </g>
+</svg>
+
+    </div>
+    `
+    ),
+
+    icesi.slideFourCards(
+      'Filtros Cardinales de la Cadena',
+      'Context Persistence', `<p style='font-size:13px; line-height:1.4;'><strong>SecurityContextHolderFilter</strong><br>Restaura el <code>SecurityContext</code> desde la <code>HttpSession</code> al inicio del hilo y garantiza su persistencia al finalizar la petición.</p>`,
+      'Authentication Filter', `<p style='font-size:13px; line-height:1.4;'><strong>UsernamePasswordAuthFilter</strong><br>Intercepta peticiones de login (por defecto <code>POST /login</code>), extrae username/password y delega al <code>AuthenticationManager</code>.</p>`,
+      'CSRF Protection', `<p style='font-size:13px; line-height:1.4;'><strong>CsrfFilter</strong><br>Inspecciona que cada petición mutadora (POST, PUT, DELETE) contenga un token CSRF válido generado por el servidor para evitar falsificaciones.</p>`,
+      'Authorization Filter', `<p style='font-size:13px; line-height:1.4;'><strong>AuthorizationFilter</strong><br>El guardián final de la cadena. Evalúa si el usuario autenticado posee los roles o permisos exigidos por las reglas de URL antes de pasar al Controller.</p>`
+    ),
+
+    icesi.slideSidebarLeftBlue(
+      'Manejo de Excepciones de Seguridad',
+      `
+    <div>
+      <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Captura de Excepciones de Seguridad</div>
+        <div class="h-item-desc">Este filtro no realiza validaciones directas; envuelve la ejecución de los siguientes filtros y captura cualquier error de seguridad lanzado en la cadena.</div>
+      </div>
+    </div>
+      <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 2.5 2.5"/><path d="m18 5 2.5 2.5"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">AuthenticationException ➔ Redirección o 401</div>
+        <div class="h-item-desc">Si el usuario es anónimo y la ruta requiere autenticación, guarda la petición solicitada y <em>lo redirige a la página de login</em> (o retorna <code>401 Unauthorized</code> en APIs).</div>
+      </div>
+    </div>
+      <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">AccessDeniedException ➔ Error 403 Forbidden</div>
+        <div class="h-item-desc">Si el usuario ya está autenticado pero <em>no tiene los roles requeridos</em>, cancela la petición y responde con código <code>403 Forbidden</code>.</div>
+      </div>
+    </div>
+    </div>
+    `,
+      {
+      type: 'icons',
+      items: [
+        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`, label: 'Captura Errores' },
+        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 2.5 2.5"/><path d="m18 5 2.5 2.5"/></svg>`, label: '401 ➔ Login' },
+        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`, label: '403 ➔ Prohibido' }
+      ]
+    }
+    ),
+
+    icesi.slideTwoCols(
+      'Contratos Fundamentales: UserDetails vs UserDetailsService',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">1. UserDetails (La Identidad)</div>
+    <p style="font-size:13px; line-height:1.4; color:#334155; margin-bottom:10px;">
+      Representa la entidad del usuario ante Spring Security. Modela credenciales y estado de cuenta:
+    </p>
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">getUsername() / getPassword()</div>
+        <div class="h-item-desc">Retorna el identificador principal (email) y el hash BCrypt.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">getAuthorities()</div>
+        <div class="h-item-desc">Colección de roles y permisos (<code>GrantedAuthority</code>).</div>
+      </div>
+    </div>
+    <div class="h-item h-item-green" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Flags de Cuenta</div>
+        <div class="h-item-desc"><code>isEnabled()</code>, <code>isAccountNonLocked()</code>, <code>isCredentialsNonExpired()</code>.</div>
+      </div>
+    </div>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-green); margin-bottom:8px;">2. UserDetailsService (El Proveedor)</div>
+    <p style="font-size:13px; line-height:1.4; color:#334155; margin-bottom:10px;">
+      Interfaz funcional con un único método que localiza al usuario según su nombre o email:
+    </p>
+    <div style="background:#1e1e2e; color:#cdd6f4; border-radius:8px; padding:12px 14px; font-family:'Courier New', monospace; font-size:11.5px; line-height:1.4; margin-bottom:10px;">
+      <span style="color:#79c0ff;">public interface</span> <span style="color:#ffa657;">UserDetailsService</span> &#123;<br>
+      &nbsp;&nbsp;<span style="color:#ffa657;">UserDetails</span> <span style="color:#d2a8ff;">loadUserByUsername</span>(<span style="color:#ffa657;">String</span> u)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#ff7b72;">throws</span> <span style="color:#ffa657;">UsernameNotFoundException</span>;<br>
+      &#125;
+    </div>
+    <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">DaoAuthenticationProvider</div>
+        <div class="h-item-desc">Recibe el <code>UserDetails</code> y usa <code>PasswordEncoder.matches()</code> para comparar hashes.</div>
+      </div>
+    </div>
+    `
+    ),
+
+    icesi.slideTwoCols(
+      'Configuración de SecurityConfig: Filter Chain y Form Login',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">Configuración Declarativa</div>
+    <p style="font-size:13px; line-height:1.4; color:#334155; margin-bottom:10px;">
+      Reemplazamos el login generado por defecto configurando nuestra propia página de inicio de sesión:
+    </p>
+    <div class="h-item h-item-green" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">loginPage("/login")</div>
+        <div class="h-item-desc">Ruta del controlador Spring MVC que renderiza la vista custom.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="7" x2="22" y2="7"/><circle cx="5" cy="5" r="1"/><circle cx="8" cy="5" r="1"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">defaultSuccessUrl("/usuarios", true)</div>
+        <div class="h-item-desc">Página a la que se redirige de forma obligatoria tras autenticación exitosa.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">permitAll() en Login & Estáticos</div>
+        <div class="h-item-desc">Garantiza que el formulario de login y los assets estáticos (/css, /js) sean accesibles sin sesión previa.</div>
+      </div>
+    </div>
+    `,
+      `
+    <div style="display:flex; justify-content:center; align-items:center;">
+      <pre><code class="language-java">@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) 
+      throws Exception {
+    return http
+      .authorizeHttpRequests(auth -> auth
+        .requestMatchers("/login", "/css/**", "/js/**").permitAll()
+        .anyRequest().authenticated()
+      )
+      .formLogin(form -> form
+        .loginPage("/login")
+        .defaultSuccessUrl("/usuarios", true)
+        .permitAll()
+      )
+      .logout(logout -> logout
+        .logoutSuccessUrl("/login?logout").permitAll()
+      )
+      .build();
+  }
+}</code></pre>
+    </div>
+    `
+    ),
+
+    icesi.slideTwoCols(
+      'Controlador y Vista de Login Personalizado',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">LoginController.java (Spring MVC)</div>
+    <p style="font-size:13px; line-height:1.4; color:#334155; margin-bottom:10px;">
+      Controlador simple para despachar la plantilla Thymeleaf <code>login.html</code>:
+    </p>
+    <pre><code class="language-java">@Controller
+public class LoginController {
+
+  @GetMapping("/login")
+  public String login() {
+    return "login"; // Retorna login.html
+  }
+}</code></pre>
+    <div class="callout-box" style="margin-top:10px;">
+      <p style="margin:0; font-size:12px; color:#1e293b;">
+        <strong>Nota:</strong> No se requiere un <code>@PostMapping("/login")</code> porque Spring Security intercepta el POST automáticamente con <code>UsernamePasswordAuthenticationFilter</code>.
+      </p>
+    </div>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-purple); margin-bottom:8px;">login.html (Thymeleaf con CSRF)</div>
+    <pre><code class="language-html">&lt;!-- src/main/resources/templates/login.html --&gt;
+&lt;form th:action="@{/login}" method="post" class="login-box"&gt;
+  &lt;!-- Alerta de error si las credenciales fallan --&gt;
+  &lt;div th:if="\${param.error}" class="alert-danger"&gt;
+    Correo o contraseña incorrectos.
+  &lt;/div&gt;
+
+  &lt;label&gt;Correo Institucional&lt;/label&gt;
+  &lt;input type="text" name="username" required /&gt;
+
+  &lt;label&gt;Contraseña&lt;/label&gt;
+  &lt;input type="password" name="password" required /&gt;
+
+  &lt;!-- th:action inyecta automáticamente el token _csrf --&gt;
+  &lt;button type="submit"&gt;Iniciar Sesión&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+    `
+    ),
+
+    icesi.slideStripeTopRight(
+      'Live Demo 2: SecurityConfig, Login Propio y Depuración',
+      `
+    <div style="display: flex; gap: 24px; align-items: center;">
+      <div style="flex: 1.1;">
+        <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Actividad en Vivo: SecurityConfig y Filtros</div>
+        <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">1. Crear SecurityConfig & In-Memory User</div>
+        <div class="h-item-desc">Declarar <code>SecurityFilterChain</code> con <code>.loginPage("/login")</code> y usuario de prueba en memoria.</div>
+      </div>
+    </div>
+        <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="7" x2="22" y2="7"/><circle cx="5" cy="5" r="1"/><circle cx="8" cy="5" r="1"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">2. Crear LoginController & login.html</div>
+        <div class="h-item-desc">Añadir <code>@GetMapping("/login")</code> y diseñar la vista Thymeleaf con soporte de errores y CSRF.</div>
+      </div>
+    </div>
+        <div class="h-item h-item-green" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">3. Activar Logs de Seguridad</div>
+        <div class="h-item-desc">En <code>application.properties</code>: <code>logging.level.org.springframework.security=DEBUG</code></div>
+      </div>
+    </div>
+        <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">4. Probar Flujo Completo & Consola</div>
+        <div class="h-item-desc">Navegar a <code>/usuarios</code> ➔ Redirección a <code>/login</code> ➔ Autenticar ➔ Analizar filtros en consola.</div>
+      </div>
+    </div>
+      </div>
+      <div style="flex: 0.9; background:#1e1e2e; color:#cdd6f4; border-radius:10px; padding:18px; font-family:'Courier New', monospace; font-size:11.5px; line-height:1.35; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+        <div style="color:#79c0ff; font-weight:bold; margin-bottom:6px;">// Salida real de Spring Boot Console</div>
+        <div style="color:#ffa657;">DEBUG o.s.s.web.DefaultSecurityFilterChain:</div>
+        <div style="color:#cdd6f4;">Will secure any request with [</div>
+        <div style="color:#7ee787; padding-left:12px;">DisableEncodeUrlFilter,</div>
+        <div style="color:#7ee787; padding-left:12px;">SecurityContextHolderFilter,</div>
+        <div style="color:#7ee787; padding-left:12px;">HeaderWriterFilter,</div>
+        <div style="color:#7ee787; padding-left:12px;">CsrfFilter,</div>
+        <div style="color:#7ee787; padding-left:12px;">LogoutFilter,</div>
+        <div style="color:#7ee787; padding-left:12px;">UsernamePasswordAuthenticationFilter,</div>
+        <div style="color:#7ee787; padding-left:12px;">DefaultLoginPageGeneratingFilter,</div>
+        <div style="color:#7ee787; padding-left:12px;">ExceptionTranslationFilter,</div>
+        <div style="color:#7ee787; padding-left:12px;">AuthorizationFilter</div>
+        <div style="color:#cdd6f4;">]</div>
+      </div>
+    </div>
+    `
+    ),
+
+    icesi.titleSlideF(
+      'Fin de la Sesión 1',
+      'Próxima Sesión: Autorización Granular RBAC, Persistencia JPA en BD y Vistas Thymeleaf'
+    )
+  ];
+
+  document.getElementById('icesi-slides').innerHTML = slides.join('\n');
+  icesi.init({
+    hash: true,
+    slideNumber: false,
+    controls: false,
+    progress: true,
+    center: false,
+    width: 1280,
+    height: 720,
+    margin: 0,
+    minScale: 0.2,
+    maxScale: 2.0
+  });
+</script>
+
+</body>
+</html>

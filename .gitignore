@@ -48,3 +48,8 @@ logs/
 /slides/*.html
 /slides/*.js
 /slides/images/
+*/node_modules/*
+*/node_modules/
+/output-skills/*
+*/screenshots/*
+/slides/*/images/

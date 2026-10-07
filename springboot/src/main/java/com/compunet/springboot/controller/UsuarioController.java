@@ -2,6 +2,7 @@ package com.compunet.springboot.controller;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,6 +57,7 @@ public class UsuarioController {
      * Aplica el patrón POST-REDIRECT-GET (PRG)
      */
     @PostMapping("/guardar")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public String guardarUsuario(@ModelAttribute("usuario") Usuario usuario,
             @RequestParam(value = "rolIds", required = false) List<Long> rolIds,
             RedirectAttributes flash) {
@@ -116,6 +118,7 @@ public class UsuarioController {
      * 6. ELIMINAR FÍSICAMENTE: GET /usuarios/eliminar/{id}
      */
     @GetMapping("/eliminar/{id}")
+    @PreAuthorize("hasAuthoritiy(USER_DELETE)")
     public String eliminarUsuario(@PathVariable("id") Long id, RedirectAttributes flash) {
         try {
             usuarioService.eliminarUsuario(id);

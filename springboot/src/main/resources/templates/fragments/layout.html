@@ -1,20 +1,30 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
 </head>
 <body>
 
-    <!-- 1. Fragmento de Barra de Navegación Global -->
+    <!-- 1. Fragmento de Barra de Navegación Global con Seguridad Condicional -->
     <header th:fragment="mainNavbar">
         <nav>
-            <a th:href="@{/usuarios}"><strong>ICESI Académico</strong></a> |
-            <a th:href="@{/usuarios}">Usuarios</a> |
-            <a th:href="@{/profesores-mvc}">Cuerpo Docente</a> |
-            <a th:href="@{/cursos-mvc}">Cursos</a> |
-            <a th:href="@{/matriculas-mvc}">Matrículas</a> |
-            <a th:href="@{/roles-mvc}">Roles</a> |
-            <a th:href="@{/permisos-mvc}">Permisos</a>
+            <div>
+                <a th:href="@{/usuarios}"><strong>ICESI Académico</strong></a> |
+                <a th:href="@{/usuarios}">Usuarios</a> |
+                <a th:href="@{/profesores-mvc}" sec:authorize="hasAnyRole('ADMINISTRADOR', 'PROFESOR')">Cuerpo Docente</a> |
+                <a th:href="@{/cursos-mvc}">Cursos</a> |
+                <a th:href="@{/matriculas-mvc}">Matrículas</a> |
+                <a th:href="@{/roles-mvc}" sec:authorize="hasRole('ADMINISTRADOR')">Roles</a> |
+                <a th:href="@{/permisos-mvc}" sec:authorize="hasRole('ADMINISTRADOR')">Permisos</a>
+            </div>
+
+            <!-- Bloque de Sesión y Logout (Alineado a la derecha por CSS) -->
+            <span sec:authorize="isAuthenticated()">
+                Usuario: <strong sec:authentication="name"></strong>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit">Salir</button>
+                </form>
+            </span>
         </nav>
     </header>
 

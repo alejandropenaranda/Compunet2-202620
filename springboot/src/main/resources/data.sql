@@ -43,40 +43,49 @@ INSERT INTO rol_permiso (rol_id, permiso_id) VALUES (3, 7); -- ENROLLMENT_WRITE
 
 -- ------------------------------------------------------------------------------
 -- 4. USUARIOS DEL SISTEMA (Total: 27 usuarios = 2 Admin + 10 Docentes + 15 Estudiantes)
+-- Contraseñas Hasheadas con BCrypt (strength 10) para pruebas en clase:
+--   - Administradores : 'admin123'      -> $2a$10$4zGHzXmSU49qDHK7m820NeTrNxP9EZ4xC9h6xhD9FtlkphqvSgWKO
+--   - Docentes        : 'profesor123'   -> $2a$10$u1/GC.ZBn1gwL9NY8oHwy./j.iN04SkyAV1WUh1BnBc33w6GafNI6
+--   - Estudiantes     : 'estudiante123' -> $2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy
+--
+-- 3 Usuarios Principales de Prueba:
+--   1. admin@icesi.edu.co / admin123       (Rol: ADMINISTRADOR)
+--   2. drincon@icesi.edu.co / profesor123  (Rol: PROFESOR)
+--   3. apaez@icesi.edu.co / estudiante123  (Rol: ESTUDIANTE)
 -- ------------------------------------------------------------------------------
 
 -- Administradores (IDs: 1, 2)
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Super', 'Admin', 'admin@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Laura', 'Gomez', 'lgomez@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Super', 'Admin', 'admin@icesi.edu.co', '$2a$10$4zGHzXmSU49qDHK7m820NeTrNxP9EZ4xC9h6xhD9FtlkphqvSgWKO', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Laura', 'Gomez', 'lgomez@icesi.edu.co', '$2a$10$4zGHzXmSU49qDHK7m820NeTrNxP9EZ4xC9h6xhD9FtlkphqvSgWKO', TRUE);
 
 -- Docentes (IDs: 3 a 12)
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Domiciano', 'Rincon', 'drincon@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Kevin', 'Rodriguez', 'krodriguez@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Alejandro', 'Munoz', 'amunoz@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Alejandro', 'Penaranda', 'apenaranda@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Beatriz', 'Caicedo', 'bcaicedo@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Gonzalo', 'Ulloa', 'gulloa@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Andres', 'Paredes', 'aparedes@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Claudia', 'Jimenez', 'cjimenez@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Mauricio', 'Cabrera', 'mcabrera@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Paola', 'Vallejo', 'pvallejo@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Domiciano', 'Rincon', 'drincon@icesi.edu.co', '$2a$10$u1/GC.ZBn1gwL9NY8oHwy./j.iN04SkyAV1WUh1BnBc33w6GafNI6', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Kevin', 'Rodriguez', 'krodriguez@icesi.edu.co', '$2a$10$u1/GC.ZBn1gwL9NY8oHwy./j.iN04SkyAV1WUh1BnBc33w6GafNI6', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Alejandro', 'Munoz', 'amunoz@icesi.edu.co', '$2a$10$u1/GC.ZBn1gwL9NY8oHwy./j.iN04SkyAV1WUh1BnBc33w6GafNI6', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Alejandro', 'Penaranda', 'apenaranda@icesi.edu.co', '$2a$10$u1/GC.ZBn1gwL9NY8oHwy./j.iN04SkyAV1WUh1BnBc33w6GafNI6', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Beatriz', 'Caicedo', 'bcaicedo@icesi.edu.co', '$2a$10$u1/GC.ZBn1gwL9NY8oHwy./j.iN04SkyAV1WUh1BnBc33w6GafNI6', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Gonzalo', 'Ulloa', 'gulloa@icesi.edu.co', '$2a$10$u1/GC.ZBn1gwL9NY8oHwy./j.iN04SkyAV1WUh1BnBc33w6GafNI6', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Andres', 'Paredes', 'aparedes@icesi.edu.co', '$2a$10$u1/GC.ZBn1gwL9NY8oHwy./j.iN04SkyAV1WUh1BnBc33w6GafNI6', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Claudia', 'Jimenez', 'cjimenez@icesi.edu.co', '$2a$10$u1/GC.ZBn1gwL9NY8oHwy./j.iN04SkyAV1WUh1BnBc33w6GafNI6', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Mauricio', 'Cabrera', 'mcabrera@icesi.edu.co', '$2a$10$u1/GC.ZBn1gwL9NY8oHwy./j.iN04SkyAV1WUh1BnBc33w6GafNI6', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Paola', 'Vallejo', 'pvallejo@icesi.edu.co', '$2a$10$u1/GC.ZBn1gwL9NY8oHwy./j.iN04SkyAV1WUh1BnBc33w6GafNI6', TRUE);
 
 -- Estudiantes (IDs: 13 a 27)
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Alejandro', 'Paez', 'apaez@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Carlos', 'Perez', 'cperez@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Raul', 'Martinez', 'rmartinez@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Sofia', 'Castillo', 'scastillo@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Mateo', 'Ospina', 'mospina@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Valentina', 'Herrera', 'vherrera@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Santiago', 'Morales', 'smorales@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Isabella', 'Rios', 'irios@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Daniel', 'Torres', 'dtorres@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Mariana', 'Vargas', 'mvargas@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Gabriel', 'Mendoza', 'gmendoza@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Camila', 'Silva', 'csilva@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Nicolas', 'Cruz', 'ncruz@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Daniela', 'Rojas', 'drojas@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
-INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Felipe', 'Aguilar', 'faguilar@icesi.edu.co', '$2a$10$hashedpassword123', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Alejandro', 'Paez', 'apaez@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Carlos', 'Perez', 'cperez@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Raul', 'Martinez', 'rmartinez@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Sofia', 'Castillo', 'scastillo@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Mateo', 'Ospina', 'mospina@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Valentina', 'Herrera', 'vherrera@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Santiago', 'Morales', 'smorales@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Isabella', 'Rios', 'irios@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Daniel', 'Torres', 'dtorres@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Mariana', 'Vargas', 'mvargas@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Gabriel', 'Mendoza', 'gmendoza@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Camila', 'Silva', 'csilva@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Nicolas', 'Cruz', 'ncruz@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Daniela', 'Rojas', 'drojas@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
+INSERT INTO usuario (nombre, apellido, correo_institucional, password, active) VALUES ('Felipe', 'Aguilar', 'faguilar@icesi.edu.co', '$2a$10$fqtWn/Xuwr9KvGMw1ybRUezTtEgeK8RoxNk2hD.ZWY.x0UXhpmAAy', TRUE);
 
 -- ------------------------------------------------------------------------------
 -- 5. ASIGNACIÓN USUARIO <-> ROL (usuario_rol)

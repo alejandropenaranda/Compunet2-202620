@@ -306,15 +306,18 @@
       width: 100% !important;
     }
     pre code {
-      font-size: 12.5px !important;
-      line-height: 1.35 !important;
+      font-size: 11.5px !important;
+      line-height: 1.28 !important;
       border-radius: 8px !important;
-      padding: 12px 14px !important;
+      padding: 10px 14px !important;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       background: #1e1e2e !important;
       color: #cdd6f4 !important;
       box-sizing: border-box !important;
       max-height: 460px !important;
+      overflow-x: auto !important;
+      word-break: normal !important;
+      white-space: pre !important;
     }
     
     .hljs-meta { color: #79c0ff !important; font-weight: bold; }
@@ -428,8 +431,8 @@
     <div class="h-item h-item-green" style="margin-bottom:12px;">
       <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
       <div style="flex:1; min-width:0;">
-        <div class="h-item-title">04. Configuración y Vistas</div>
-        <div class="h-item-desc">SecurityFilterChain, Form Login custom y Thymeleaf Security.</div>
+        <div class="h-item-title">04. Configuración, @PreAuthorize y Vistas</div>
+        <div class="h-item-desc">SecurityFilterChain, seguridad de métodos (@PreAuthorize) y Thymeleaf condicional.</div>
       </div>
     </div>
     `
@@ -504,18 +507,253 @@
     </div>
     `,
       `
-    <div style="font-size:15px; font-weight:700; color:var(--icesi-purple); margin-bottom:8px;">Anatomía del Objeto Authentication</div>
-    <div style="background:#f8fafc; border:1px solid #CBD5E1; border-radius:8px; padding:10px 14px; margin-bottom:8px;">
-      <div style="font-weight:700; color:#1e293b; font-size:13px; margin-bottom:2px;">1. Principal</div>
-      <div style="font-size:12px; color:#475569;">Representa al usuario (generalmente tu instancia personalizada de <code>UserDetails</code>).</div>
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-purple); margin-bottom:8px;">Las 4 Dimensiones de Authentication</div>
+    <div style="background:#f8fafc; border:1px solid #CBD5E1; border-radius:6px; padding:6px 12px; margin-bottom:6px;">
+      <div style="font-weight:700; color:#1e293b; font-size:12px;">1. Principal (getPrincipal)</div>
+      <div style="font-size:11px; color:#475569;">Identidad del usuario: Instancia de <code>UserDetails</code> / <code>CustomUserDetails</code>.</div>
     </div>
-    <div style="background:#f8fafc; border:1px solid #CBD5E1; border-radius:8px; padding:10px 14px; margin-bottom:8px;">
-      <div style="font-weight:700; color:#1e293b; font-size:13px; margin-bottom:2px;">2. Credentials</div>
-      <div style="font-size:12px; color:#475569;">La contraseña o token ingresado (suele borrarse tras la autenticación por seguridad).</div>
+    <div style="background:#f8fafc; border:1px solid #CBD5E1; border-radius:6px; padding:6px 12px; margin-bottom:6px;">
+      <div style="font-weight:700; color:#1e293b; font-size:12px;">2. Credentials (getCredentials)</div>
+      <div style="font-size:11px; color:#475569;">Contraseña plana/token. Se limpia con <code>eraseCredentials()</code> tras validar.</div>
     </div>
-    <div style="background:#f8fafc; border:1px solid #CBD5E1; border-radius:8px; padding:10px 14px;">
-      <div style="font-weight:700; color:#1e293b; font-size:13px; margin-bottom:2px;">3. Authorities</div>
-      <div style="font-size:12px; color:#475569;">Colección de <code>GrantedAuthority</code> (roles y permisos atómicos).</div>
+    <div style="background:#f8fafc; border:1px solid #CBD5E1; border-radius:6px; padding:6px 12px; margin-bottom:6px;">
+      <div style="font-weight:700; color:#1e293b; font-size:12px;">3. Authorities (getAuthorities)</div>
+      <div style="font-size:11px; color:#475569;">Lista de <code>GrantedAuthority</code>: Roles (<code>ROLE_*</code>) y permisos atómicos.</div>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #CBD5E1; border-radius:6px; padding:6px 12px;">
+      <div style="font-weight:700; color:#1e293b; font-size:12px;">4. Details (getDetails)</div>
+      <div style="font-size:11px; color:#475569;">Metadatos web de la petición HTTP (IP remota y Session ID de Tomcat).</div>
+    </div>
+    `
+    ),
+
+    icesi.slideStandard(
+      'Anatomía de Authentication e Interacción con el Contexto',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="100%" height="480" style="max-width:1000px; display:block; margin:0 auto;">
+  <defs>
+    <style>
+      .title { font-family: system-ui, -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+      .sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; fill: #64748b; }
+      .label { font-family: system-ui, -apple-system, sans-serif; font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+      .h-box { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; font-weight: 700; }
+      .body  { font-family: system-ui, -apple-system, sans-serif; font-size: 8.5px; fill: #334155; }
+      .mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 8.5px; }
+      .badge-txt { font-family: system-ui, -apple-system, sans-serif; font-size: 8px; font-weight: 700; }
+    </style>
+    <filter id="aa-shadow" x="-3%" y="-3%" width="106%" height="110%" filterUnits="objectBoundingBox">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+    <marker id="aa-arr-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- Fondo Canvas -->
+  <rect width="1000" height="480" rx="14" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Encabezado de la Slide -->
+  <text class="title" x="28" y="26">Anatomía del Objeto Authentication e Interacción con el Contexto</text>
+  <text class="sub" x="28" y="44">Jerarquía ThreadLocal: SecurityContextHolder ➔ SecurityContext ➔ Authentication (Principal, Credentials, Authorities, Details)</text>
+
+  <!-- ========================================================================= -->
+  <!-- BLOQUE IZQUIERDO: HILO HTTP Y CONTENEDORES DEL CONTEXTO (x=28, w=340, h=330) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(28, 58)">
+    <!-- 1. Hilo HTTP / ThreadLocal Box -->
+    <rect x="0" y="0" width="340" height="330" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5" filter="url(#aa-shadow)"/>
+    <circle cx="16" cy="18" r="7" fill="#38bdf8"/>
+    <text class="badge-txt" x="16" y="21" fill="#0f172a" text-anchor="middle">T</text>
+    <text class="label" x="30" y="21" fill="#38bdf8">HILO HTTP DE PETICIÓN (ThreadLocal)</text>
+    <text class="mono" x="12" y="36" fill="#94a3b8" font-size="8px">Tomcat Thread: http-nio-8080-exec-* | Aislamiento por petición</text>
+
+    <!-- 2. SecurityContextHolder Box -->
+    <g transform="translate(10, 44)">
+      <rect x="0" y="0" width="320" height="274" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.6" filter="url(#aa-shadow)"/>
+      <rect x="0" y="0" width="320" height="4" rx="2" fill="#2563eb"/>
+      
+      <text class="h-box" x="12" y="19" fill="#1e40af">SecurityContextHolder</text>
+      <text class="mono" x="12" y="32" fill="#64748b" font-size="8px">Estrategia: MODE_THREADLOCAL (aislado en memoria)</text>
+      
+      <!-- Static Access Badge -->
+      <rect x="10" y="38" width="300" height="22" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+      <text class="mono" x="16" y="52" fill="#1d4ed8" font-weight="700">SecurityContextHolder.getContext()</text>
+
+      <!-- 3. SecurityContext Box (Encapsulado adentro) -->
+      <g transform="translate(10, 68)">
+        <rect x="0" y="0" width="300" height="156" rx="7" fill="#faf5ff" stroke="#a855f7" stroke-width="1.3"/>
+        <rect x="0" y="0" width="300" height="3" rx="1.5" fill="#7c3aed"/>
+        
+        <text class="h-box" x="10" y="18" fill="#6b21a8">SecurityContext</text>
+        <text class="body" x="10" y="30" font-size="8px" fill="#7e22ce">Envoltorio del estado de seguridad del hilo actual</text>
+
+        <!-- Method Setters / Getters -->
+        <g transform="translate(8, 38)">
+          <rect x="0" y="0" width="284" height="30" rx="4" fill="#ffffff" stroke="#e9d5ff" stroke-width="1"/>
+          <text class="mono" x="8" y="13" fill="#6b21a8" font-weight="700">.setAuthentication(auth)</text>
+          <text class="body" x="8" y="24" font-size="7.5px" fill="#64748b">Asigna el token autenticado tras validar credenciales</text>
+        </g>
+
+        <g transform="translate(8, 74)">
+          <rect x="0" y="0" width="284" height="30" rx="4" fill="#ffffff" stroke="#e9d5ff" stroke-width="1"/>
+          <text class="mono" x="8" y="13" fill="#6b21a8" font-weight="700">.getAuthentication() : Authentication</text>
+          <text class="body" x="8" y="24" font-size="7.5px" fill="#64748b">Obtiene el token activo para verificar autorizaciones</text>
+        </g>
+
+        <!-- Caja de Limpieza (en 2 líneas para evitar desborde) -->
+        <g transform="translate(8, 110)">
+          <rect x="0" y="0" width="284" height="38" rx="4" fill="#fdf4ff" stroke="#f0abfc" stroke-width="1"/>
+          <text class="body" x="8" y="14" font-size="8px" fill="#9333ea" font-weight="700">&#9888; Limpieza al cerrar la petición HTTP:</text>
+          <text class="mono" x="8" y="28" font-size="8px" fill="#7e22ce" font-weight="700">SecurityContextHolder.clearContext();</text>
+        </g>
+      </g>
+      
+      <!-- Nota de Tomcat -->
+      <text class="body" x="12" y="244" font-size="7.5px" fill="#64748b">&#8226; Previene memory leaks al reciclar hilos HTTP en Tomcat.</text>
+      <text class="body" x="12" y="258" font-size="7.5px" fill="#64748b">&#8226; Orquestado por SecurityContextHolderFilter.</text>
+    </g>
+  </g>
+
+  <!-- Flecha Conectora entre SecurityContext y Authentication -->
+  <path d="M 370,225 L 406,225" fill="none" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#aa-arr-purple)"/>
+  <rect x="365" y="204" width="44" height="15" rx="3" fill="#ffffff" stroke="#c084fc" stroke-width="1"/>
+  <text class="mono" x="387" y="215" fill="#7c3aed" font-size="7.5px" font-weight="700" text-anchor="middle">contiene</text>
+
+  <!-- ========================================================================= -->
+  <!-- BLOQUE DERECHO: ANATOMÍA DETALLADA DEL OBJETO AUTHENTICATION (x=410, w=562) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(410, 58)">
+    <!-- Contenedor Maestro de Authentication -->
+    <rect x="0" y="0" width="562" height="330" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.8" filter="url(#aa-shadow)"/>
+    <rect x="0" y="0" width="562" height="4" rx="2" fill="#059669"/>
+
+    <!-- Cabecera de Authentication -->
+    <circle cx="18" cy="18" r="7" fill="#059669"/>
+    <text class="badge-txt" x="18" y="21" fill="#ffffff" text-anchor="middle">&#10004;</text>
+    <text class="h-box" x="32" y="19" fill="#065f46" font-size="13px">interface Authentication</text>
+    <text class="mono" x="190" y="19" fill="#047857" font-size="8.5px">extends Principal, Serializable</text>
+
+    <!-- Badge isAuthenticated() -->
+    <rect x="428" y="8" width="124" height="20" rx="10" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+    <circle cx="438" cy="18" r="3.5" fill="#16a34a"/>
+    <text class="badge-txt" x="492" y="21.5" fill="#166534" text-anchor="middle">isAuthenticated() = true</text>
+
+    <!-- Grid 2x2: Las 4 Dimensiones de Authentication (w=264 cada una) -->
+    
+    <!-- 1. Principal (getPrincipal) -->
+    <g transform="translate(12, 36)">
+      <rect x="0" y="0" width="264" height="138" rx="7" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.2"/>
+      <rect x="0" y="0" width="264" height="3" rx="1.5" fill="#2563eb"/>
+      
+      <text class="h-box" x="10" y="18" fill="#1e40af">1. Principal &#8212; getPrincipal()</text>
+      <text class="mono" x="10" y="31" fill="#2563eb" font-weight="700">CustomUserDetails / UserDetails</text>
+      
+      <text class="body" x="10" y="46">&#8226; Identidad del sujeto autenticado en BD.</text>
+      <text class="body" x="10" y="59">&#8226; Expone username (correo), ID y entidad Usuario.</text>
+      
+      <rect x="8" y="68" width="248" height="60" rx="4" fill="#ffffff" stroke="#bfdbfe" stroke-width="1"/>
+      <text class="body" x="14" y="82" font-size="8px" fill="#1d4ed8" font-weight="700">Inyección en Controladores MVC:</text>
+      <text class="mono" x="14" y="96" fill="#0f172a" font-weight="700">@AuthenticationPrincipal</text>
+      <text class="mono" x="14" y="110" fill="#2563eb" font-weight="700">CustomUserDetails user</text>
+      <text class="body" x="14" y="122" font-size="7.5px" fill="#64748b">Acceso tipado sin consultar la BD nuevamente</text>
+    </g>
+
+    <!-- 2. Credentials (getCredentials) -->
+    <g transform="translate(286, 36)">
+      <rect x="0" y="0" width="264" height="138" rx="7" fill="#fff7ed" stroke="#fdba74" stroke-width="1.2"/>
+      <rect x="0" y="0" width="264" height="3" rx="1.5" fill="#ea580c"/>
+      
+      <text class="h-box" x="10" y="18" fill="#c2410c">2. Credentials &#8212; getCredentials()</text>
+      <text class="mono" x="10" y="31" fill="#ea580c" font-weight="700">Object (password / secreto en login)</text>
+      
+      <text class="body" x="10" y="46">&#8226; Contraseña provista en el formulario HTTP.</text>
+      <text class="body" x="10" y="59">&#8226; Comparada con BCrypt en AuthProvider.</text>
+      
+      <!-- Recuadro de Seguridad: Borrado de contraseña -->
+      <rect x="8" y="68" width="248" height="60" rx="4" fill="#ffffff" stroke="#fed7aa" stroke-width="1"/>
+      <text class="badge-txt" x="14" y="82" fill="#c2410c">&#9888; Borrado Obligatorio en Memoria:</text>
+      <text class="mono" x="14" y="96" fill="#9a3412" font-weight="700">eraseCredentials();</text>
+      <text class="body" x="14" y="109" font-size="7.5px" fill="#64748b">Se limpia a null tras autenticar.</text>
+      <text class="body" x="14" y="121" font-size="7.5px" fill="#64748b">Mitiga ataques de volcado de RAM (heap dump).</text>
+    </g>
+
+    <!-- 3. Authorities (getAuthorities) -->
+    <g transform="translate(12, 182)">
+      <rect x="0" y="0" width="264" height="138" rx="7" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.2"/>
+      <rect x="0" y="0" width="264" height="3" rx="1.5" fill="#059669"/>
+      
+      <text class="h-box" x="10" y="18" fill="#047857">3. Authorities &#8212; getAuthorities()</text>
+      <text class="mono" x="10" y="31" fill="#059669" font-weight="700">Collection&lt;? extends GrantedAuthority&gt;</text>
+      
+      <text class="body" x="10" y="46">&#8226; <tspan font-weight="700" fill="#7c3aed">Roles:</tspan> Con prefijo <tspan class="mono" fill="#6b21a8">ROLE_ADMINISTRADOR</tspan></text>
+      <text class="body" x="10" y="59">&#8226; <tspan font-weight="700" fill="#047857">Permisos:</tspan> Atómicos <tspan class="mono" fill="#065f46">USER_READ, COURSE_WRITE</tspan></text>
+      
+      <rect x="8" y="68" width="248" height="60" rx="4" fill="#ffffff" stroke="#a7f3d0" stroke-width="1"/>
+      <text class="body" x="14" y="82" font-size="8px" fill="#047857" font-weight="700">Evaluado en capas declarativas y SpEL:</text>
+      <text class="mono" x="14" y="96" fill="#065f46">&#8226; hasRole('ADMINISTRADOR')</text>
+      <text class="mono" x="14" y="110" fill="#065f46">&#8226; hasAuthority('USER_READ')</text>
+      <text class="body" x="14" y="122" font-size="7.5px" fill="#64748b">Base para reglas de @PreAuthorize</text>
+    </g>
+
+    <!-- 4. Details (getDetails) -->
+    <g transform="translate(286, 182)">
+      <rect x="0" y="0" width="264" height="138" rx="7" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+      <rect x="0" y="0" width="264" height="3" rx="1.5" fill="#64748b"/>
+      
+      <text class="h-box" x="10" y="18" fill="#334155">4. Details &#8212; getDetails()</text>
+      <text class="mono" x="10" y="31" fill="#475569" font-weight="700">WebAuthenticationDetails</text>
+      
+      <text class="body" x="10" y="46">&#8226; Metadatos contextuales de la petición web.</text>
+      <text class="body" x="10" y="59">&#8226; Empleado en auditoría y control de acceso.</text>
+      
+      <rect x="8" y="68" width="248" height="60" rx="4" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+      <text class="mono" x="14" y="84" fill="#0f172a">&#8226; remoteAddress: <tspan fill="#2563eb">192.168.1.45</tspan></text>
+      <text class="mono" x="14" y="100" fill="#0f172a">&#8226; sessionId: <tspan fill="#7c3aed">JSESSIONID (Tomcat)</tspan></text>
+      <text class="body" x="14" y="118" font-size="7.5px" fill="#64748b">Inspección forense de sesiones sospechosas</text>
+    </g>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- BANNER INFERIOR: 3 TARJETAS MODULARES DE CICLO DE INTERACCIÓN (y=396, h=74) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(28, 396)">
+    <rect width="944" height="74" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" filter="url(#aa-shadow)"/>
+    
+    <!-- Tarjeta 1: Establecimiento (Código en dos líneas para evitar desborde) -->
+    <g transform="translate(10, 6)">
+      <rect width="298" height="62" rx="6" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1"/>
+      <circle cx="16" cy="16" r="7" fill="#2563eb"/>
+      <text class="badge-txt" x="16" y="19" fill="#ffffff" text-anchor="middle">1</text>
+      <text class="h-box" x="28" y="18" fill="#1e40af" font-size="10px">Filtro: Establece Token</text>
+      <text class="body" x="10" y="32" font-size="8px" fill="#475569">AuthenticationFilter valida y guarda token:</text>
+      <text class="mono" x="10" y="44" font-size="7.8px" fill="#1d4ed8" font-weight="700">SecurityContextHolder.getContext()</text>
+      <text class="mono" x="18" y="55" font-size="7.8px" fill="#1d4ed8" font-weight="700">.setAuthentication(auth);</text>
+    </g>
+
+    <!-- Tarjeta 2: Negocio / SpEL (Sin @AuthPrincipal) -->
+    <g transform="translate(323, 6)">
+      <rect width="298" height="62" rx="6" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1"/>
+      <circle cx="16" cy="16" r="7" fill="#7c3aed"/>
+      <text class="badge-txt" x="16" y="19" fill="#ffffff" text-anchor="middle">2</text>
+      <text class="h-box" x="28" y="18" fill="#6b21a8" font-size="10px">Negocio: Autorización SpEL</text>
+      <text class="body" x="10" y="32" font-size="8px" fill="#475569">Controladores y servicios validan permisos:</text>
+      <text class="mono" x="10" y="44" font-size="7.8px" fill="#7c3aed" font-weight="700">@PreAuthorize("hasAuthority('...')")</text>
+      <text class="mono" x="10" y="55" font-size="7.5px" fill="#64748b">// Intercepta antes de ejecutar el método</text>
+    </g>
+
+    <!-- Tarjeta 3: UI Thymeleaf y Limpieza -->
+    <g transform="translate(636, 6)">
+      <rect width="298" height="62" rx="6" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+      <circle cx="16" cy="16" r="7" fill="#059669"/>
+      <text class="badge-txt" x="16" y="19" fill="#ffffff" text-anchor="middle">3</text>
+      <text class="h-box" x="28" y="18" fill="#047857" font-size="10px">UI Thymeleaf y Limpieza</text>
+      <text class="body" x="10" y="32" font-size="8px" fill="#475569">Thymeleaf evalúa sec:authorize. Al cerrar:</text>
+      <text class="mono" x="10" y="44" font-size="7.8px" fill="#047857" font-weight="700">SecurityContextHolder.clearContext();</text>
+      <text class="mono" x="10" y="55" font-size="7.5px" fill="#64748b">// Libera el ThreadLocal del hilo HTTP</text>
+    </g>
+  </g>
+</svg>
     </div>
     `
     ),
@@ -683,24 +921,25 @@
       .h-box { font-family: system-ui, -apple-system, sans-serif; font-size: 13.5px; font-weight: 700; fill: #0f172a; }
       .body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; fill: #475569; }
       .mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 10px; }
+      .step-num { font-family: system-ui, -apple-system, sans-serif; font-size: 9.5px; font-weight: 800; fill: #ffffff; }
     </style>
-    <filter id="fc-shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="objectBoundingBox">
-      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.08"/>
+    <filter id="ae-shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="objectBoundingBox">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.07"/>
     </filter>
-    <marker id="fc-arr-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#64748b"/>
-    </marker>
-    <marker id="fc-arr-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <marker id="ae-arr-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#2563eb"/>
     </marker>
-    <marker id="fc-arr-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <marker id="ae-arr-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#7c3aed"/>
     </marker>
-    <marker id="fc-arr-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <marker id="ae-arr-emerald" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#059669"/>
+    </marker>
+    <marker id="ae-arr-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#ea580c"/>
     </marker>
-    <marker id="fc-arr-emerald" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#059669"/>
+    <marker id="ae-arr-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#64748b"/>
     </marker>
   </defs>
 
@@ -708,202 +947,217 @@
   <rect width="1000" height="530" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
 
   <!-- Header -->
-  <text class="title" x="30" y="34">Arquitectura Interna de Spring Security</text>
-  <text class="sub" x="30" y="54">Flujo de autenticaci&#243;n: SecurityFilterChain, AuthenticationManager, Providers y UserDetails</text>
+  <text class="title" x="32" y="34">Arquitectura del Motor de Autenticación</text>
+  <text class="sub" x="32" y="54">Flujo de resolución: AuthenticationFilter ➔ ProviderManager ➔ DaoAuthenticationProvider ➔ BD &amp; BCrypt</text>
 
   <!-- ========================================================================= -->
-  <!-- ZONA SUPERIOR: HTTP REQUEST & SECURITY FILTER CHAIN -->
+  <!-- PASO 1: CLIENTE HTTP & AUTHENTICATION FILTER -->
   <!-- ========================================================================= -->
-  <g transform="translate(30, 68)">
-    <!-- External HTTP Request Source -->
-    <g transform="translate(0, 10)">
-      <rect x="0" y="0" width="105" height="54" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
-      <text class="label" x="52" y="20" fill="#38bdf8" text-anchor="middle">HTTP CLIENT</text>
-      <text class="mono" x="52" y="35" fill="#e2e8f0" text-anchor="middle">Browser / API</text>
-      <text class="mono" x="52" y="47" fill="#94a3b8" font-size="9px" text-anchor="middle">POST /login</text>
+  <g transform="translate(30, 80)">
+    <!-- HTTP Request Box -->
+    <rect x="0" y="0" width="130" height="74" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5" filter="url(#ae-shadow)"/>
+    <circle cx="16" cy="18" r="8" fill="#2563eb"/>
+    <text class="step-num" x="16" y="21.5" text-anchor="middle">1</text>
+    <text class="label" x="30" y="21" fill="#38bdf8">HTTP REQUEST</text>
+    <text class="mono" x="12" y="42" fill="#f1f5f9" font-weight="700">POST /login</text>
+    <text class="mono" x="12" y="58" fill="#94a3b8" font-size="9px">username + password</text>
+
+    <!-- Arrow 1 -> Filter -->
+    <path d="M132,37 L158,37" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#ae-arr-blue)"/>
+
+    <!-- UsernamePasswordAuthenticationFilter -->
+    <g transform="translate(164, 0)">
+      <rect x="0" y="0" width="200" height="150" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.8" filter="url(#ae-shadow)"/>
+      <rect x="0" y="0" width="200" height="4" rx="2" fill="#2563eb"/>
+      
+      <circle cx="18" cy="20" r="8" fill="#2563eb"/>
+      <text class="step-num" x="18" y="23.5" text-anchor="middle">2</text>
+      <text class="label" x="32" y="23" fill="#2563eb">SECURITY FILTER</text>
+      
+      <text class="h-box" x="14" y="44" fill="#1e40af" font-size="12.5px">UsernamePassword-</text>
+      <text class="h-box" x="14" y="58" fill="#1e40af" font-size="12.5px">AuthenticationFilter</text>
+      
+      <rect x="10" y="70" width="180" height="42" rx="5" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+      <text class="mono" x="16" y="85" fill="#1e40af" font-size="9.5px">new UsernamePassword-</text>
+      <text class="mono" x="16" y="99" fill="#1e40af" font-size="9.5px">AuthenticationToken(u, p)</text>
+      
+      <text class="body" x="14" y="126" font-size="10px">Estado inicial: <tspan fill="#ea580c" font-weight="700">unauthenticated</tspan></text>
+      <text class="body" x="14" y="140" font-size="9.5px" fill="#64748b">authenticate(token) ➔</text>
     </g>
 
-    <!-- Arrow into FilterChain -->
-    <path d="M108,37 L138,37" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#fc-arr-blue)"/>
+    <!-- Arrow Filter -> AuthenticationManager -->
+    <path d="M366,75 L392,75" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#ae-arr-blue)"/>
+  </g>
 
-    <!-- Security Filter Chain Boundary Container -->
-    <rect x="142" y="0" width="550" height="74" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="6 5"/>
-    <rect x="152" y="6" width="145" height="16" rx="4" fill="#2563eb"/>
-    <text class="mono" x="224" y="18" fill="#ffffff" font-weight="700" font-size="8.5px" text-anchor="middle">SECURITY FILTER CHAIN</text>
+  <!-- ========================================================================= -->
+  <!-- PASO 2: AUTHENTICATION MANAGER (PROVIDER MANAGER) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(426, 80)">
+    <rect x="0" y="0" width="210" height="150" rx="10" fill="#ffffff" stroke="#7c3aed" stroke-width="1.8" filter="url(#ae-shadow)"/>
+    <rect x="0" y="0" width="210" height="4" rx="2" fill="#7c3aed"/>
+    
+    <circle cx="18" cy="20" r="8" fill="#7c3aed"/>
+    <text class="step-num" x="18" y="23.5" text-anchor="middle">3</text>
+    <text class="label" x="32" y="23" fill="#7c3aed">GESTOR CENTRAL</text>
+    
+    <text class="h-box" x="14" y="44" fill="#6b21a8" font-size="12.5px">AuthenticationManager</text>
+    <text class="mono" x="14" y="58" fill="#7c3aed" font-size="10px">ProviderManager.class</text>
+    
+    <rect x="10" y="68" width="190" height="48" rx="5" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1"/>
+    <text class="body" x="16" y="83" font-size="10px" fill="#6b21a8">&#8226; Contiene lista de providers</text>
+    <text class="body" x="16" y="97" font-size="10px" fill="#6b21a8">&#8226; Itera buscando soporte:</text>
+    <text class="mono" x="16" y="110" font-size="9.5px" fill="#7c3aed">  provider.supports(token)</text>
+    
+    <text class="body" x="14" y="134" font-size="10px" fill="#64748b">Delega resolución al provider ➔</text>
+  </g>
 
-    <!-- Filters Sequence Cards -->
-    <g transform="translate(152, 25)">
-      <!-- Filter 1: Cors/Csrf -->
-      <rect x="0" y="0" width="120" height="42" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#fc-shadow)"/>
-      <text class="mono" x="60" y="18" fill="#1e293b" font-weight="700" text-anchor="middle">Cors/CsrfFilter</text>
-      <text class="body" x="60" y="32" font-size="9.5px" text-anchor="middle">Cabeceras y CSRF</text>
+  <!-- Arrow ProviderManager -> DaoAuthenticationProvider -->
+  <path d="M638,155 L666,155" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#ae-arr-purple)"/>
 
-      <path d="M122,21 L142,21" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#fc-arr-gray)"/>
+  <!-- ========================================================================= -->
+  <!-- PASO 3: DAO AUTHENTICATION PROVIDER (MOTOR DE VALIDACIÓN) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(670, 80)">
+    <rect x="0" y="0" width="300" height="150" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.8" filter="url(#ae-shadow)"/>
+    <rect x="0" y="0" width="300" height="4" rx="2" fill="#059669"/>
+    
+    <circle cx="18" cy="20" r="8" fill="#059669"/>
+    <text class="step-num" x="18" y="23.5" text-anchor="middle">4</text>
+    <text class="label" x="32" y="23" fill="#059669">PROVEEDOR ESPECÍFICO</text>
+    
+    <text class="h-box" x="14" y="44" fill="#047857" font-size="13px">DaoAuthenticationProvider</text>
+    <text class="body" x="14" y="60">Coordina la consulta a la BD y validación criptográfica</text>
+    
+    <!-- Mini tasks inside DaoAuthenticationProvider -->
+    <rect x="12" y="70" width="276" height="32" rx="4" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+    <text class="mono" x="20" y="85" fill="#065f46" font-size="9.5px">1. loadUserByUsername(email)</text>
+    <text class="body" x="20" y="96" fill="#047857" font-size="9px">Consulta identidad en BD (JPA)</text>
+    
+    <rect x="12" y="108" width="276" height="32" rx="4" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+    <text class="mono" x="20" y="123" fill="#9a3412" font-size="9.5px">2. passwordEncoder.matches(raw, hash)</text>
+    <text class="body" x="20" y="134" fill="#c2410c" font-size="9px">Compara contraseña con algoritmo BCrypt</text>
+  </g>
 
-      <!-- Filter 2: Authentication Filter (Highlighted) -->
-      <rect x="146" y="0" width="200" height="42" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="2" filter="url(#fc-shadow)"/>
-      <text class="mono" x="246" y="18" fill="#1e40af" font-weight="700" text-anchor="middle">UsernamePasswordFilter</text>
-      <text class="body" x="246" y="32" font-size="9.5px" fill="#2563eb" text-anchor="middle">Extrae Credenciales</text>
+  <!-- Connectors downwards from DaoAuthenticationProvider to Collaborators -->
+  <path d="M740,232 L740,268" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#ae-arr-emerald)"/>
+  <path d="M890,232 L890,268" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#ae-arr-orange)"/>
 
-      <path d="M348,21 L368,21" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#fc-arr-gray)"/>
-
-      <!-- Filter 3: Authorization Filter -->
-      <rect x="372" y="0" width="158" height="42" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#fc-shadow)"/>
-      <text class="mono" x="451" y="18" fill="#1e293b" font-weight="700" text-anchor="middle">AuthorizationFilter</text>
-      <text class="body" x="451" y="32" font-size="9.5px" text-anchor="middle">Verifica Authorities</text>
+  <!-- ========================================================================= -->
+  <!-- PASO 4: COLABORADORES (USER DETAILS SERVICE & PASSWORD ENCODER) -->
+  <!-- ========================================================================= -->
+  <!-- Collaborator 1: UserDetailsService + BD -->
+  <g transform="translate(630, 272)">
+    <rect x="0" y="0" width="200" height="135" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.5" filter="url(#ae-shadow)"/>
+    <rect x="0" y="0" width="200" height="3" rx="1.5" fill="#059669"/>
+    
+    <text class="label" x="12" y="18" fill="#059669">CONTRATO DE IDENTIDAD</text>
+    <text class="h-box" x="12" y="34" fill="#065f46" font-size="11.5px">UserDetailsService</text>
+    <text class="mono" x="12" y="48" fill="#047857" font-size="9.5px">CustomUserDetailsService</text>
+    
+    <!-- Mini DB block -->
+    <g transform="translate(10, 56)">
+      <rect x="0" y="0" width="180" height="36" rx="5" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+      <text class="mono" x="10" y="16" fill="#334155" font-size="9px">UsuarioRepository.java</text>
+      <text class="body" x="10" y="28" fill="#64748b" font-size="8.5px">PostgreSQL / H2 (data.sql)</text>
     </g>
+    
+    <rect x="10" y="98" width="180" height="28" rx="4" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+    <text class="mono" x="14" y="112" fill="#065f46" font-size="9px">Retorna: CustomUserDetails</text>
+    <text class="body" x="14" y="122" fill="#047857" font-size="8px">Password Hash + GrantedAuthorities</text>
+  </g>
 
-    <!-- Arrow to DispatcherServlet -->
-    <path d="M694,37 L724,37" fill="none" stroke="#059669" stroke-width="2" marker-end="url(#fc-arr-emerald)"/>
+  <!-- Collaborator 2: PasswordEncoder -->
+  <g transform="translate(845, 272)">
+    <rect x="0" y="0" width="125" height="135" rx="8" fill="#ffffff" stroke="#ea580c" stroke-width="1.5" filter="url(#ae-shadow)"/>
+    <rect x="0" y="0" width="125" height="3" rx="1.5" fill="#ea580c"/>
+    
+    <text class="label" x="10" y="18" fill="#ea580c">CRIPTOGRAFÍA</text>
+    <text class="h-box" x="10" y="34" fill="#9a3412" font-size="11.5px">PasswordEncoder</text>
+    <text class="mono" x="10" y="48" fill="#c2410c" font-size="9.5px">BCryptPasswordEncoder</text>
+    
+    <rect x="8" y="58" width="109" height="66" rx="5" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+    <text class="body" x="14" y="74" fill="#9a3412" font-size="9.5px" font-weight="700">matches(raw, hash)</text>
+    <text class="body" x="14" y="88" fill="#c2410c" font-size="8.5px">&#8226; Salt aleatorio</text>
+    <text class="body" x="14" y="100" fill="#c2410c" font-size="8.5px">&#8226; Costo x10 (2^10)</text>
+    <text class="mono" x="14" y="114" fill="#ea580c" font-size="8.5px">$2a$10$... OK</text>
+  </g>
 
-    <!-- Spring MVC Destination -->
-    <g transform="translate(730, 2)">
-      <rect x="0" y="0" width="210" height="70" rx="8" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5"/>
-      <text class="label" x="105" y="21" fill="#047857" text-anchor="middle">DISPATCHER SERVLET</text>
-      <text class="mono" x="105" y="40" fill="#065f46" font-weight="700" text-anchor="middle">@Controller (MVC)</text>
-      <text class="body" x="105" y="56" font-size="10px" fill="#047857" text-anchor="middle">Petici&#243;n Autorizada (200 OK)</text>
+  <!-- Return Flow Arrow (Dashed Purple/Blue Line back to SecurityContext) -->
+  <path d="M670,195 L530,195 L530,285 L320,285 L320,320" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ae-arr-blue)"/>
+  <rect x="360" y="274" width="150" height="20" rx="4" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text class="mono" x="435" y="288" fill="#1e40af" font-size="9px" font-weight="700" text-anchor="middle">&#10004; Token Autenticado</text>
+
+  <!-- ========================================================================= -->
+  <!-- PASO 5: RESULTADO EXITOSO - SECURITY CONTEXT Y SESIÓN -->
+  <!-- ========================================================================= -->
+  <g transform="translate(30, 320)">
+    <rect x="0" y="0" width="580" height="95" rx="10" fill="#ffffff" stroke="#2563eb" stroke-width="1.8" filter="url(#ae-shadow)"/>
+    <rect x="0" y="0" width="580" height="4" rx="2" fill="#2563eb"/>
+    
+    <circle cx="18" cy="20" r="8" fill="#2563eb"/>
+    <text class="step-num" x="18" y="23.5" text-anchor="middle">5</text>
+    <text class="label" x="32" y="23" fill="#2563eb">ESTABLECIMIENTO DEL CONTEXTO DE SEGURIDAD</text>
+    
+    <!-- Left Inner Box: SecurityContextHolder -->
+    <g transform="translate(16, 32)">
+      <rect x="0" y="0" width="265" height="52" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+      <text class="mono" x="12" y="18" fill="#1e40af" font-weight="700">SecurityContextHolder</text>
+      <text class="mono" x="12" y="32" fill="#2563eb" font-size="9.5px">.getContext().setAuthentication(auth)</text>
+      <text class="body" x="12" y="44" fill="#64748b" font-size="9px">Almacenado en <tspan font-weight="700">ThreadLocal</tspan> del hilo HTTP actual</text>
+    </g>
+    
+    <!-- Right Inner Box: SecurityContextRepository & Session -->
+    <g transform="translate(295, 32)">
+      <rect x="0" y="0" width="270" height="52" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+      <text class="mono" x="12" y="18" fill="#0f172a" font-weight="700">HttpSessionSecurityContextRepo</text>
+      <text class="mono" x="12" y="32" fill="#475569" font-size="9.5px">session.setAttribute("SPRING_SECURITY_CONTEXT")</text>
+      <text class="body" x="12" y="44" fill="#059669" font-size="9px">Persistido en RAM de Tomcat ➔ Vinculado a <tspan font-weight="700">JSESSIONID</tspan></text>
     </g>
   </g>
 
   <!-- ========================================================================= -->
-  <!-- ZONA INTERMEDIA: CONECTORES Y FLECHAS PRINCIPALES -->
+  <!-- BANNER INFERIOR: RESUMEN DE RESPONSABILIDADES Y CONTRATOS -->
   <!-- ========================================================================= -->
-
-  <!-- Green Dashed Arrow: Leaves directly below AuthFilter at (350, 142) -->
-  <path d="M350,142 C260,146 132,166 132,216" fill="none" stroke="#059669" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#fc-arr-emerald)"/>
-  <rect x="155" y="152" width="144" height="22" rx="4" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.2"/>
-  <text class="mono" x="227" y="167" fill="#047857" font-weight="700" font-size="9px" text-anchor="middle">Guarda Authentication</text>
-
-  <!-- Blue Arrow down from AuthFilter to AuthenticationManager -->
-  <path d="M428,142 L410,216" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#fc-arr-blue)"/>
-  <rect x="330" y="162" width="168" height="22" rx="4" fill="#ffffff" stroke="#93c5fd" stroke-width="1.2"/>
-  <text class="mono" x="414" y="177" fill="#1e40af" font-weight="700" font-size="9px" text-anchor="middle">authenticate(unauth_token)</text>
-
-  <!-- ========================================================================= -->
-  <!-- ZONA INFERIOR: 3 COLUMNAS MODULARES (WHITE PAPER CARDS) -->
-  <!-- ========================================================================= -->
-  <g transform="translate(30, 220)">
-
-    <!-- ========================================== -->
-    <!-- COLUMNA 1 (IZQ): SecurityContextHolder -->
-    <!-- ========================================== -->
+  <g transform="translate(30, 428)">
+    <!-- Tarjeta 1: AuthenticationFilter -->
     <g transform="translate(0, 0)">
-      <rect width="205" height="222" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.8" filter="url(#fc-shadow)"/>
-      <rect x="0" y="0" width="205" height="4" rx="2" fill="#059669"/>
-      <text class="label" x="14" y="22" fill="#047857">SESI&#211;N Y CONTEXTO</text>
-      <text class="h-box" x="14" y="42" fill="#065f46">SecurityContextHolder</text>
-      <text class="mono" x="14" y="64" fill="#1e293b">&gt; Almac&#233;n: ThreadLocal</text>
-      <text class="mono" x="14" y="86" fill="#047857">&gt; SecurityContext</text>
-      <text class="mono" x="24" y="108" fill="#059669">&#8226; Authentication (OK)</text>
-      <text class="mono" x="24" y="128" fill="#475569">&#8226; Principal (Usuario)</text>
-      <text class="mono" x="24" y="148" fill="#475569">&#8226; GrantedAuthorities</text>
-
-      <rect x="12" y="170" width="181" height="38" rx="6" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
-      <text class="body" x="102" y="186" font-size="9.5px" fill="#047857" font-weight="700" text-anchor="middle">Disponible en toda la app</text>
-      <text class="mono" x="102" y="200" font-size="8px" fill="#059669" text-anchor="middle">SecurityContextHolder.getContext()</text>
+      <rect width="224" height="86" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" filter="url(#ae-shadow)"/>
+      <rect width="224" height="4" rx="2" fill="#2563eb"/>
+      <text class="mono" x="12" y="22" fill="#1e40af" font-size="10.5px" font-weight="700">AuthenticationFilter</text>
+      <text class="body" x="12" y="40" font-size="9.5px" fill="#475569">&#8226; Extrae credenciales HTTP</text>
+      <text class="body" x="12" y="56" font-size="9.5px" fill="#475569">&#8226; Delega token no verificado</text>
+      <text class="body" x="12" y="72" font-size="9.5px" fill="#2563eb" font-weight="600">&#8226; Persiste sesión tras éxito</text>
     </g>
 
-    <!-- ========================================== -->
-    <!-- COLUMNA 2 (CENTRAL): Manager y Provider -->
-    <!-- ========================================== -->
-
-    <!-- Card 1: AuthenticationManager -->
-    <g transform="translate(245, 0)">
-      <rect width="270" height="92" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.8" filter="url(#fc-shadow)"/>
-      <rect x="0" y="0" width="270" height="4" rx="2" fill="#2563eb"/>
-      <text class="label" x="14" y="20" fill="#2563eb">1. COORDINADOR CENTRAL</text>
-      <text class="h-box" x="14" y="40">AuthenticationManager</text>
-      <text class="mono" x="14" y="58" fill="#1e40af">Impl: ProviderManager</text>
-      <text class="body" x="14" y="76">Consulta la lista de proveedores registrados</text>
+    <!-- Tarjeta 2: ProviderManager -->
+    <g transform="translate(239, 0)">
+      <rect width="224" height="86" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" filter="url(#ae-shadow)"/>
+      <rect width="224" height="4" rx="2" fill="#7c3aed"/>
+      <text class="mono" x="12" y="22" fill="#6b21a8" font-size="10.5px" font-weight="700">ProviderManager</text>
+      <text class="body" x="12" y="40" font-size="9.5px" fill="#475569">&#8226; Orquestador central de auth</text>
+      <text class="body" x="12" y="56" font-size="9.5px" fill="#475569">&#8226; Itera lista de providers</text>
+      <text class="body" x="12" y="72" font-size="9.5px" fill="#7c3aed" font-weight="600">&#8226; Delega según supports(token)</text>
     </g>
 
-    <!-- Arrow Manager -> Provider (Clean vertical connector) -->
-    <path d="M380,94 L380,126" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#fc-arr-purple)"/>
-    <rect x="330" y="101" width="100" height="18" rx="4" fill="#ffffff" stroke="#d8b4fe" stroke-width="1"/>
-    <text class="mono" x="380" y="114" fill="#7c3aed" font-size="8.5px" font-weight="700" text-anchor="middle">Delega validaci&#243;n</text>
-
-    <!-- Card 2: DaoAuthenticationProvider -->
-    <g transform="translate(245, 130)">
-      <rect width="270" height="92" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.8" filter="url(#fc-shadow)"/>
-      <rect x="0" y="0" width="270" height="4" rx="2" fill="#7c3aed"/>
-      <text class="label" x="14" y="20" fill="#7c3aed">2. PROVEEDOR DE AUTENTICACI&#211;N</text>
-      <text class="h-box" x="14" y="38">DaoAuthenticationProvider</text>
-      <text class="body" x="14" y="56">Carga datos v&#237;a UserDetailsService y valida</text>
-      <text class="body" x="14" y="74">la contrase&#241;a ingresada contra el hash BCrypt.</text>
+    <!-- Tarjeta 3: DaoAuthenticationProvider -->
+    <g transform="translate(478, 0)">
+      <rect width="224" height="86" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" filter="url(#ae-shadow)"/>
+      <rect width="224" height="4" rx="2" fill="#059669"/>
+      <text class="mono" x="12" y="22" fill="#047857" font-size="10px" font-weight="700">DaoAuthenticationProvider</text>
+      <text class="body" x="12" y="40" font-size="9.5px" fill="#475569">&#8226; Consulta UserDetailsService</text>
+      <text class="body" x="12" y="56" font-size="9.5px" fill="#475569">&#8226; Valida estado de cuenta</text>
+      <text class="body" x="12" y="72" font-size="9.5px" fill="#059669" font-weight="600">&#8226; Coordina cotejo de password</text>
     </g>
 
-    <!-- ========================================== -->
-    <!-- CONEXIONES ENTRE PROVEEDOR Y COLUMNA DERECHA -->
-    <!-- ========================================== -->
-
-    <!-- Purple Arrow Provider -> UserDetailsService (Smooth S-curve) -->
-    <path d="M515,138 C560,138 565,46 656,46" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#fc-arr-purple)"/>
-    <!-- Purple Badge: Placed gracefully above arrival at (546, 18) -->
-    <rect x="542" y="18" width="114" height="22" rx="4" fill="#ffffff" stroke="#c084fc" stroke-width="1.2"/>
-    <text class="mono" x="599" y="32" fill="#7c3aed" font-size="8.5px" font-weight="700" text-anchor="middle">loadUserByUsername</text>
-
-    <!-- Orange Arrow Provider -> PasswordEncoder (Horizontal Connection Centered at Y=185) -->
-    <path d="M515,185 L656,185" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#fc-arr-orange)"/>
-    <!-- Orange Badge: Placed directly above the line at (542, 158) -->
-    <rect x="542" y="157" width="114" height="22" rx="4" fill="#ffffff" stroke="#fed7aa" stroke-width="1.2"/>
-    <text class="mono" x="599" y="171" fill="#ea580c" font-size="8.5px" font-weight="700" text-anchor="middle">matches(raw, hash)</text>
-
-    <!-- ========================================== -->
-    <!-- COLUMNA 3 (DER): Identidad y BCrypt -->
-    <!-- ========================================== -->
-
-    <!-- Card 3A: UserDetailsService con Integración JPA / BD -->
-    <g transform="translate(662, 0)">
-      <rect width="308" height="92" rx="8" fill="#ffffff" stroke="#c084fc" stroke-width="1.8" filter="url(#fc-shadow)"/>
-      <rect x="0" y="0" width="308" height="4" rx="2" fill="#7c3aed"/>
-      <text class="label" x="14" y="20" fill="#7c3aed">3A. CARGA DE IDENTIDAD Y DATOS</text>
-      <text class="h-box" x="14" y="38">UserDetailsService</text>
-      <text class="mono" x="14" y="54" fill="#475569">loadUserByUsername(username)</text>
-
-      <!-- Sub-chip: Acceso a Persistencia JPA -->
-      <rect x="14" y="62" width="280" height="22" rx="4" fill="#0f172a"/>
-      <ellipse cx="28" cy="73" rx="7" ry="3.5" fill="#38bdf8"/>
-      <text class="mono" x="42" y="77" fill="#38bdf8" font-size="9px" font-weight="700">JPA Repository:</text>
-      <text class="mono" x="126" y="77" fill="#e2e8f0" font-size="8.5px">findByUsername &#8594; UserDetails</text>
+    <!-- Tarjeta 4: PasswordEncoder -->
+    <g transform="translate(717, 0)">
+      <rect width="224" height="86" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" filter="url(#ae-shadow)"/>
+      <rect width="224" height="4" rx="2" fill="#ea580c"/>
+      <text class="mono" x="12" y="22" fill="#c2410c" font-size="10.5px" font-weight="700">PasswordEncoder</text>
+      <text class="body" x="12" y="40" font-size="9.5px" fill="#475569">&#8226; Algoritmo BCrypt con salt</text>
+      <text class="body" x="12" y="56" font-size="9.5px" fill="#475569">&#8226; Hash adaptativo (60 chars)</text>
+      <text class="body" x="12" y="72" font-size="9.5px" fill="#ea580c" font-weight="600">&#8226; matches(raw, encoded)</text>
     </g>
-
-    <!-- Card 3B: PasswordEncoder (BCrypt) -->
-    <g transform="translate(662, 130)">
-      <rect width="308" height="92" rx="8" fill="#ffffff" stroke="#fdba74" stroke-width="1.8" filter="url(#fc-shadow)"/>
-      <rect x="0" y="0" width="308" height="4" rx="2" fill="#ea580c"/>
-      <text class="label" x="14" y="20" fill="#ea580c">3B. VERIFICACI&#211;N CRIPTOGR&#193;FICA</text>
-      <text class="h-box" x="14" y="38">PasswordEncoder</text>
-      <text class="mono" x="14" y="54" fill="#c2410c" font-weight="700">matches(rawPassword, encodedPassword)</text>
-
-      <!-- Sub-chip: Algoritmo BCrypt -->
-      <rect x="14" y="62" width="280" height="22" rx="4" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
-      <text class="mono" x="22" y="77" fill="#9a3412" font-size="8.5px">BCrypt (Salting autom&#225;tico + Work Factor = 12)</text>
-    </g>
-  </g>
-
-  <!-- ========================================================================= -->
-  <!-- BARRA INFERIOR: RESUMEN DEL FLUJO COMPLETO -->
-  <!-- ========================================================================= -->
-  <g transform="translate(30, 475)">
-    <rect x="0" y="0" width="940" height="34" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
-    <circle cx="16" cy="17" r="5" fill="#2563eb"/>
-    <text class="mono" x="28" y="21" fill="#1e293b" font-size="10px">
-      <tspan fill="#2563eb" font-weight="700">Flujo:</tspan>
-      <tspan> HTTP &#8594; </tspan>
-      <tspan fill="#2563eb">AuthFilter</tspan>
-      <tspan> &#8594; </tspan>
-      <tspan fill="#1e40af">AuthManager</tspan>
-      <tspan> &#8594; </tspan>
-      <tspan fill="#7c3aed">DaoAuthProvider</tspan>
-      <tspan> &#8594; </tspan>
-      <tspan fill="#7c3aed">UserDetailsService (BD)</tspan>
-      <tspan> &#8594; </tspan>
-      <tspan fill="#ea580c">PasswordEncoder (BCrypt)</tspan>
-      <tspan> &#8594; </tspan>
-      <tspan fill="#059669">SecurityContext</tspan>
-      <tspan> &#8594; </tspan>
-      <tspan fill="#047857" font-weight="700">DispatcherServlet (OK)</tspan>
-    </text>
   </g>
 </svg>
 
@@ -960,19 +1214,18 @@ public class CustomUserDetailsService
       'Modelado Relacional RBAC en Base de Datos',
       `
     <div style="display:flex; justify-content:center; align-items:center; width:100%;">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 440" width="100%" height="440" style="max-width:1000px; display:block; margin:0 auto;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="100%" height="450" style="max-width:1000px; display:block; margin:0 auto;">
   <defs>
     <style>
       .r-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
       .r-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
       .r-tbl-hdr { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; font-weight: 700; fill: #ffffff; }
       .r-field { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; fill: #1e293b; }
-      .r-badge { font-family: system-ui, -apple-system, sans-serif; font-size: 9px; font-weight: 700; }
       .r-rel   { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; fill: #64748b; }
       .r-box   { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; rx: 8px; }
     </style>
     <filter id="r-shadow" x="-3%" y="-4%" width="106%" height="110%" filterUnits="userSpaceOnUse">
-      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.05"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.06"/>
     </filter>
     <marker id="rm-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#2563eb"/>
@@ -980,23 +1233,31 @@ public class CustomUserDetailsService
     <marker id="rm-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#7c3aed"/>
     </marker>
+    <marker id="rm-indigo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#312e81"/>
+    </marker>
     <marker id="rm-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#ea580c"/>
     </marker>
+    <marker id="rm-emerald" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L2.5,5 Z" fill="#059669"/>
+    </marker>
   </defs>
 
-  <!-- Background -->
-  <rect width="1000" height="440" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+  <!-- Background Canvas -->
+  <rect width="1000" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
 
   <!-- Header -->
   <text class="r-title" x="28" y="32">Modelo Relacional de Control de Acceso (RBAC en BD)</text>
   <text class="r-sub" x="28" y="52">Estructura de tablas en PostgreSQL/H2 (schema.sql / data.sql) mapeadas a JPA en el proyecto springboot</text>
 
-  <!-- TABLA 1: USUARIO -->
+  <!-- ========================================================================= -->
+  <!-- TABLA 1: USUARIO (x=24..199, width=175) -->
+  <!-- ========================================================================= -->
   <g transform="translate(24, 75)">
-    <rect class="r-box" width="180" height="235" filter="url(#r-shadow)"/>
-    <path d="M0,8 A8,8 0 0,1 8,0 L172,0 A8,8 0 0,1 180,8 L180,32 L0,32 Z" fill="#2563eb"/>
-    <text class="r-tbl-hdr" x="90" y="21" text-anchor="middle">usuario</text>
+    <rect class="r-box" width="175" height="235" filter="url(#r-shadow)"/>
+    <path d="M0,8 A8,8 0 0,1 8,0 L167,0 A8,8 0 0,1 175,8 L175,32 L0,32 Z" fill="#2563eb"/>
+    <text class="r-tbl-hdr" x="87.5" y="21" text-anchor="middle">usuario</text>
     
     <g transform="translate(14, 48)">
       <text class="r-field" x="0" y="0"><tspan fill="#2563eb" font-weight="700">id</tspan> (PK, BIGINT)</text>
@@ -1007,83 +1268,91 @@ public class CustomUserDetailsService
       <text class="r-field" x="0" y="120">active (BOOLEAN)</text>
     </g>
 
-    <rect x="12" y="195" width="156" height="26" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
-    <text class="r-field" x="90" y="212" fill="#1e40af" font-size="9.5px" text-anchor="middle">Entidad: Usuario.java</text>
+    <rect x="12" y="195" width="151" height="26" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+    <text class="r-field" x="87.5" y="212" fill="#1e40af" font-size="9.5px" text-anchor="middle">Entidad: Usuario.java</text>
   </g>
 
-  <!-- Connector: usuario -> usuario_rol -->
-  <path d="M206,170 L236,170" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#rm-blue)"/>
-  <text class="r-rel" x="221" y="160" text-anchor="middle">1 : N</text>
+  <!-- Connector 1: usuario -> usuario_rol (Gap: 199 to 230) -->
+  <path d="M201,170 L228,170" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#rm-blue)"/>
+  <text class="r-rel" x="214" y="160" text-anchor="middle">1 : N</text>
 
-  <!-- TABLA 2: USUARIO_ROL (JOIN TABLE) -->
-  <g transform="translate(244, 95)">
-    <rect class="r-box" width="165" height="195" filter="url(#r-shadow)"/>
-    <path d="M0,8 A8,8 0 0,1 8,0 L157,0 A8,8 0 0,1 165,8 L165,32 L0,32 Z" fill="#7c3aed"/>
-    <text class="r-tbl-hdr" x="82" y="21" text-anchor="middle">usuario_rol</text>
+  <!-- ========================================================================= -->
+  <!-- TABLA 2: USUARIO_ROL (x=230..380, width=150) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(230, 95)">
+    <rect class="r-box" width="150" height="195" filter="url(#r-shadow)"/>
+    <path d="M0,8 A8,8 0 0,1 8,0 L142,0 A8,8 0 0,1 150,8 L150,32 L0,32 Z" fill="#7c3aed"/>
+    <text class="r-tbl-hdr" x="75" y="21" text-anchor="middle">usuario_rol</text>
     
     <g transform="translate(14, 52)">
       <text class="r-field" x="0" y="0"><tspan fill="#7c3aed" font-weight="700">usuario_id</tspan> (PK, FK)</text>
       <text class="r-field" x="0" y="30"><tspan fill="#7c3aed" font-weight="700">rol_id</tspan> (PK, FK)</text>
     </g>
 
-    <rect x="12" y="135" width="141" height="42" rx="4" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1"/>
-    <text class="r-field" x="82" y="152" fill="#6b21a8" font-size="9.5px" text-anchor="middle">Tabla Intermedia</text>
-    <text class="r-field" x="82" y="166" fill="#7c3aed" font-size="9px" text-anchor="middle">@ManyToMany</text>
+    <rect x="12" y="135" width="126" height="42" rx="4" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1"/>
+    <text class="r-field" x="75" y="152" fill="#6b21a8" font-size="9.5px" text-anchor="middle">Tabla Intermedia</text>
+    <text class="r-field" x="75" y="166" fill="#7c3aed" font-size="9px" text-anchor="middle">@ManyToMany</text>
   </g>
 
-  <!-- Connector: rol -> usuario_rol -->
-  <path d="M460,170 L416,170" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#rm-purple)"/>
-  <text class="r-rel" x="438" y="160" text-anchor="middle">N : 1</text>
+  <!-- Connector 2: rol -> usuario_rol (Gap: 380 to 414) -->
+  <path d="M412,170 L382,170" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#rm-purple)"/>
+  <text class="r-rel" x="397" y="160" text-anchor="middle">N : 1</text>
 
-  <!-- TABLA 3: ROL -->
-  <g transform="translate(468, 75)">
-    <rect class="r-box" width="170" height="235" filter="url(#r-shadow)"/>
-    <path d="M0,8 A8,8 0 0,1 8,0 L162,0 A8,8 0 0,1 170,8 L170,32 L0,32 Z" fill="#312e81"/>
-    <text class="r-tbl-hdr" x="85" y="21" text-anchor="middle">rol</text>
+  <!-- ========================================================================= -->
+  <!-- TABLA 3: ROL (x=414..580, width=166) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(414, 75)">
+    <rect class="r-box" width="166" height="235" filter="url(#r-shadow)"/>
+    <path d="M0,8 A8,8 0 0,1 8,0 L158,0 A8,8 0 0,1 166,8 L166,32 L0,32 Z" fill="#312e81"/>
+    <text class="r-tbl-hdr" x="83" y="21" text-anchor="middle">rol</text>
     
     <g transform="translate(14, 52)">
       <text class="r-field" x="0" y="0"><tspan fill="#312e81" font-weight="700">id</tspan> (PK, BIGINT)</text>
       <text class="r-field" x="0" y="28"><tspan font-weight="700">nombre</tspan> (UQ)</text>
-      <text class="r-field" x="0" y="56" fill="#475569">Ej: "ADMIN"</text>
+      <text class="r-field" x="0" y="56" fill="#475569">"ADMINISTRADOR"</text>
       <text class="r-field" x="0" y="76" fill="#475569">"PROFESOR"</text>
       <text class="r-field" x="0" y="96" fill="#475569">"ESTUDIANTE"</text>
     </g>
 
-    <rect x="12" y="195" width="146" height="26" rx="4" fill="#e0e7ff" stroke="#c7d2fe" stroke-width="1"/>
-    <text class="r-field" x="85" y="212" fill="#312e81" font-size="9.5px" text-anchor="middle">Entidad: Rol.java</text>
+    <rect x="12" y="195" width="142" height="26" rx="4" fill="#e0e7ff" stroke="#c7d2fe" stroke-width="1"/>
+    <text class="r-field" x="83" y="212" fill="#312e81" font-size="9.5px" text-anchor="middle">Entidad: Rol.java</text>
   </g>
 
-  <!-- Connector: rol -> rol_permiso -->
-  <path d="M640,170 L670,170" fill="none" stroke="#312e81" stroke-width="2" marker-end="url(#rm-purple)"/>
-  <text class="r-rel" x="655" y="160" text-anchor="middle">1 : N</text>
+  <!-- Connector 3: rol -> rol_permiso (Gap: 580 to 614) -->
+  <path d="M582,170 L612,170" fill="none" stroke="#312e81" stroke-width="2" marker-end="url(#rm-indigo)"/>
+  <text class="r-rel" x="597" y="160" text-anchor="middle">1 : N</text>
 
-  <!-- TABLA 4: ROL_PERMISO (JOIN TABLE) -->
-  <g transform="translate(678, 95)">
-    <rect class="r-box" width="145" height="195" filter="url(#r-shadow)"/>
-    <path d="M0,8 A8,8 0 0,1 8,0 L137,0 A8,8 0 0,1 145,8 L145,32 L0,32 Z" fill="#ea580c"/>
-    <text class="r-tbl-hdr" x="72" y="21" text-anchor="middle">rol_permiso</text>
+  <!-- ========================================================================= -->
+  <!-- TABLA 4: ROL_PERMISO (x=614..764, width=150) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(614, 95)">
+    <rect class="r-box" width="150" height="195" filter="url(#r-shadow)"/>
+    <path d="M0,8 A8,8 0 0,1 8,0 L142,0 A8,8 0 0,1 150,8 L150,32 L0,32 Z" fill="#ea580c"/>
+    <text class="r-tbl-hdr" x="75" y="21" text-anchor="middle">rol_permiso</text>
     
-    <g transform="translate(12, 52)">
+    <g transform="translate(14, 52)">
       <text class="r-field" x="0" y="0"><tspan fill="#ea580c" font-weight="700">rol_id</tspan> (PK, FK)</text>
       <text class="r-field" x="0" y="30"><tspan fill="#ea580c" font-weight="700">permiso_id</tspan> (PK, FK)</text>
     </g>
 
-    <rect x="10" y="135" width="125" height="42" rx="4" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
-    <text class="r-field" x="72" y="152" fill="#9a3412" font-size="9.5px" text-anchor="middle">Tabla Intermedia</text>
-    <text class="r-field" x="72" y="166" fill="#ea580c" font-size="9px" text-anchor="middle">@ManyToMany</text>
+    <rect x="12" y="135" width="126" height="42" rx="4" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+    <text class="r-field" x="75" y="152" fill="#9a3412" font-size="9.5px" text-anchor="middle">Tabla Intermedia</text>
+    <text class="r-field" x="75" y="166" fill="#ea580c" font-size="9px" text-anchor="middle">@ManyToMany</text>
   </g>
 
-  <!-- Connector: permiso -> rol_permiso -->
-  <path d="M848,170 L830,170" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#rm-orange)"/>
-  <text class="r-rel" x="839" y="160" text-anchor="middle">N : 1</text>
+  <!-- Connector 4: permiso -> rol_permiso (Gap: 764 to 798) -->
+  <path d="M796,170 L766,170" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#rm-orange)"/>
+  <text class="r-rel" x="781" y="160" text-anchor="middle">N : 1</text>
 
-  <!-- TABLA 5: PERMISO -->
-  <g transform="translate(832, 75)">
-    <rect class="r-box" width="145" height="235" filter="url(#r-shadow)"/>
-    <path d="M0,8 A8,8 0 0,1 8,0 L137,0 A8,8 0 0,1 145,8 L145,32 L0,32 Z" fill="#059669"/>
-    <text class="r-tbl-hdr" x="72" y="21" text-anchor="middle">permiso</text>
+  <!-- ========================================================================= -->
+  <!-- TABLA 5: PERMISO (x=798..976, width=178) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(798, 75)">
+    <rect class="r-box" width="178" height="235" filter="url(#r-shadow)"/>
+    <path d="M0,8 A8,8 0 0,1 8,0 L170,0 A8,8 0 0,1 178,8 L178,32 L0,32 Z" fill="#059669"/>
+    <text class="r-tbl-hdr" x="89" y="21" text-anchor="middle">permiso</text>
     
-    <g transform="translate(12, 52)">
+    <g transform="translate(14, 52)">
       <text class="r-field" x="0" y="0"><tspan fill="#059669" font-weight="700">id</tspan> (PK, BIGINT)</text>
       <text class="r-field" x="0" y="28"><tspan font-weight="700">nombre</tspan> (UQ)</text>
       <text class="r-field" x="0" y="56" fill="#475569">"USER_READ"</text>
@@ -1091,21 +1360,23 @@ public class CustomUserDetailsService
       <text class="r-field" x="0" y="96" fill="#475569">"COURSE_READ"</text>
     </g>
 
-    <rect x="10" y="195" width="125" height="26" rx="4" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
-    <text class="r-field" x="72" y="212" fill="#047857" font-size="9.5px" text-anchor="middle">Entidad: Permiso.java</text>
+    <rect x="14" y="195" width="150" height="26" rx="4" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+    <text class="r-field" x="89" y="212" fill="#047857" font-size="9.5px" text-anchor="middle">Entidad: Permiso.java</text>
   </g>
 
-  <!-- Bottom Integration Summary -->
+  <!-- ========================================================================= -->
+  <!-- BANNER INFERIOR: MAPEO A SPRING SECURITY EN CUSTOMUSERDETAILS -->
+  <!-- ========================================================================= -->
   <g transform="translate(24, 335)">
-    <rect width="952" height="85" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#r-shadow)"/>
+    <rect width="952" height="90" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#r-shadow)"/>
     <text class="r-field" x="20" y="26" font-size="12px">
-      <tspan font-weight="700" fill="#2563eb">Mapeo a Spring Security en CustomUserDetails:</tspan>
+      <tspan font-weight="700" fill="#2563eb">Mapeo a Spring Security en CustomUserDetails (GrantedAuthority):</tspan>
     </text>
-    <text class="r-field" x="20" y="50" font-size="11px" fill="#475569">
-      &#8226; <tspan font-weight="700" fill="#7c3aed">Roles:</tspan> Se mapean con el prefijo <tspan font-weight="700" fill="#7c3aed">"ROLE_" + rol.getNombre()</tspan> (ej. <tspan fill="#6b21a8">ROLE_ADMINISTRADOR</tspan>) para <tspan>hasRole('ADMINISTRADOR')</tspan>.
+    <text class="r-field" x="20" y="52" font-size="11px" fill="#475569">
+      &#8226; <tspan font-weight="700" fill="#7c3aed">Roles de Alto Nivel:</tspan> Se mapean con prefijo <tspan font-weight="700" fill="#7c3aed">"ROLE_" + rol.getNombre()</tspan> (ej. <tspan fill="#6b21a8">ROLE_ADMINISTRADOR</tspan>) para evaluar con <tspan font-weight="700">hasRole('ADMINISTRADOR')</tspan>.
     </text>
-    <text class="r-field" x="20" y="70" font-size="11px" fill="#475569">
-      &#8226; <tspan font-weight="700" fill="#059669">Authorities:</tspan> Se mapean directamente con <tspan font-weight="700" fill="#059669">permiso.getNombre()</tspan> (ej. <tspan fill="#047857">USER_READ</tspan>) para <tspan>hasAuthority('USER_READ')</tspan>.
+    <text class="r-field" x="20" y="72" font-size="11px" fill="#475569">
+      &#8226; <tspan font-weight="700" fill="#059669">Permisos Atómicos:</tspan> Se mapean directamente con <tspan font-weight="700" fill="#059669">permiso.getNombre()</tspan> (ej. <tspan fill="#047857">USER_READ</tspan>, <tspan fill="#047857">COURSE_WRITE</tspan>) para evaluar con <tspan font-weight="700">hasAuthority('USER_READ')</tspan>.
     </text>
   </g>
 </svg>
@@ -1177,21 +1448,23 @@ public class CustomUserDetails implements UserDetails {
     </div>
     `,
       `
-    <div style="display:flex; justify-content:center; align-items:center;">
-      <pre><code class="language-java">@Service
+    <div style="width:100%; display:flex; justify-content:center;">
+      <pre style="width:100%;"><code class="language-java" style="font-size:11px !important; line-height:1.26 !important;">@Service
 @RequiredArgsConstructor
-public class CustomUserDetailsService 
-    implements UserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService {
+
   private final UsuarioRepository usuarioRepository;
 
   @Override
   @Transactional(readOnly = true)
   public UserDetails loadUserByUsername(String email) 
       throws UsernameNotFoundException {
+
     Usuario u = usuarioRepository.findByCorreoInstitucional(email)
-      .orElseThrow(() -> new UsernameNotFoundException("No existe: " + email));
+      .orElseThrow(() -> new UsernameNotFoundException(
+          "Usuario no encontrado: " + email));
     
-    // Inicializar relaciones Lazy
+    // Forzar carga de relaciones Lazy en la sesión Hibernate
     u.getRoles().forEach(r -> r.getPermisos().size());
     return new CustomUserDetails(u);
   }
@@ -1201,8 +1474,8 @@ public class CustomUserDetailsService
     ),
 
     icesi.sectionSlideEPurple(
-      '04. Configuración Declarativa con SecurityFilterChain',
-      'SecurityFilterChain DSL, formulario de login propio, logout y tags sec:authorize.'
+      '04. Configuración Declarativa, @PreAuthorize y Vistas',
+      'SecurityFilterChain, seguridad de métodos (@PreAuthorize) y renderización condicional con Thymeleaf.'
     ),
 
     icesi.slideTwoCols(
@@ -1235,20 +1508,30 @@ public class CustomUserDetailsService
     </div>
     `,
       `
-    <div style="display:flex; justify-content:center; align-items:center;">
-      <pre><code class="language-java">@Bean
+    <div style="width:100%; display:flex; justify-content:center;">
+      <pre style="width:100%;"><code class="language-java" style="font-size:10.5px !important; line-height:1.24 !important;">@Bean
 public SecurityFilterChain filterChain(HttpSecurity http) 
     throws Exception {
   return http
     .authorizeHttpRequests(authz -> authz
       .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
-      .requestMatchers("/roles-mvc/**", "/permisos-mvc/**").hasRole("ADMINISTRADOR")
-      .requestMatchers("/profesores-mvc/**").hasAnyRole("ADMINISTRADOR", "PROFESOR")
+      .requestMatchers("/roles-mvc/**", "/permisos-mvc/**")
+        .hasRole("ADMINISTRADOR")
+      .requestMatchers("/profesores-mvc/**")
+        .hasAnyRole("ADMINISTRADOR", "PROFESOR")
       .requestMatchers("/cursos-mvc/**", "/matriculas-mvc/**").authenticated()
       .anyRequest().authenticated()
     )
-    .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/usuarios", true).permitAll())
-    .logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/login?logout").permitAll())
+    .formLogin(form -> form
+      .loginPage("/login")
+      .defaultSuccessUrl("/usuarios", true)
+      .permitAll()
+    )
+    .logout(logout -> logout
+      .logoutUrl("/logout")
+      .logoutSuccessUrl("/login?logout")
+      .permitAll()
+    )
     .build();
 }</code></pre>
     </div>
@@ -1256,49 +1539,44 @@ public SecurityFilterChain filterChain(HttpSecurity http)
     ),
 
     icesi.slideSidebarLeftBlue(
-      'Formulario de Login Personalizado',
+      'Integración del Login y Manejo de 403 Forbidden',
       `
     <div style="display: flex; gap: 20px; align-items: center;">
       <div style="flex: 1.05;">
         <div class="h-item h-item-blue" style="margin-bottom:12px;">
-      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="7" x2="22" y2="7"/><circle cx="5" cy="5" r="1"/><circle cx="8" cy="5" r="1"/></svg></div>
-      <div style="flex:1; min-width:0;">
-        <div class="h-item-title">loginPage("/login")</div>
-        <div class="h-item-desc">Ruta del controlador Spring MVC que renderiza la vista Thymeleaf.</div>
-      </div>
-    </div>
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="7" x2="22" y2="7"/><circle cx="5" cy="5" r="1"/><circle cx="8" cy="5" r="1"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">Conexión con BD y UserDetails</div>
+            <div class="h-item-desc">El formulario básico (username, password) creado en Sesión 1 delega transparente en DaoAuthenticationProvider y BD.</div>
+          </div>
+        </div>
         <div class="h-item h-item-purple" style="margin-bottom:12px;">
-      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>
-      <div style="flex:1; min-width:0;">
-        <div class="h-item-title">defaultSuccessUrl("/usuarios", true)</div>
-        <div class="h-item-desc">Página de redirección inmediata tras autenticación exitosa.</div>
-      </div>
-    </div>
-        <div class="h-item h-item-green" style="margin-bottom:12px;">
-      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-      <div style="flex:1; min-width:0;">
-        <div class="h-item-title">usernameParameter("username")</div>
-        <div class="h-item-desc">Nombre del input HTML para el identificador (correo institucional).</div>
-      </div>
-    </div>
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">failureUrl("/login?error")</div>
+            <div class="h-item-desc">Redirecciona con parámetro si las credenciales fallan, activando el mensaje de alerta condicional en Thymeleaf.</div>
+          </div>
+        </div>
         <div class="h-item h-item-orange" style="margin-bottom:12px;">
-      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
-      <div style="flex:1; min-width:0;">
-        <div class="h-item-title">failureUrl("/login?error")</div>
-        <div class="h-item-desc">Redirección con parámetro de error si las credenciales fallan.</div>
-      </div>
-    </div>
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">accessDeniedPage("/access-denied")</div>
+            <div class="h-item-desc">Cuando un usuario autenticado (ej. ESTUDIANTE) intenta violar permisos, se redirige a la vista amigable 403.</div>
+          </div>
+        </div>
       </div>
       <div style="flex: 0.95;">
-        <pre><code class="language-java">.formLogin(form -> form
-  .loginPage("/login")
-  .loginProcessingUrl("/login")
-  .defaultSuccessUrl("/usuarios", true)
-  .failureUrl("/login?error")
-  .usernameParameter("username")
-  .passwordParameter("password")
-  .permitAll()
-)</code></pre>
+        <pre><code class="language-java">// En SecurityConfig.java
+http
+  .formLogin(form -> form
+    .loginPage("/login")
+    .defaultSuccessUrl("/usuarios", true)
+    .failureUrl("/login?error")
+    .permitAll()
+  )
+  .exceptionHandling(ex -> ex
+    .accessDeniedPage("/access-denied")
+  );</code></pre>
       </div>
     </div>
     `,
@@ -1306,10 +1584,82 @@ public SecurityFilterChain filterChain(HttpSecurity http)
       type: 'icons',
       items: [
         { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="7" x2="22" y2="7"/><circle cx="5" cy="5" r="1"/><circle cx="8" cy="5" r="1"/></svg>`, label: 'Vista Custom' },
-        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`, label: 'POST Intercept' },
-        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`, label: 'Success URL' }
+        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`, label: 'Error 401/Cred' },
+        { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`, label: '403 Denied' }
       ]
     }
+    ),
+
+    icesi.slideTwoCols(
+      'Seguridad a Nivel de Métodos: @PreAuthorize',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">Control Granular con Spring AOP y SpEL</div>
+    <p style="font-size:13px; line-height:1.4; color:#334155; margin-bottom:12px;">
+      Proteger rutas perimetrales con <code>requestMatchers</code> no basta. <code>@PreAuthorize</code> valida permisos atómicos directamente en la invocación de métodos en Controladores y Servicios.
+    </p>
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">@EnableMethodSecurity</div>
+        <div class="h-item-desc">Anotación obligatoria en SecurityConfig (reemplaza al viejo @EnableGlobalMethodSecurity).</div>
+      </div>
+    </div>
+    <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 2.5 2.5"/><path d="m18 5 2.5 2.5"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Expresiones SpEL Flexibles</div>
+        <div class="h-item-desc">hasAuthority('USER_DELETE') o hasAnyRole('ADMINISTRADOR', 'PROFESOR').</div>
+      </div>
+    </div>
+    `,
+      `
+    <div style="display:flex; justify-content:center; align-items:center;">
+      <pre><code class="language-java">// 1. Habilitar en SecurityConfig.java
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity // <-- Obligatorio
+public class SecurityConfig { ... }
+
+// 2. Proteger Métodos en UsuarioController.java
+@Controller
+@RequestMapping("/usuarios")
+public class UsuarioController {
+
+  // Solo quien tenga el permiso atómico
+  @PreAuthorize("hasAuthority('USER_DELETE')")
+  @PostMapping("/eliminar/{id}")
+  public String eliminar(@PathVariable Long id) {
+    usuarioService.eliminar(id);
+    return "redirect:/usuarios";
+  }
+
+  // Administradores o Docentes
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESOR')")
+  @GetMapping("/detalle/{id}")
+  public String verDetalle(...) { ... }
+}</code></pre>
+    </div>
+    `
+    ),
+
+    icesi.slideThreeCards(
+      'Defensa en Profundidad: Las 3 Capas de Seguridad',
+      'Capa 1: UI (Thymeleaf)', `
+    <p style='font-size:13px; line-height:1.4;'><strong>sec:authorize</strong><br>
+    Oculta o muestra botones y enlaces según el perfil.<br>
+    <em>Beneficio:</em> Experiencia de usuario limpia (UX).<br>
+    <span style="color:#dc2626; font-size:11px;">⚠️ No sustituye la seguridad del backend.</span></p>
+    `,
+      'Capa 2: Web HTTP (Filter)', `
+    <p style='font-size:13px; line-height:1.4;'><strong>authorizeHttpRequests</strong><br>
+    Intercepta peticiones en <code>SecurityFilterChain</code> por prefijos URL.<br>
+    <em>Beneficio:</em> Cortafuegos perimetral para rutas completas (/roles-mvc/**).</p>
+    `,
+      'Capa 3: Lógica Java (Método)', `
+    <p style='font-size:13px; line-height:1.4;'><strong>@PreAuthorize</strong><br>
+    Interceptor AOP que valida el <code>SecurityContext</code> antes de ejecutar el método Java.<br>
+    <em>Beneficio:</em> Protección granular imposible de evadir aunque se manipule la URL.</p>
+    `
     ),
 
     icesi.slideThreeCards(
@@ -1331,43 +1681,54 @@ public SecurityFilterChain filterChain(HttpSecurity http)
     icesi.slideTwoCols(
       'Control de Vistas con Thymeleaf Extras',
       `
-    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">Seguridad en Interfaz de Usuario</div>
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">Renderización Condicional por Roles y Authorities</div>
     <p style="font-size:13px; line-height:1.4; color:#334155; margin-bottom:12px;">
-      Con el dialecto <code>thymeleaf-extras-springsecurity6</code>, la interfaz se adapta dinámicamente al perfil del usuario autenticado.
+      Con <code>thymeleaf-extras-springsecurity6</code>, la interfaz se adapta dinámicamente tanto a roles de alto nivel como a permisos atómicos.
     </p>
     <div class="h-item h-item-blue" style="margin-bottom:12px;">
       <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
       <div style="flex:1; min-width:0;">
         <div class="h-item-title">sec:authorize="hasRole('ADMINISTRADOR')"</div>
-        <div class="h-item-desc">Renderiza botones o menús administrativos únicamente si el usuario posee dicho rol.</div>
+        <div class="h-item-desc">Muestra módulos completos (ej. Gestión de Roles) solo a perfiles administradores.</div>
       </div>
     </div>
     <div class="h-item h-item-purple" style="margin-bottom:12px;">
-      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 2.5 2.5"/><path d="m18 5 2.5 2.5"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">sec:authorize="hasAuthority('USER_DELETE')"</div>
+        <div class="h-item-desc">Condiciona botones o acciones destructivas a la posesión del permiso atómico.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-green" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
       <div style="flex:1; min-width:0;">
         <div class="h-item-title">sec:authentication="name"</div>
-        <div class="h-item-desc">Imprime el correo o nombre del usuario autenticado en la barra superior.</div>
+        <div class="h-item-desc">Despliega el correo institucional del usuario autenticado en el encabezado.</div>
       </div>
     </div>
     `,
       `
     <div style="display:flex; justify-content:center; align-items:center;">
-      <pre><code class="language-html">&lt;!-- Barra de Navegación Thymeleaf --&gt;
-&lt;div class="navbar"&gt;
-  &lt;span&gt;Conectado: 
-    &lt;strong sec:authentication="name"&gt;usuario&lt;/strong&gt;
-  &lt;/span&gt;
+      <pre><code class="language-html">&lt;!-- templates/fragments/layout.html (Fragmento) --&gt;
+&lt;header th:fragment="mainNavbar"&gt;
+  &lt;nav&gt;
+    &lt;a th:href="@{/usuarios}"&gt;Usuarios&lt;/a&gt;
+    &lt;a th:href="@{/roles-mvc}" 
+       sec:authorize="hasRole('ADMINISTRADOR')"&gt;Roles&lt;/a&gt;
+    &lt;span&gt;Usuario: &lt;strong sec:authentication="name"&gt;&lt;/strong&gt;&lt;/span&gt;
+    &lt;form th:action="@{/logout}" method="post"&gt;
+      &lt;button type="submit"&gt;Salir&lt;/button&gt;
+    &lt;/form&gt;
+  &lt;/nav&gt;
+&lt;/header&gt;
 
-  &lt;!-- Visible solo para Administradores --&gt;
-  &lt;a th:href="@{/roles-mvc}" 
-     sec:authorize="hasRole('ADMINISTRADOR')"&gt;
-    Gestión de Roles
-  &lt;/a&gt;
-
-  &lt;form th:action="@{/logout}" method="post"&gt;
-    &lt;button type="submit"&gt;Cerrar Sesión&lt;/button&gt;
+&lt;!-- En templates/usuarios/lista.html --&gt;
+&lt;td&gt;
+  &lt;form th:action="@{/usuarios/eliminar/{id}(id=\${u.id})}" 
+        method="post" sec:authorize="hasAuthority('USER_DELETE')"&gt;
+    &lt;button type="submit"&gt;Eliminar&lt;/button&gt;
   &lt;/form&gt;
-&lt;/div&gt;</code></pre>
+&lt;/td&gt;</code></pre>
     </div>
     `
     ),
@@ -1376,54 +1737,52 @@ public SecurityFilterChain filterChain(HttpSecurity http)
       'Errores Frecuentes y Buenas Prácticas',
       'Lazy Loading en JPA', `<p style='font-size:13px; line-height:1.4;'><strong>LazyInitializationException</strong><br>Ocurre al acceder a <code>usuario.getRoles()</code> fuera de sesión Hibernate. <em>Solución: Usar @Transactional(readOnly = true) e inicializar colecciones</em>.</p>`,
       'Prefijo de Roles', `<p style='font-size:13px; line-height:1.4;'><strong>Confusión con Prefijo ROLE_</strong><br><code>hasRole('ADMIN')</code> busca <code>ROLE_ADMIN</code>. No ingresar <code>hasRole('ROLE_ADMIN')</code> porque buscaría <code>ROLE_ROLE_ADMIN</code>.</p>`,
-      'Tokens CSRF', `<p style='font-size:13px; line-height:1.4;'><strong>Olvido de Token CSRF</strong><br>Formularios HTML puros sin Thymeleaf (<code>th:action</code>) fallarán con 403 Forbidden por omisión del campo <code>_csrf</code> oculto.</p>`,
-      'Hashing de BD', `<p style='font-size:13px; line-height:1.4;'><strong>Contraseñas no Hasheadas</strong><br>Insertar contraseñas en texto plano en la BD causará fallos en <code>BCryptPasswordEncoder.matches()</code>. Usar script con hash generado.</p>`
+      'Olvido de @EnableMethodSecurity', `<p style='font-size:13px; line-height:1.4;'><strong>@PreAuthorize Ignorado</strong><br>Si no se anota la configuración con <code>@EnableMethodSecurity</code>, los métodos anotados se ejecutarán sin ningún control.</p>`,
+      'Tokens CSRF en POST', `<p style='font-size:13px; line-height:1.4;'><strong>403 en Logout / Delete</strong><br>Formularios HTML puros sin Thymeleaf fallarán con 403 Forbidden. Usar siempre <code>th:action</code> para inyectar <code>_csrf</code>.</p>`
     ),
 
     icesi.slideStripeTopRight(
-      'Live Demo 3: Prueba Integral de Acceso',
+      'Live Demo 3: Prueba Integral de Acceso y @PreAuthorize',
       `
     <div style="display: flex; gap: 24px; align-items: center;">
       <div style="flex: 1.1;">
-        <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Actividad en Vivo: Verificación Integral RBAC</div>
+        <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Actividad en Vivo: Validación RBAC y Seguridad de Métodos</div>
         <div class="h-item h-item-blue" style="margin-bottom:12px;">
-      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
-      <div style="flex:1; min-width:0;">
-        <div class="h-item-title">1. Inspeccionar Usuario en BD</div>
-        <div class="h-item-desc">Verificar que <code>data.sql</code> contiene hashes que inician con <code>$2a$10$...</code> (BCrypt).</div>
-      </div>
-    </div>
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">1. Login Administrador (admin@icesi.edu.co / admin123)</div>
+            <div class="h-item-desc">Verificar acceso total a /roles-mvc y presencia del botón Eliminar.</div>
+          </div>
+        </div>
         <div class="h-item h-item-green" style="margin-bottom:12px;">
-      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="7" x2="22" y2="7"/><circle cx="5" cy="5" r="1"/><circle cx="8" cy="5" r="1"/></svg></div>
-      <div style="flex:1; min-width:0;">
-        <div class="h-item-title">2. Login con Administrador</div>
-        <div class="h-item-desc">Ingresar con <code>admin@icesi.edu.co</code> y comprobar acceso total a <code>/roles-mvc</code>.</div>
-      </div>
-    </div>
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="7" x2="22" y2="7"/><circle cx="5" cy="5" r="1"/><circle cx="8" cy="5" r="1"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">2. Login Docente (drincon@icesi.edu.co / profesor123)</div>
+            <div class="h-item-desc">Acceder a /profesores-mvc pero recibir bloqueo 403 en /roles-mvc.</div>
+          </div>
+        </div>
         <div class="h-item h-item-orange" style="margin-bottom:12px;">
-      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 2.5 2.5"/><path d="m18 5 2.5 2.5"/></svg></div>
-      <div style="flex:1; min-width:0;">
-        <div class="h-item-title">3. Probar Aislamiento de Estudiante</div>
-        <div class="h-item-desc">Ingresar con <code>apaez@icesi.edu.co</code> y verificar código <code>403 Forbidden</code> al intentar acceder a rutas administrativas.</div>
-      </div>
-    </div>
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 2.5 2.5"/><path d="m18 5 2.5 2.5"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">3. Ocultamiento en UI (apaez@icesi.edu.co / estudiante123)</div>
+            <div class="h-item-desc">Comprobar que en la UI desaparecen los menús y botones no autorizados.</div>
+          </div>
+        </div>
         <div class="h-item h-item-purple" style="margin-bottom:12px;">
-      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
-      <div style="flex:1; min-width:0;">
-        <div class="h-item-title">4. Verificar Barra Condicional</div>
-        <div class="h-item-desc">Comprobar que el botón de roles desaparece automáticamente para estudiantes en Thymeleaf.</div>
-      </div>
-    </div>
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">4. Forzar Invocación con @PreAuthorize</div>
+            <div class="h-item-desc">Intentar POST manual a método protegido: el interceptor AOP bloquea con 403 Forbidden.</div>
+          </div>
+        </div>
       </div>
       <div style="flex: 0.9; background:#1e1e2e; color:#cdd6f4; border-radius:10px; padding:18px; font-family:'Courier New', monospace; font-size:11.5px; line-height:1.35; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-        <div style="color:#79c0ff; font-weight:bold; margin-bottom:6px;">// Registro SQL en data.sql</div>
-        <div style="color:#ff7b72;">INSERT INTO usuario (nombre, correo_institucional, password, active)</div>
-        <div style="color:#cdd6f4;">VALUES (</div>
-        <div style="color:#7ee787; padding-left:12px;">'Super Admin',</div>
-        <div style="color:#7ee787; padding-left:12px;">'admin@icesi.edu.co',</div>
-        <div style="color:#f2cc60; padding-left:12px;">'$2a$10$wK5W3yC3yF15D1nB.vN7teI0wL/y6V5t1oB97GgD4aAefXkK/Zl9G',</div>
-        <div style="color:#7ee787; padding-left:12px;">TRUE</div>
-        <div style="color:#cdd6f4;">);</div>
+        <div style="color:#79c0ff; font-weight:bold; margin-bottom:6px;">// Comprobación de Seguridad AOP</div>
+        <div style="color:#ff7b72;">org.springframework.security.access.</div>
+        <div style="color:#f2cc60;">AccessDeniedException:</div>
+        <div style="color:#cdd6f4; padding-left:12px;">Access Denied (PreAuthorize check failed</div>
+        <div style="color:#cdd6f4; padding-left:12px;">for authority: USER_DELETE)</div>
+        <div style="color:#6c7086; margin-top:10px;">➔ Redirigido a /access-denied (403)</div>
       </div>
     </div>
     `

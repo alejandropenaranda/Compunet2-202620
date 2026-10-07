@@ -10,5 +10,10 @@ public class LoginController {
     public String login() {
         return "login";
     }
+
+    @GetMapping({"/access-denied", "/acces-denied"})
+    public String accessDenied() {
+        return "acces-denied"; // Renderiza templates/acces-denied.html
+    }
     
 }

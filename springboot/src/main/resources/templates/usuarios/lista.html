@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title th:text="${titulo}">Gestión de Usuarios</title>
@@ -55,7 +55,8 @@
                            onclick="return confirm('¿Está seguro de cambiar el estado de este usuario?');">
                             Cambiar Estado
                         </a> |
-                        <a th:href="@{/usuarios/eliminar/{id}(id=${u.id})}" 
+                        <a th:href="@{/usuarios/eliminar/{id}(id=${u.id})}"
+                           sec:authorize="hasAuthority('USER_DELETE')"
                            onclick="return confirm('¿Está seguro de eliminar definitivamente este usuario?');">
                             Eliminar
                         </a>

@@ -33,21 +33,73 @@ h3 {
 /* Barra de Navegación */
 header {
     background: #1e293b;
-    padding: 16px 24px;
+    padding: 14px 22px;
     border-radius: 8px;
     margin-bottom: 24px;
 }
 
-nav a {
-    color: #f8fafc;
-    text-decoration: none;
-    margin-right: 18px;
-    font-weight: 500;
+header nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: #94a3b8;
 }
 
-nav a:hover {
+header nav div {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+header nav a {
+    color: #f8fafc;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+header nav a:hover {
     text-decoration: underline;
     color: #38bdf8;
+}
+
+header nav strong {
+    color: #ffffff;
+}
+
+/* Bloque de usuario / sesión en nav (sin clases) */
+header nav span {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #cbd5e1;
+    font-size: 13.5px;
+}
+
+header nav form {
+    display: inline-block;
+    margin: 0;
+}
+
+header nav form button,
+header nav button {
+    background: #dc2626;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+header nav form button:hover,
+header nav button:hover {
+    background: #b91c1c;
 }
 
 /* Tablas de Datos */
@@ -75,7 +127,31 @@ tr:hover {
     background-color: #f8fafc;
 }
 
-/* Formularios y Controles */
+/* Botones de acción dentro de tablas (sin clases) */
+td form {
+    display: inline-block;
+    margin: 0;
+}
+
+td form button,
+td button {
+    background-color: #ef4444;
+    color: #ffffff;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+td form button:hover,
+td button:hover {
+    background-color: #dc2626;
+}
+
+/* Formularios y Controles por Defecto (sin requerir clases en HTML) */
 form div {
     margin-bottom: 16px;
 }
@@ -84,7 +160,8 @@ label {
     display: block;
     font-weight: 600;
     margin-bottom: 6px;
-    color: #334155;
+    color: #1e293b;
+    font-size: 13.5px;
 }
 
 input[type="text"],
@@ -96,6 +173,18 @@ select {
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     font-size: 14px;
+    background-color: #ffffff;
+    color: #0f172a;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus {
+    outline: none;
+    border-color: #004b93;
+    box-shadow: 0 0 0 3px rgba(0, 75, 147, 0.12);
 }
 
 input[type="checkbox"] {
@@ -104,9 +193,10 @@ input[type="checkbox"] {
 
 /* Botones y Enlaces de Acción */
 button,
+input[type="submit"],
 .button {
     display: inline-block;
-    background-color: #2563eb;
+    background-color: #004b93;
     color: #ffffff;
     padding: 10px 18px;
     border: none;
@@ -114,12 +204,14 @@ button,
     text-decoration: none;
     cursor: pointer;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
+    transition: background-color 0.15s;
 }
 
 button:hover,
+input[type="submit"]:hover,
 .button:hover {
-    background-color: #1d4ed8;
+    background-color: #003366;
 }
 
 .button-secondary {
@@ -278,4 +370,53 @@ button:hover,
 
 .btn-back:hover {
     background: #003366;
+}
+
+/* ==========================================================================
+   Soporte Universal Semántico (Páginas sin Navigation Header)
+   Permite renderizar Login y 403 automáticamente sin clases en el HTML
+   ========================================================================== */
+
+body:not(:has(header)) main {
+    max-width: 440px;
+    margin: 60px auto;
+    padding: 36px 30px;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+    background: #ffffff;
+}
+
+body:not(:has(header)) main h2 {
+    color: #004b93;
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+body:not(:has(header)) main > p {
+    color: #64748b;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+body:not(:has(header)) main form button[type="submit"],
+body:not(:has(header)) main button[type="submit"] {
+    width: 100%;
+    padding: 11px 16px;
+    margin-top: 8px;
+    font-size: 14.5px;
+}
+
+/* Alertas automáticas en páginas sin header */
+body:not(:has(header)) main > div:not(form div) {
+    padding: 12px 14px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 13.5px;
+    font-weight: 500;
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
 }

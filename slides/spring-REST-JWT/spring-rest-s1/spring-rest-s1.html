@@ -1,0 +1,1751 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>APIs RESTful en Spring Boot, DTOs, Streams y MapStruct — Sesión 1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Reveal.js Themes & Highlights -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css" id="theme">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+  <!-- ICESI Beamer Stylesheet -->
+  <link rel="stylesheet" href="../dist/main.css?v=28">
+
+  <style>
+    /* Strict 16:9 1280x720 Base Dimensions */
+    .reveal .slides {
+      width: 1280px !important;
+      height: 720px !important;
+      text-align: left;
+    }
+    .reveal section.slide {
+      width: 1280px !important;
+      height: 720px !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+      background: #ffffff;
+    }
+
+    /* Global Brand & Logo adjustments: logo placed at top: 32px, height: ~45px (ends at ~77px) */
+    .slide .logo-positive,
+    .slide .logo-negative {
+      position: absolute !important;
+      top: 32px !important;
+      left: 60px !important;
+      width: 160px !important;
+      height: auto !important;
+      z-index: 20 !important;
+    }
+    .slide.title-f .logo-positive {
+      filter: brightness(0) invert(1) !important;
+    }
+
+    /* REGLA 1: PADDING DE AL MENOS 1 CM DESDE EL LOGO Y EL CONTENIDO */
+    /* Header title starts at top: 125px (48px / >1.2cm padding below logo) */
+    .slide.standard .slide-header,
+    .slide.two-cols .slide-header,
+    .slide.three-cols .slide-header,
+    .slide.four-cards .slide-header {
+      position: absolute !important;
+      left: 60px !important;
+      top: 125px !important;
+      width: 1160px !important;
+      height: 48px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      z-index: 10 !important;
+    }
+    .slide.standard .slide-header h2,
+    .slide.two-cols .slide-header h2,
+    .slide.three-cols .slide-header h2,
+    .slide.four-cards .slide-header h2 {
+      position: relative !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      font-size: 29px !important;
+      line-height: 36px !important;
+      font-weight: 700 !important;
+      color: var(--icesi-blue) !important;
+      margin: 0 !important;
+    }
+
+    /* Defined Content Box (Top 190px to 675px = 485px height) Vertically Centered */
+    .slide.standard .slide-content {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+    }
+
+    .slide.two-cols .cols-container {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 36px !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.two-cols .col {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+
+    .slide.three-cols .cols-container {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 20px !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.three-cols .col {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+
+    /* Cards Grids Vertically Centered */
+    .slide.four-cards .cards-grid {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      align-content: center !important;
+      gap: 16px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.four-cards .cards-grid.cards-grid-3 {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 24px !important;
+      align-content: center !important;
+    }
+    .slide.four-cards .cards-grid.cards-grid-2 {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 28px !important;
+      align-content: center !important;
+    }
+
+    .slide.four-cards .card {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 8px !important;
+      background: #FFFFFF !important;
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
+    }
+    .slide.four-cards .card-header {
+      font-size: 13.5px !important;
+      font-weight: 700 !important;
+      padding: 12px 14px !important;
+      letter-spacing: 0.03em !important;
+      text-transform: uppercase !important;
+    }
+    .slide.four-cards .card-body {
+      font-size: 13.2px !important;
+      line-height: 1.45 !important;
+      padding: 16px !important;
+      flex: 1 !important;
+    }
+
+    /* Sidebar Layout Vertically Centered */
+    .slide.sidebar-left .sidebar {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 420px !important;
+      height: 720px !important;
+    }
+    .slide.sidebar-left .sidebar .logo-negative {
+      top: 32px !important;
+      left: 45px !important;
+    }
+    .slide.sidebar-left .sidebar-title {
+      position: absolute !important;
+      left: 465px !important;
+      top: 125px !important;
+      width: 755px !important;
+      height: 48px !important;
+      margin: 0 !important;
+    }
+    .slide.sidebar-left .sidebar-title h2 {
+      position: relative !important;
+      left: 0 !important;
+      top: 0 !important;
+      margin: 0 !important;
+      font-size: 29px !important;
+      line-height: 36px !important;
+      font-weight: 700 !important;
+      color: var(--icesi-blue) !important;
+    }
+    .slide.sidebar-left .sidebar-content {
+      position: absolute !important;
+      left: 465px !important;
+      top: 190px !important;
+      width: 755px !important;
+      height: 485px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* Stripe Slides Vertically Centered */
+    .slide.stripe-top-left .slide-title,
+    .slide.stripe-top-right .slide-title {
+      position: absolute !important;
+      top: 172px !important;
+      height: 45px !important;
+      font-size: 26px !important;
+      line-height: 34px !important;
+      font-weight: 700 !important;
+      color: #ffffff !important;
+      margin: 0 !important;
+    }
+    .slide.stripe-top-left .slide-title {
+      left: 55px !important;
+      width: 720px !important;
+    }
+    .slide.stripe-top-right .slide-title {
+      left: 510px !important;
+      width: 710px !important;
+    }
+    .slide.stripe-top-left .slide-content,
+    .slide.stripe-top-right .slide-content {
+      position: absolute !important;
+      left: 55px !important;
+      top: 250px !important;
+      width: 1170px !important;
+      height: 425px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* ========================================================================= */
+    /* REGLA 2: SEPARADORES DE TEMAS FULL COLOR CON TEXTO CENTRADO VERTICALMENTE */
+    /* ========================================================================= */
+    .slide.section-e {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      text-align: center !important;
+      padding: 0 100px !important;
+      box-sizing: border-box !important;
+      width: 1280px !important;
+      height: 720px !important;
+    }
+    .slide.section-e .section-title {
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      width: 1080px !important;
+      font-size: 46px !important;
+      line-height: 1.25 !important;
+      font-weight: 700 !important;
+      margin: 0 0 20px 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+      color: #ffffff !important;
+      hyphens: none !important;
+    }
+    .slide.section-e .section-content {
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      width: 1080px !important;
+      height: auto !important;
+      font-size: 23px !important;
+      line-height: 1.45 !important;
+      font-weight: 400 !important;
+      color: rgba(255, 255, 255, 0.95) !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+    }
+    .slide.section-e.bg-yellow .section-content {
+      color: rgba(30, 41, 59, 0.95) !important;
+    }
+    .slide.section-e.bg-purple {
+      background: var(--icesi-purple) !important;
+      color: #ffffff !important;
+    }
+
+    /* Code styling enhancements */
+    pre {
+      margin: 0 !important;
+      width: 100% !important;
+    }
+    pre code {
+      font-size: 12.5px !important;
+      line-height: 1.35 !important;
+      border-radius: 8px !important;
+      padding: 12px 14px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      background: #1e1e2e !important;
+      color: #cdd6f4 !important;
+      box-sizing: border-box !important;
+      max-height: 460px !important;
+    }
+
+    .hljs-meta { color: #79c0ff !important; font-weight: bold; }
+    .hljs-keyword { color: #ff7b72 !important; font-weight: bold; }
+    .hljs-type, .hljs-title.class_ { color: #ffa657 !important; }
+    .hljs-title.function_ { color: #d2a8ff !important; }
+    .hljs-string { color: #7ee787 !important; }
+    .hljs-number, .hljs-literal { color: #f2cc60 !important; }
+    .hljs-comment { color: #8b949e !important; font-style: italic; }
+    .hljs-attr { color: #f472b6 !important; }
+
+    /* Horizontal Card Item Pattern */
+    .h-item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      padding: 10px 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .h-item-icon {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+    }
+    .h-item-blue { border-left: 4px solid var(--icesi-blue); }
+    .h-item-blue .h-item-icon { background: rgba(84,84,233,0.12); color: var(--icesi-blue); }
+    .h-item-green { border-left: 4px solid var(--icesi-green); }
+    .h-item-green .h-item-icon { background: rgba(76,185,121,0.12); color: var(--icesi-green); }
+    .h-item-orange { border-left: 4px solid var(--icesi-orange); }
+    .h-item-orange .h-item-icon { background: rgba(233,104,59,0.12); color: var(--icesi-orange); }
+    .h-item-purple { border-left: 4px solid var(--icesi-purple); }
+    .h-item-purple .h-item-icon { background: rgba(134,92,240,0.12); color: var(--icesi-purple); }
+
+    .h-item-title { font-size: 14px; font-weight: 700; color: #1e293b; line-height: 1.25; margin-bottom: 3px; }
+    .h-item-desc { font-size: 12.5px; color: #475569; line-height: 1.38; }
+
+    /* Callout Card */
+    .callout-box {
+      background: #f8fafc;
+      border: 1px solid #CBD5E1;
+      border-left: 5px solid var(--icesi-blue);
+      border-radius: 8px;
+      padding: 11px 15px;
+    }
+
+    /* Tables */
+    table.icesi-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid #cbd5e1;
+    }
+    table.icesi-table th {
+      background: var(--icesi-blue);
+      color: #ffffff;
+      padding: 10px 14px;
+      font-weight: 700;
+      text-align: left;
+      font-size: 13px;
+    }
+    table.icesi-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+      line-height: 1.35;
+    }
+    table.icesi-table tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* Hide Navigation Controls / Arrows */
+    .reveal .controls,
+    .reveal aside.controls {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides" id="icesi-slides"></div>
+</div>
+
+<!-- Reveal.js & Plugins -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/highlight/highlight.min.js"></script>
+
+<!-- ICESI Beamer Library -->
+<script src="../dist/main.js?v=28"></script>
+
+<script>
+  icesi.setBasePath('../../');
+
+  const slides = [
+
+    // =========================================================================
+    // SLIDE 1: Portada
+    // =========================================================================
+    icesi.titleSlideA(
+      'Arquitectura de APIs RESTful en Spring Boot',
+      'Sesión 1: Recursos, Versionamiento, Idempotencia, Caché, DTOs, Streams y MapStruct<br><span class="slide-footer-tag">Computación en Internet II — Universidad Icesi</span>'
+    ),
+
+    // =========================================================================
+    // SLIDE 2: Ruta de Aprendizaje — 4 Micro-Ciclos
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Ruta de Aprendizaje — 4 Micro-Ciclos (Teoría ↔ Práctica)',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Primera Mitad: Fundamentos REST y Contrato DTO</div>
+    <div class="h-item h-item-blue" style="margin-bottom:14px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">01. REST Orientado a Recursos, Caché e Idempotencia</div>
+        <div class="h-item-desc">URIs, Versionamiento, Verbos HTTP, Caché 304, Status Codes + Diagnóstico de antipatrones REST.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-orange" style="margin-bottom:14px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">02. El Patrón DTO (Data Transfer Object)</div>
+        <div class="h-item-desc">Riesgos de exponer <code>@Entity</code> + Implementación de contratos asimétricos Request/Response.</div>
+      </div>
+    </div>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-blue); margin-top:8px;">
+      <p style="margin:0; font-size:12.5px; color:#334155; line-height:1.4;">
+        <strong>Enfoque Práctico:</strong> Cada bloque teórico va seguido inmediatamente de su implementación en vivo sobre el dominio de <code>Usuario</code>.
+      </p>
+    </div>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-green); margin-bottom:10px;">Segunda Mitad: Streams, MapStruct y @RestController</div>
+    <div class="h-item h-item-purple" style="margin-bottom:14px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">03. Java Streams API y Mapeo con MapStruct</div>
+        <div class="h-item-desc">Pipelines <code>.stream().filter().map().collect()</code>, JSR 269 + Implementación de <code>Mapper</code>.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-green" style="margin-bottom:14px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">04. @RestController, Parámetros y ResponseEntity</div>
+        <div class="h-item-desc"><code>@PathVariable</code>, <code>@RequestParam</code>, <code>@RequestBody</code>, <code>ResponseEntity</code> + Controlador REST.</div>
+      </div>
+    </div>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-green); margin-top:8px;">
+      <p style="margin:0; font-size:12.5px; color:#334155; line-height:1.4;">
+        <strong>Convención de Rutas:</strong> Todos los recursos RESTful siguen el esquema jerárquico versionado <code>/api/v1/{recurso}</code> (ej. <code>/api/v1/usuarios</code>).
+      </p>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 3: Separador Micro-Ciclo 1
+    // =========================================================================
+    icesi.sectionSlideEBlue(
+      '01. REST Orientado a Recursos, Versionamiento, Idempotencia y Caché',
+      'Evolución de MVC a REST, diseño de URIs, semántica HTTP (RFC 9110), caché y códigos de estado.'
+    ),
+
+    // =========================================================================
+    // SLIDE 4: Contraste MVC vs REST
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Evolución Arquitectónica: @Controller (MVC) vs. @RestController',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-orange); margin-bottom:8px;">Spring MVC Tradicional (@Controller)</div>
+    <p style="font-size:13px; line-height:1.45; color:#334155; margin-bottom:10px;">
+      Orientado a <strong>Server-Side Rendering (SSR)</strong>. El controlador puebla un objeto <code>Model</code> y retorna el nombre de una plantilla HTML.
+    </p>
+    <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="7" x2="22" y2="7"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Motor ViewResolver + Thymeleaf</div>
+        <div class="h-item-desc">Resuelve <code>"usuarios/lista"</code> hacia un archivo <code>.html</code> y entrega <code>Content-Type: text/html</code>.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Limitación Multi-Cliente</div>
+        <div class="h-item-desc">Una app móvil nativa iOS/Android o un otro microservicio no puede consumir vistas HTML acopladas.</div>
+      </div>
+    </div>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">API RESTful Desacoplada (@RestController)</div>
+    <p style="font-size:13px; line-height:1.45; color:#334155; margin-bottom:10px;">
+      Combina <code>@Controller + @ResponseBody</code>. El controlador retorna datos puros (DTOs) que se escriben directamente en el cuerpo HTTP.
+    </p>
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Motor HttpMessageConverter (Jackson)</div>
+        <div class="h-item-desc">Serializa objetos Java a JSON (<code>application/json</code>) sin pasar por ningún motor de vistas.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-green" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Interoperabilidad Universal</div>
+        <div class="h-item-desc">Un único backend alimenta SPAs (React/Angular), apps móviles, Postman y sistemas externos.</div>
+      </div>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 5: Modelo Conceptual Visual MVC vs REST (SVG 920x460)
+    // =========================================================================
+    icesi.slideStandard(
+      'Flujo Interno en Spring: ViewResolver vs. HttpMessageConverter',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 460" width="100%" height="460" style="max-width:920px; display:block; margin:0 auto;">
+        <defs>
+          <style>
+            .title { font-family: system-ui, -apple-system, sans-serif; font-size: 20px; font-weight: 700; fill: #0f172a; }
+            .sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; fill: #64748b; }
+            .label { font-family: system-ui, -apple-system, sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+            .h-card{ font-family: system-ui, -apple-system, sans-serif; font-size: 15.5px; font-weight: 700; fill: #1e293b; }
+            .body  { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; fill: #475569; }
+            .mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+          </style>
+          <filter id="mvc-shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="objectBoundingBox">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.08"/>
+          </filter>
+        </defs>
+
+        <rect width="920" height="460" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text class="title" x="32" y="36">Procesamiento del Retorno en DispatcherServlet</text>
+        <text class="sub" x="32" y="56">Comparación del pipeline de salida entre un controlador de vistas MVC y un controlador RESTful</text>
+
+        <!-- COLUMNA 1: MVC -->
+        <g transform="translate(32, 78)">
+          <rect width="410" height="350" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#mvc-shadow)"/>
+          <rect x="0" y="0" width="410" height="5" rx="2.5" fill="#ea580c"/>
+          <rect x="20" y="18" width="145" height="22" rx="6" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+          <text class="label" x="92" y="33" fill="#ea580c" text-anchor="middle">ARQUITECTURA MVC</text>
+
+          <text class="h-card" x="20" y="64">1. @Controller (Vistas HTML)</text>
+          <text class="body" x="20" y="84">El método retorna un <tspan fill="#ea580c" font-weight="700">String (Nombre de Vista)</tspan></text>
+
+          <g transform="translate(20, 100)">
+            <rect width="370" height="120" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+            <text class="mono" x="16" y="26" fill="#fdba74" font-weight="700">@Controller</text>
+            <text class="mono" x="16" y="46" fill="#e2e8f0">public String listar(Model model) {</text>
+            <text class="mono" x="16" y="66" fill="#94a3b8">  model.addAttribute("usuarios", list);</text>
+            <text class="mono" x="16" y="86" fill="#4ade80">  return "usuarios/lista";</text>
+            <text class="mono" x="16" y="106" fill="#e2e8f0">}</text>
+          </g>
+
+          <g transform="translate(20, 238)">
+            <text class="label" x="0" y="12" fill="#64748b">COMPONENTE DE SALIDA</text>
+            <rect x="0" y="22" width="370" height="44" rx="6" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+            <text class="mono" x="185" y="42" fill="#9a3412" font-weight="700" text-anchor="middle">ThymeleafViewResolver ➔ HTML</text>
+            <text class="body" x="185" y="58" fill="#c2410c" font-size="11px" text-anchor="middle">Content-Type: text/html;charset=UTF-8</text>
+            <text class="body" x="0" y="90" font-size="12px">Estado de sesión: <tspan font-family="monospace" fill="#1e293b" font-weight="700">Stateful (Cookie JSESSIONID)</tspan></text>
+          </g>
+        </g>
+
+        <!-- COLUMNA 2: REST -->
+        <g transform="translate(478, 78)">
+          <rect width="410" height="350" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#mvc-shadow)"/>
+          <rect x="0" y="0" width="410" height="5" rx="2.5" fill="#2563eb"/>
+          <rect x="20" y="18" width="145" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+          <text class="label" x="92" y="33" fill="#2563eb" text-anchor="middle">ARQUITECTURA REST</text>
+
+          <text class="h-card" x="20" y="64">2. @RestController (Datos JSON)</text>
+          <text class="body" x="20" y="84">El método retorna <tspan fill="#2563eb" font-weight="700">ResponseEntity&lt;DTO&gt;</tspan></text>
+
+          <g transform="translate(20, 100)">
+            <rect width="370" height="120" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+            <text class="mono" x="16" y="26" fill="#38bdf8" font-weight="700">@RestController // @Controller + @ResponseBody</text>
+            <text class="mono" x="16" y="46" fill="#e2e8f0">public ResponseEntity&lt;List&lt;UsuarioDTO&gt;&gt; get() {</text>
+            <text class="mono" x="16" y="66" fill="#94a3b8">  List&lt;UsuarioDTO&gt; dtos = mapper.toDTOs(list);</text>
+            <text class="mono" x="16" y="86" fill="#4ade80">  return ResponseEntity.ok(dtos);</text>
+            <text class="mono" x="16" y="106" fill="#e2e8f0">}</text>
+          </g>
+
+          <g transform="translate(20, 238)">
+            <text class="label" x="0" y="12" fill="#64748b">COMPONENTE DE SALIDA</text>
+            <rect x="0" y="22" width="370" height="44" rx="6" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+            <text class="mono" x="185" y="42" fill="#1e40af" font-weight="700" text-anchor="middle">MappingJackson2HttpMessageConverter</text>
+            <text class="body" x="185" y="58" fill="#2563eb" font-size="11px" text-anchor="middle">Content-Type: application/json + HttpStatus</text>
+            <text class="body" x="0" y="90" font-size="12px">Estado de sesión: <tspan font-family="monospace" fill="#1e293b" font-weight="700">Stateless (Token JWT Bearer)</tspan></text>
+          </g>
+        </g>
+      </svg>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 6: Los 4 Pilares de REST (Roy Fielding) - 9 positional arguments!
+    // =========================================================================
+    icesi.slideFourCards(
+      'REST vs. RESTful: Los 4 Pilares Arquitectónicos (Roy Fielding)',
+      '1. Recursos',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Orientado a Recursos</strong><br>Toda entidad del dominio (<code>Usuario</code>, <code>Curso</code>) es un <em>recurso</em> identificado por una URI única:<br><code>/api/v1/usuarios/5</code><br>Las URIs nombran sustantivos, jamás verbos.</p>`,
+      '2. Interfaz Uniforme',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Verbos HTTP Estándar</strong><br>La operación que se desea ejecutar se expresa únicamente mediante el método HTTP:<br><code>GET, POST, PUT, PATCH, DELETE</code> sobre la misma URI.</p>`,
+      '3. Representaciones',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Intercambio de Estado</strong><br>El cliente nunca accede a la tabla SQL; intercambia <em>representaciones</em> serializadas en <code>application/json</code> modeladas mediante objetos <strong>DTO</strong>.</p>`,
+      '4. Stateless & Cache',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Sin Estado y Cacheable</strong><br>Cada petición contiene todo el contexto necesario para procesarse, y las respuestas de lectura declaran si pueden almacenarse en <strong>caché</strong>.</p>`
+    ),
+
+    // =========================================================================
+    // SLIDE 7: REST Orientado a Recursos (Sustantivos vs Verbos y Jerarquía)
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Diseño REST Orientado a Recursos: Sustantivos vs. Acciones RPC',
+      `
+    <div style="font-size:15px; font-weight:700; color:#dc2626; margin-bottom:8px;">Antipatrón: Diseño Orientado a Acciones (RPC)</div>
+    <p style="font-size:13px; line-height:1.45; color:#334155; margin-bottom:10px;">
+      Acopla el nombre de la función Java en la URL e ignora la semántica del verbo HTTP (típico error al migrar de MVC a REST):
+    </p>
+    <div class="h-item h-item-orange" style="margin-bottom:10px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">GET /api/obtenerTodosLosUsuarios</div>
+        <div class="h-item-desc">Incorrecto: acopla un verbo de acción en la ruta y usa <em>camelCase</em> arbitrario.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-orange" style="margin-bottom:10px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">GET /api/crearUsuario?nombre=Ana</div>
+        <div class="h-item-desc">Violación grave de RFC 9110: utiliza un verbo de lectura (<code>GET</code>) para insertar datos en la BD.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-orange">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">POST /api/borrarUsuarioPorId?id=4</div>
+        <div class="h-item-desc">Incorrecto: usa <code>POST</code> en lugar de <code>DELETE</code> y esconde la identidad en un query param.</div>
+      </div>
+    </div>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-green); margin-bottom:8px;">Estándar RESTful: Sustantivos en Plural y Jerarquía</div>
+    <p style="font-size:13px; line-height:1.45; color:#334155; margin-bottom:10px;">
+      Las URIs representan <strong>colecciones</strong> e <strong>instancias</strong> en minúsculas (<em>kebab-case</em>), delegando la acción al método HTTP:
+    </p>
+    <div class="h-item h-item-green" style="margin-bottom:10px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Colección: /api/v1/usuarios</div>
+        <div class="h-item-desc"><code>GET</code> lista la colección; <code>POST</code> agrega un nuevo usuario a la colección.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-blue" style="margin-bottom:10px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Instancia: /api/v1/usuarios/{id}</div>
+        <div class="h-item-desc"><code>GET</code> consulta el usuario; <code>PUT</code> lo reemplaza; <code>DELETE</code> lo elimina.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-purple">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Sub-recurso / Atributo: /api/v1/usuarios/{id}/estado</div>
+        <div class="h-item-desc"><code>PATCH</code> actualiza parcialmente el estado activo del usuario <code>{id}</code>.</div>
+      </div>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 8: Versionamiento de URLs (API Versioning) - 7 positional arguments!
+    // =========================================================================
+    icesi.slideThreeCards(
+      'Versionamiento de URLs y Contratos en APIs RESTful',
+      '1. URI Path Versioning',
+      `<p style="font-size:13px; line-height:1.45;"><strong>En la Ruta (Estándar más Adoptado)</strong><br>Incrusta el número de versión mayor directamente en el prefijo del URI:<br><code>/api/v1/usuarios</code><br><code>/api/v2/usuarios</code><br><strong>Ventaja:</strong> Explícito, fácil de probar en navegador/Postman y de enrutar en API Gateways.</p>`,
+      '2. Header Versioning',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Por Encabezado Personalizado</strong><br>Mantiene la URI intacta y envía la versión solicitada en un header HTTP:<br><code>GET /api/usuarios</code><br><code>X-API-Version: 1</code><br><strong>Ventaja:</strong> URIs limpias, aunque menos evidente al explorar o cachear por URL.</p>`,
+      '3. Content Negotiation',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Por Media Type (Header Accept)</strong><br>Versiona la representación usando el estándar MIME de negociación de contenido:<br><code>Accept: application/vnd.icesi.v1+json</code><br><strong>Regla de Oro:</strong> Jamás rompas un contrato publicado; lanza <code>v2</code> mientras deprecias <code>v1</code>.</p>`
+    ),
+
+    // =========================================================================
+    // SLIDE 9: Métodos REST e Idempotencia (Sidebar Left Blue)
+    // =========================================================================
+    icesi.slideSidebarLeftBlue(
+      'Métodos HTTP REST: Seguridad e Idempotencia',
+      `
+    <div>
+      <div class="h-item h-item-blue" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">1. Métodos Seguros (Safe Methods — RFC 9110)</div>
+          <div class="h-item-desc">Son operaciones de <strong>solo lectura</strong> que no alteran el estado del servidor (<code>GET</code>, <code>HEAD</code>, <code>OPTIONS</code>). Pueden ser pre-cargadas por navegadores o indexadas sin riesgo.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-purple" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">2. Idempotencia Matemática: f(f(x)) = f(x)</div>
+          <div class="h-item-desc">Una operación es <strong>idempotente</strong> si ejecutarla <strong>N veces</strong> seguidas con los mismos parámetros produce exactamente el <strong>mismo estado en el servidor</strong> que ejecutarla una sola vez (<code>GET</code>, <code>PUT</code>, <code>DELETE</code>).</div>
+        </div>
+      </div>
+      <div class="h-item h-item-orange">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">3. ¿Por Qué POST NO es Idempotente?</div>
+          <div class="h-item-desc">Enviar 3 veces <code>POST /api/v1/cursos</code> crea 3 registros con IDs distintos. En cambio, enviar 3 veces <code>PUT /api/v1/usuarios/4</code> o <code>DELETE /api/v1/usuarios/4</code> deja el sistema en el mismo estado final.</div>
+        </div>
+      </div>
+    </div>
+    `,
+      {
+        type: 'icons',
+        items: [
+          { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`, label: 'Métodos Seguros' },
+          { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>`, label: 'Idempotencia f(x)' },
+          { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`, label: 'Reintentos Seguros' }
+        ]
+      }
+    ),
+
+    // =========================================================================
+    // SLIDE 10: Matriz Completa de Métodos HTTP REST
+    // =========================================================================
+    icesi.slideStandard(
+      'Matriz de Propiedades de los Métodos HTTP REST (RFC 9110)',
+      `
+      <table class="icesi-table" style="margin-bottom:14px;">
+        <thead>
+          <tr>
+            <th>Método HTTP</th>
+            <th>Acción Semántica</th>
+            <th>¿Seguro?</th>
+            <th>¿Idempotente?</th>
+            <th>¿Cacheable?</th>
+            <th>Ejemplo de Endpoint RESTful</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>GET</strong></td>
+            <td>Obtener recurso o colección</td>
+            <td><span style="color:#16a34a; font-weight:700;">SÍ</span></td>
+            <td><span style="color:#16a34a; font-weight:700;">SÍ</span></td>
+            <td><span style="color:#16a34a; font-weight:700;">SÍ (Por defecto)</span></td>
+            <td><code>GET /api/v1/usuarios?active=true</code></td>
+          </tr>
+          <tr>
+            <td><strong>POST</strong></td>
+            <td>Crear nuevo recurso subordinado</td>
+            <td><span style="color:#dc2626; font-weight:700;">NO</span></td>
+            <td><span style="color:#dc2626; font-weight:700;">NO (Crea N recursos)</span></td>
+            <td><span style="color:#dc2626; font-weight:700;">NO</span></td>
+            <td><code>POST /api/v1/usuarios</code></td>
+          </tr>
+          <tr>
+            <td><strong>PUT</strong></td>
+            <td>Reemplazar el recurso en su totalidad</td>
+            <td><span style="color:#dc2626; font-weight:700;">NO</span></td>
+            <td><span style="color:#16a34a; font-weight:700;">SÍ (Sobrescribe igual)</span></td>
+            <td><span style="color:#dc2626; font-weight:700;">NO</span></td>
+            <td><code>PUT /api/v1/usuarios/{id}</code></td>
+          </tr>
+          <tr>
+            <td><strong>PATCH</strong></td>
+            <td>Actualizar parcialmente campos</td>
+            <td><span style="color:#dc2626; font-weight:700;">NO</span></td>
+            <td><span style="color:#d97706; font-weight:700;">Sí si asigna valor fijo</span></td>
+            <td><span style="color:#dc2626; font-weight:700;">NO</span></td>
+            <td><code>PATCH /api/v1/usuarios/{id}/estado?active=false</code></td>
+          </tr>
+          <tr>
+            <td><strong>DELETE</strong></td>
+            <td>Eliminar el recurso identificado</td>
+            <td><span style="color:#dc2626; font-weight:700;">NO</span></td>
+            <td><span style="color:#16a34a; font-weight:700;">SÍ (Estado final borrado)</span></td>
+            <td><span style="color:#dc2626; font-weight:700;">NO</span></td>
+            <td><code>DELETE /api/v1/usuarios/{id}</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-box" style="border-left:5px solid var(--icesi-blue);">
+        <p style="margin:0; font-size:13px; color:#1e293b;">
+          <strong>Nota de Tolerancia a Fallos:</strong> En redes móviles inestables, los clientes HTTP reintentan automáticamente peticiones <code>GET</code>, <code>PUT</code> y <code>DELETE</code> ante un timeout porque su <strong>idempotencia</strong> garantiza que no corromperán ni duplicarán el estado.
+        </p>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 11: Caché de Request REST (HTTP Caching - Diagrama SVG 960x465)
+    // =========================================================================
+    icesi.slideStandard(
+      'Caché de Peticiones REST: Cache-Control, ETag y 304 Not Modified',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 465" width="100%" height="465" style="max-width:960px; display:block; margin:0 auto;">
+        <defs>
+          <style>
+            .c-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
+            .c-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
+            .c-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+            .c-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+            .c-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; fill: #475569; }
+          </style>
+          <filter id="cache-sh" x="-3%" y="-4%" width="106%" height="110%" filterUnits="objectBoundingBox">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.06"/>
+          </filter>
+          <marker id="ca-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+          <marker id="ca-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+          <marker id="ca-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker>
+        </defs>
+
+        <rect width="960" height="465" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text class="c-title" x="30" y="34">Restricción REST Cacheable: Ahorro de Ancho de Banda y CPU</text>
+        <text class="c-sub" x="30" y="54">Las respuestas a peticiones GET pueden reutilizarse localmente o validarse mediante ETag condicional</text>
+
+        <!-- Left Sequence Diagram -->
+        <g transform="translate(30, 72)">
+          <rect width="540" height="365" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#cache-sh)"/>
+          <rect x="24" y="18" width="150" height="36" rx="6" fill="#1e293b"/>
+          <text x="99" y="40" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">Cliente + Caché Local</text>
+
+          <rect x="366" y="18" width="150" height="36" rx="6" fill="#2563eb"/>
+          <text x="441" y="40" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">API Spring Boot</text>
+
+          <line x1="99" y1="54" x2="99" y2="345" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <line x1="441" y1="54" x2="441" y2="345" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+          <!-- 1st Request -->
+          <path d="M104,82 L436,82" stroke="#2563eb" stroke-width="2" marker-end="url(#ca-blue)"/>
+          <text class="c-mono" x="270" y="75" fill="#1e40af" font-weight="700" text-anchor="middle">1. GET /api/v1/usuarios/5</text>
+
+          <!-- 1st Response -->
+          <path d="M436,138 L104,138" stroke="#059669" stroke-width="2" marker-end="url(#ca-green)"/>
+          <rect x="130" y="96" width="280" height="34" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1"/>
+          <text class="c-mono" x="270" y="111" fill="#065f46" font-weight="700" text-anchor="middle">2. 200 OK + Body JSON Completo</text>
+          <text class="c-mono" x="270" y="124" fill="#047857" font-size="9.5px" text-anchor="middle">Cache-Control: max-age=60 | ETag: "v1-8f9a"</text>
+
+          <!-- Conditional Request after TTL -->
+          <path d="M104,215 L436,215" stroke="#7c3aed" stroke-width="2" marker-end="url(#ca-purple)"/>
+          <rect x="130" y="175" width="280" height="32" rx="5" fill="#faf5ff" stroke="#7c3aed" stroke-width="1"/>
+          <text class="c-mono" x="270" y="190" fill="#6b21a8" font-weight="700" text-anchor="middle">3. GET /api/v1/usuarios/5 (Revalidación)</text>
+          <text class="c-mono" x="270" y="202" fill="#7c3aed" font-size="9.5px" text-anchor="middle">Header If-None-Match: "v1-8f9a"</text>
+
+          <!-- 304 Not Modified -->
+          <path d="M436,285 L104,285" stroke="#059669" stroke-width="2" marker-end="url(#ca-green)"/>
+          <rect x="130" y="242" width="280" height="34" rx="5" fill="#ecfdf5" stroke="#059669" stroke-width="1"/>
+          <text class="c-mono" x="270" y="257" fill="#065f46" font-weight="700" text-anchor="middle">4. HTTP 304 Not Modified (¡Sin Body!)</text>
+          <text class="c-body" x="270" y="270" fill="#047857" font-size="10px" text-anchor="middle">El cliente reutiliza su JSON local instantáneamente</text>
+
+          <text class="c-body" x="270" y="328" fill="#1e293b" font-weight="700" text-anchor="middle">Solo GET y HEAD son cacheables; POST/PUT/DELETE invalidan la caché</text>
+        </g>
+
+        <!-- Right Cards: Headers & Spring Code -->
+        <g transform="translate(590, 72)">
+          <rect width="340" height="170" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#cache-sh)"/>
+          <rect width="340" height="4" rx="2" fill="#2563eb"/>
+          <text class="c-label" x="18" y="24" fill="#2563eb">CABECERAS ESTÁNDAR DE CACHÉ</text>
+          <text class="c-body" x="18" y="48"><tspan font-weight="700" fill="#0f172a">• Cache-Control: max-age=60</tspan></text>
+          <text class="c-body" x="26" y="66">Durante 60 seg el cliente ni siquiera</text>
+          <text class="c-body" x="26" y="82">contacta al servidor (0 ms de red).</text>
+          <text class="c-body" x="18" y="106"><tspan font-weight="700" fill="#0f172a">• ETag / If-None-Match</tspan></text>
+          <text class="c-body" x="26" y="124">Huella hash de la versión del recurso.</text>
+          <text class="c-body" x="26" y="140">Si no cambió, responde <tspan font-weight="700" fill="#059669">304 Not Modified</tspan>.</text>
+
+          <rect y="185" width="340" height="180" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1.5" filter="url(#cache-sh)"/>
+          <text class="c-label" x="18" y="210" fill="#38bdf8">SOPORTE NATIVO EN RESPONSEENTITY</text>
+          <text class="c-mono" x="18" y="236" fill="#e2e8f0">return ResponseEntity.ok()</text>
+          <text class="c-mono" x="18" y="256" fill="#4ade80">  .cacheControl(</text>
+          <text class="c-mono" x="18" y="276" fill="#4ade80">    CacheControl.maxAge(60, SECONDS)</text>
+          <text class="c-mono" x="18" y="296" fill="#4ade80">      .cachePublic())</text>
+          <text class="c-mono" x="18" y="316" fill="#facc15">  .eTag(String.valueOf(dto.hashCode()))</text>
+          <text class="c-mono" x="18" y="336" fill="#e2e8f0">  .body(dto);</text>
+        </g>
+      </svg>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 12: Taxonomía de Status Codes (HttpStatus) - 9 positional arguments!
+    // =========================================================================
+    icesi.slideFourCards(
+      'Taxonomía de Códigos de Estado HTTP (HttpStatus)',
+      '2xx — Éxito',
+      `<p style="font-size:13px; line-height:1.42;"><strong>200 OK:</strong> Lectura (<code>GET</code>) o edición (<code>PUT/PATCH</code>) exitosa con JSON.<br><br><strong>201 Created:</strong> Nuevo recurso creado (<code>POST</code>) + Header <code>Location</code>.<br><br><strong>204 No Content:</strong> Borrado exitoso (<code>DELETE</code>) sin cuerpo.</p>`,
+      '3xx — Caché & Redir',
+      `<p style="font-size:13px; line-height:1.42;"><strong>304 Not Modified:</strong> El recurso en caché del cliente sigue vigente (valida <code>ETag</code> sin reenviar JSON).<br><br><strong>302 Found:</strong> Redirección típica de MVC hacia <code>/login</code> (no deseada en clientes REST).</p>`,
+      '4xx — Error Cliente',
+      `<p style="font-size:13px; line-height:1.42;"><strong>400 Bad Request:</strong> JSON inválido.<br><strong>401 Unauthorized:</strong> Sin token JWT válido.<br><strong>403 Forbidden:</strong> Sin permisos suficientes.<br><strong>404 Not Found:</strong> ID inexistente.<br><strong>409 Conflict:</strong> Correo duplicado.</p>`,
+      '5xx — Error Servidor',
+      `<p style="font-size:13px; line-height:1.42;"><strong>500 Internal Server Error:</strong> Falla no controlada en el backend.<br><br><strong>503 Service Unavailable:</strong> Base de datos o microservicio caído.<br><br><em>Jamás devuelvas 200 OK cuando ocurrió un error.</em></p>`
+    ),
+
+    // =========================================================================
+    // SLIDE 13: Práctica Ciclo 1 - Diagnóstico de Controller.java
+    // =========================================================================
+    icesi.slideStripeTopLeft(
+      'Práctica Ciclo 1: Diagnóstico de Antipatrones en Controller.java',
+      `
+    <div style="display: flex; gap: 28px; align-items: center;">
+      <div style="flex: 1.05;">
+        <pre><code class="language-java">// Código actual en controller/Controller.java
+@RestController
+public class Controller {
+
+  // ANTIPATRÓN 1: Devuelve la @Entity JPA directa
+  @GetMapping("/usuario")
+  public List&lt;Usuario&gt; getUsuarios() {
+    return usuarioService.obtenerTodosLosUsuarios();
+  }
+
+  // ANTIPATRÓN 2: ¡Muta la BD con un método GET!
+  @GetMapping("/crear-usuario")
+  public Usuario crearUsuario() {
+    Usuario u = new Usuario();
+    u.setCorreoInstitucional("example@icesi.edu.co");
+    u.setPassword(passwordEncoder.encode("123456"));
+    return usuarioService.crearUsuario(u);
+  }
+}</code></pre>
+      </div>
+      <div style="flex: 0.95;">
+        <div class="h-item h-item-orange" style="margin-bottom:12px;">
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">1. Fuga de Hashes BCrypt (Data Exposure)</div>
+            <div class="h-item-desc">Serializar <code>Usuario</code> expone <code>"password": "\$2a\$10\$7s/F87..."</code> y la estructura interna de tablas <code>Rol</code> y <code>Permiso</code>.</div>
+          </div>
+        </div>
+        <div class="h-item h-item-purple" style="margin-bottom:12px;">
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">2. Ruptura de Seguridad e Idempotencia</div>
+            <div class="h-item-desc"><code>GET /crear-usuario</code> usa un verbo en la URI y modifica el servidor mediante un método que debería ser seguro.</div>
+          </div>
+        </div>
+        <div class="h-item h-item-blue">
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">3. Sin Versionamiento ni ResponseEntity</div>
+            <div class="h-item-desc">Carece del prefijo <code>/api/v1/usuarios</code> y no distingue códigos de estado como <code>201 Created</code> o <code>404 Not Found</code>.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 14: Separador Micro-Ciclo 2
+    // =========================================================================
+    icesi.sectionSlideEGreen(
+      '02. El Patrón DTO (Data Transfer Object)',
+      'Aislamiento del modelo de persistencia JPA, contratos asimétricos e implementación sobre Usuario.'
+    ),
+
+    // =========================================================================
+    // SLIDE 15: Por qué jamás exponer @Entity - 7 positional arguments!
+    // =========================================================================
+    icesi.slideThreeCards(
+      '¿Por Qué Jamás Devolver ni Recibir Entidades JPA (@Entity) en la API?',
+      '1. Seguridad & Privacidad',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Fuga de Datos y Mass Assignment</strong><br>En lecturas (<code>GET</code>), devolver <code>Usuario</code> filtra el hash BCrypt <code>password</code>.<br><br>En escrituras (<code>POST/PUT</code>), recibir la entidad permite que un cliente malicioso inyecte <code>"id": 1</code> o se auto-asigne roles administrativos.</p>`,
+      '2. Desacoplamiento BD',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Evolución Independiente</strong><br>Si las tablas SQL cambian (ej. renombrar una columna o normalizar <code>Rol</code>), las aplicaciones móviles en producción se rompen.<br><br>El <strong>DTO</strong> blinda el contrato público frente a cambios internos del esquema JPA.</p>`,
+      '3. Serialización & Peso',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Ciclos Infinitos y Lazy Loading</strong><br>Relaciones bidireccionales provocan <code>StackOverflowError</code> al serializar a JSON o disparan <code>LazyInitializationException</code>.<br><br>El DTO transporta únicamente los campos exactos que requiere la vista o cliente.</p>`
+    ),
+
+    // =========================================================================
+    // SLIDE 16: Arquitectura del Patrón DTO (Diagrama SVG 960x450)
+    // =========================================================================
+    icesi.slideStandard(
+      'Asimetría de Contratos: UsuarioRequestDTO vs. UsuarioResponseDTO',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
+        <defs>
+          <style>
+            .d-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
+            .d-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
+            .d-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+            .d-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11.5px; }
+            .d-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; fill: #475569; }
+          </style>
+          <filter id="dto-sh" x="-4%" y="-4%" width="108%" height="110%" filterUnits="objectBoundingBox">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.06"/>
+          </filter>
+          <marker id="da-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+          <marker id="da-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+        </defs>
+
+        <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text class="d-title" x="32" y="34">Separación de Contratos de Entrada y Salida (Entidad Usuario)</text>
+        <text class="d-sub" x="32" y="54">La contraseña entra en el registro (RequestDTO), pero jamás sale en las consultas (ResponseDTO)</text>
+
+        <!-- Card 1: UsuarioRequestDTO -->
+        <g transform="translate(32, 80)">
+          <rect width="275" height="290" rx="12" fill="#ffffff" stroke="#93c5fd" stroke-width="1.8" filter="url(#dto-sh)"/>
+          <rect width="275" height="5" rx="2.5" fill="#2563eb"/>
+          <rect x="18" y="18" width="145" height="20" rx="5" fill="#eff6ff" stroke="#bfdbfe"/>
+          <text class="d-label" x="90" y="32" fill="#2563eb" text-anchor="middle">ENTRADA (POST / PUT)</text>
+          <text x="18" y="60" font-family="system-ui" font-size="16" font-weight="700" fill="#1e293b">UsuarioRequestDTO</text>
+
+          <rect x="18" y="76" width="239" height="145" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+          <text class="d-mono" x="30" y="100" fill="#334155">+ nombre: String</text>
+          <text class="d-mono" x="30" y="122" fill="#334155">+ apellido: String</text>
+          <text class="d-mono" x="30" y="144" fill="#334155">+ correoInstitucional: String</text>
+          <text class="d-mono" x="30" y="166" fill="#2563eb" font-weight="700">+ password: String (Plano)</text>
+          <text class="d-mono" x="30" y="188" fill="#7c3aed" font-weight="700">+ roles: Set&lt;String&gt;</text>
+          <text class="d-body" x="30" y="210" fill="#64748b" font-size="10.5px">(No permite enviar id ni active)</text>
+
+          <text class="d-body" x="18" y="246">Evita ataques de <tspan font-weight="700" fill="#1e293b">Mass Assignment</tspan></text>
+          <text class="d-body" x="18" y="264">sobre el identificador primario.</text>
+        </g>
+
+        <!-- Arrow 1: toEntity -->
+        <path d="M312,225 L348,225" stroke="#2563eb" stroke-width="2.5" marker-end="url(#da-blue)"/>
+        <text class="d-mono" x="330" y="215" fill="#2563eb" font-size="9.5px" font-weight="700" text-anchor="middle">toEntity</text>
+
+        <!-- Card 2: @Entity Usuario -->
+        <g transform="translate(354, 80)">
+          <rect width="252" height="290" rx="12" fill="#1e293b" stroke="#475569" stroke-width="1.8" filter="url(#dto-sh)"/>
+          <rect width="252" height="5" rx="2.5" fill="#ea580c"/>
+          <rect x="18" y="18" width="135" height="20" rx="5" fill="#334155"/>
+          <text class="d-label" x="85" y="32" fill="#fdba74" text-anchor="middle">MODELO JPA INTERNO</text>
+          <text x="18" y="60" font-family="system-ui" font-size="16" font-weight="700" fill="#ffffff">@Entity Usuario</text>
+
+          <text class="d-mono" x="22" y="95" fill="#facc15">- id: Long (@Id)</text>
+          <text class="d-mono" x="22" y="118" fill="#e2e8f0">- nombre: String</text>
+          <text class="d-mono" x="22" y="141" fill="#e2e8f0">- apellido: String</text>
+          <text class="d-mono" x="22" y="164" fill="#e2e8f0">- correoInstitucional</text>
+          <text class="d-mono" x="22" y="187" fill="#f87171" font-weight="700">- password: Hash BCrypt</text>
+          <text class="d-mono" x="22" y="210" fill="#4ade80">- active: Boolean</text>
+          <text class="d-mono" x="22" y="233" fill="#c084fc" font-weight="700">- roles: Set&lt;Rol&gt; (EAGER)</text>
+          <text class="d-body" x="22" y="265" style="fill:#cbd5e1; font-size:10.5px;">Nunca sale de la capa Service</text>
+        </g>
+
+        <!-- Arrow 2: toResponseDTO -->
+        <path d="M612,225 L648,225" stroke="#059669" stroke-width="2.5" marker-end="url(#da-green)"/>
+        <text class="d-mono" x="630" y="215" fill="#059669" font-size="9.5px" font-weight="700" text-anchor="middle">toDTO</text>
+
+        <!-- Card 3: UsuarioResponseDTO -->
+        <g transform="translate(654, 80)">
+          <rect width="274" height="290" rx="12" fill="#ffffff" stroke="#86efac" stroke-width="1.8" filter="url(#dto-sh)"/>
+          <rect width="274" height="5" rx="2.5" fill="#059669"/>
+          <rect x="18" y="18" width="145" height="20" rx="5" fill="#ecfdf5" stroke="#a7f3d0"/>
+          <text class="d-label" x="90" y="32" fill="#059669" text-anchor="middle">SALIDA SEGURA (JSON)</text>
+          <text x="18" y="60" font-family="system-ui" font-size="16" font-weight="700" fill="#1e293b">UsuarioResponseDTO</text>
+
+          <rect x="18" y="76" width="238" height="145" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+          <text class="d-mono" x="30" y="100" fill="#059669" font-weight="700">+ id: Long</text>
+          <text class="d-mono" x="30" y="122" fill="#334155">+ nombre: String</text>
+          <text class="d-mono" x="30" y="144" fill="#334155">+ apellido: String</text>
+          <text class="d-mono" x="30" y="166" fill="#334155">+ correoInstitucional: String</text>
+          <text class="d-mono" x="30" y="188" fill="#059669" font-weight="700">+ active: Boolean</text>
+          <text class="d-mono" x="30" y="210" fill="#7c3aed" font-weight="700">+ roles: Set&lt;String&gt; (Aplanado)</text>
+
+          <text class="d-body" x="18" y="246"><tspan font-weight="700" fill="#dc2626">Sin campo password:</tspan> Cero riesgo</text>
+          <text class="d-body" x="18" y="264">de filtrar hashes en respuestas HTTP.</text>
+        </g>
+
+        <!-- Bottom note -->
+        <rect x="32" y="388" width="896" height="40" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+        <circle cx="52" cy="408" r="5" fill="#7c3aed"/>
+        <text class="d-body" x="68" y="412" fill="#1e293b">
+          <tspan font-weight="700">Aplanamiento de Relaciones (Flattening):</tspan> Transformamos la entidad compleja <tspan font-family="monospace" fill="#7c3aed">Set&lt;Rol&gt;</tspan> en una lista limpia de nombres <tspan font-family="monospace" fill="#059669">["ADMINISTRADOR"]</tspan>.
+        </text>
+      </svg>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 17: Práctica Ciclo 2 - Codificación de los DTOs
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Práctica Ciclo 2: Codificación de los DTOs de Entrada y Salida',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">1. dto/UsuarioRequestDTO.java (Contrato de Entrada)</div>
+    <pre><code class="language-java">import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.util.Set;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UsuarioRequestDTO {
+
+    private String nombre;
+    private String apellido;
+    private String correoInstitucional;
+    private String password;
+    // Ej: ["ADMINISTRADOR", "PROFESOR"]
+    private Set&lt;String&gt; roles;
+}</code></pre>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-green); margin-bottom:8px;">2. dto/UsuarioResponseDTO.java (Contrato de Salida Segura)</div>
+    <pre><code class="language-java">import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.util.Set;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UsuarioResponseDTO {
+
+    private Long id;
+    private String nombre;
+    private String apellido;
+    private String correoInstitucional;
+    private Boolean active;
+    // Aplanado de Set&lt;Rol&gt; a Set&lt;String&gt;
+    private Set&lt;String&gt; roles;
+}</code></pre>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 18: Separador Micro-Ciclo 3 (Streams y MapStruct)
+    // =========================================================================
+    icesi.sectionSlideEPurple(
+      '03. Java Streams API y Mapeo Estático con MapStruct',
+      'Procesamiento declarativo de colecciones con Streams y generación de mapeadores en tiempo de compilación.'
+    ),
+
+    // =========================================================================
+    // SLIDE 19: Java Streams API (Diagrama SVG Pipeline 960x450)
+    // =========================================================================
+    icesi.slideStandard(
+      'Java Streams API: Transformación y Filtrado Declarativo de Colecciones',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
+        <defs>
+          <style>
+            .s-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
+            .s-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
+            .s-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+            .s-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11.5px; }
+            .s-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; fill: #475569; }
+          </style>
+          <filter id="st-sh" x="-4%" y="-4%" width="108%" height="110%" filterUnits="objectBoundingBox">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.06"/>
+          </filter>
+          <marker id="sa-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+        </defs>
+
+        <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text class="s-title" x="32" y="34">Anatomía de un Pipeline Funcional con Java Streams</text>
+        <text class="s-sub" x="32" y="54">Reemplaza los bucles for imperativos por tuberías inmutables de evaluación perezosa (Lazy Evaluation)</text>
+
+        <!-- Stage 1: Fuente -->
+        <g transform="translate(32, 82)">
+          <rect width="200" height="190" rx="12" fill="#ffffff" stroke="#93c5fd" stroke-width="1.8" filter="url(#st-sh)"/>
+          <rect width="200" height="5" rx="2.5" fill="#2563eb"/>
+          <text class="s-label" x="16" y="24" fill="#2563eb">1. FUENTE (SOURCE)</text>
+          <text class="s-mono" x="16" y="48" fill="#0f172a" font-weight="700">coleccion.stream()</text>
+          <text class="s-body" x="16" y="74">Abre un flujo secuencial</text>
+          <text class="s-body" x="16" y="92">sobre <tspan font-family="monospace">List&lt;Usuario&gt;</tspan> o</text>
+          <text class="s-body" x="16" y="110"><tspan font-family="monospace">Set&lt;Rol&gt;</tspan> sin modificar</text>
+          <text class="s-body" x="16" y="128">la colección original.</text>
+          <rect x="16" y="144" width="168" height="28" rx="5" fill="#eff6ff"/>
+          <text class="s-mono" x="100" y="162" fill="#1e40af" font-size="10.5px" text-anchor="middle">Stream&lt;Rol&gt;</text>
+        </g>
+
+        <path d="M236,177 L260,177" stroke="#64748b" stroke-width="2" marker-end="url(#sa-arr)"/>
+
+        <!-- Stage 2: Filter -->
+        <g transform="translate(264, 82)">
+          <rect width="205" height="190" rx="12" fill="#ffffff" stroke="#fed7aa" stroke-width="1.8" filter="url(#st-sh)"/>
+          <rect width="205" height="5" rx="2.5" fill="#ea580c"/>
+          <text class="s-label" x="16" y="24" fill="#ea580c">2. FILTRADO (INTERMEDIA)</text>
+          <text class="s-mono" x="16" y="48" fill="#0f172a" font-weight="700">.filter(Predicate&lt;T&gt;)</text>
+          <text class="s-body" x="16" y="74">Evalúa una expresión</text>
+          <text class="s-body" x="16" y="92">lambda booleana y retiene</text>
+          <text class="s-body" x="16" y="110">solo los elementos que</text>
+          <text class="s-body" x="16" y="128">cumplen la condición.</text>
+          <rect x="16" y="144" width="173" height="28" rx="5" fill="#fff7ed"/>
+          <text class="s-mono" x="102" y="162" fill="#c2410c" font-size="10px" text-anchor="middle">u -&gt; u.getActive()</text>
+        </g>
+
+        <path d="M473,177 L497,177" stroke="#64748b" stroke-width="2" marker-end="url(#sa-arr)"/>
+
+        <!-- Stage 3: Map -->
+        <g transform="translate(501, 82)">
+          <rect width="205" height="190" rx="12" fill="#ffffff" stroke="#d8b4fe" stroke-width="1.8" filter="url(#st-sh)"/>
+          <rect width="205" height="5" rx="2.5" fill="#7c3aed"/>
+          <text class="s-label" x="16" y="24" fill="#7c3aed">3. TRANSFORMACIÓN</text>
+          <text class="s-mono" x="16" y="48" fill="#0f172a" font-weight="700">.map(Function&lt;T, R&gt;)</text>
+          <text class="s-body" x="16" y="74">Convierte cada elemento</text>
+          <text class="s-body" x="16" y="92">de tipo <tspan font-family="monospace">T</tspan> (ej. <tspan font-family="monospace">Rol</tspan>) en un</text>
+          <text class="s-body" x="16" y="110">nuevo tipo <tspan font-family="monospace">R</tspan> (<tspan font-family="monospace">String</tspan>) con</text>
+          <text class="s-body" x="16" y="128">Method Reference <tspan font-family="monospace">::</tspan>.</text>
+          <rect x="16" y="144" width="173" height="28" rx="5" fill="#faf5ff"/>
+          <text class="s-mono" x="102" y="162" fill="#6b21a8" font-size="10.5px" text-anchor="middle">.map(Rol::getNombre)</text>
+        </g>
+
+        <path d="M710,177 L734,177" stroke="#64748b" stroke-width="2" marker-end="url(#sa-arr)"/>
+
+        <!-- Stage 4: Collect -->
+        <g transform="translate(738, 82)">
+          <rect width="190" height="190" rx="12" fill="#ffffff" stroke="#86efac" stroke-width="1.8" filter="url(#st-sh)"/>
+          <rect width="190" height="5" rx="2.5" fill="#059669"/>
+          <text class="s-label" x="16" y="24" fill="#059669">4. TERMINAL (COLLECT)</text>
+          <text class="s-mono" x="16" y="48" fill="#0f172a" font-weight="700">.collect() / .toList()</text>
+          <text class="s-body" x="16" y="74">Dispara la ejecución del</text>
+          <text class="s-body" x="16" y="92">pipeline y materializa el</text>
+          <text class="s-body" x="16" y="110">resultado en un <tspan font-family="monospace">List</tspan> o</text>
+          <text class="s-body" x="16" y="128">en un <tspan font-family="monospace">Set</tspan> sin duplicados.</text>
+          <rect x="16" y="144" width="158" height="28" rx="5" fill="#ecfdf5"/>
+          <text class="s-mono" x="95" y="162" fill="#047857" font-size="10px" text-anchor="middle">Collectors.toSet()</text>
+        </g>
+
+        <!-- Bottom Code Box -->
+        <g transform="translate(32, 294)">
+          <rect width="896" height="132" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+          <text class="s-label" x="20" y="24" fill="#38bdf8">COMPARATIVA: BUCLE IMPERATIVO VS. PIPELINE FUNCIONAL CON JAVA STREAMS</text>
+          <text class="s-mono" x="20" y="52" fill="#94a3b8">// Antes (7 líneas con mutación de estado externa):</text>
+          <text class="s-mono" x="20" y="72" fill="#cbd5e1">Set&lt;String&gt; res = new HashSet&lt;&gt;(); for (Rol r : roles) { res.add(r.getNombre()); }</text>
+          <text class="s-mono" x="20" y="98" fill="#4ade80" font-weight="700">// Con Java Streams + Method Reference (Declarativo, conciso y thread-safe):</text>
+          <text class="s-mono" x="20" y="118" fill="#facc15">Set&lt;String&gt; res = roles.stream().map(Rol::getNombre).collect(Collectors.toSet());</text>
+        </g>
+      </svg>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 20: Aplicación de Java Streams en Servicio y Mapeo
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Java Streams Aplicados en la Capa de Servicio y Mapeo',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">1. Filtrado Dinámico en la Capa de Servicio</div>
+    <p style="font-size:13px; color:#334155; line-height:1.45; margin-bottom:10px;">
+      Usamos <code>.stream().filter(...).toList()</code> (introducido en Java 16+) para filtrar colecciones por criterios opcionales como <code>?active=true</code>:
+    </p>
+    <pre><code class="language-java">@Override
+@Transactional(readOnly = true)
+public List&lt;Usuario&gt; obtenerUsuariosPorEstado(Boolean active) {
+    if (active == null) {
+        return usuarioRepository.findAll();
+    }
+    return usuarioRepository.findAll()
+            .stream()
+            .filter(u -&gt; active == u.isActive())
+            .toList();
+}</code></pre>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-purple); margin-bottom:8px;">2. Transformación de Colecciones con .map()</div>
+    <p style="font-size:13px; color:#334155; line-height:1.45; margin-bottom:10px;">
+      Tanto en mapeadores manuales como en métodos personalizados de <strong>MapStruct</strong>, <code>.stream().map()</code> transforma colecciones enteras sin efectos secundarios:
+    </p>
+    <pre><code class="language-java">// Conversión Set&lt;Rol&gt; -> Set&lt;String&gt; en el Mapper
+default Set&lt;String&gt; rolesToStrings(Set&lt;Rol&gt; roles) {
+    if (roles == null) {
+        return Collections.emptySet();
+    }
+    return roles.stream()
+            .map(Rol::getNombre) // Method Reference
+            .collect(Collectors.toSet());
+}
+
+// Conversión List&lt;Usuario&gt; -> List&lt;UsuarioResponseDTO&gt;
+usuarios.stream().map(usuarioMapper::toResponseDTO).toList();</code></pre>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 21: MapStruct vs Reflexión vs Manual + pom.xml
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Estrategias de Conversión Entidad ↔ DTO: ¿Por Qué MapStruct?',
+      `
+    <table class="icesi-table" style="margin-bottom:14px;">
+      <thead>
+        <tr>
+          <th>Criterio</th>
+          <th>Manual (Setters)</th>
+          <th>Reflexión (ModelMapper)</th>
+          <th>MapStruct (JSR 269)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Fase de enlace</strong></td>
+          <td>Compilación</td>
+          <td>Ejecución (Runtime)</td>
+          <td><strong>Compilación</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Rendimiento</strong></td>
+          <td>Máximo (Nativo)</td>
+          <td>Bajo (Usa Reflexión)</td>
+          <td><strong>Máximo (Nativo)</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Detección de Error</strong></td>
+          <td>En compilación</td>
+          <td>Falla en producción</td>
+          <td><strong>En mvn compile</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Mantenibilidad</strong></td>
+          <td>Baja (Boilerplate)</td>
+          <td>Opaca al depurar</td>
+          <td><strong>Alta (Solo Interfaz)</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-purple);">
+      <p style="margin:0; font-size:12.5px; color:#1e293b;">
+        <strong>Sinergia Lombok + MapStruct:</strong> En <code>maven-compiler-plugin</code> declaramos <code>lombok-mapstruct-binding</code> para que Lombok genere los <code>getters/builders</code> antes de que MapStruct escriba la clase <code>Impl</code>.
+      </p>
+    </div>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-purple); margin-bottom:8px;">Configuración en pom.xml (annotationProcessorPaths)</div>
+    <pre><code class="language-xml">&lt;annotationProcessorPaths&gt;
+  &lt;!-- 1. Lombok genera getters, setters y @Builder --&gt;
+  &lt;path&gt;
+    &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+    &lt;artifactId&gt;lombok&lt;/artifactId&gt;
+  &lt;/path&gt;
+  &lt;!-- 2. Binding oficial entre Lombok y MapStruct --&gt;
+  &lt;path&gt;
+    &lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+    &lt;artifactId&gt;lombok-mapstruct-binding&lt;/artifactId&gt;
+    &lt;version&gt;0.2.0&lt;/version&gt;
+  &lt;/path&gt;
+  &lt;!-- 3. Procesador MapStruct (JSR 269) --&gt;
+  &lt;path&gt;
+    &lt;groupId&gt;org.mapstruct&lt;/groupId&gt;
+    &lt;artifactId&gt;mapstruct-processor&lt;/artifactId&gt;
+    &lt;version&gt;1.5.5.Final&lt;/version&gt;
+  &lt;/path&gt;
+&lt;/annotationProcessorPaths&gt;</code></pre>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 22: Práctica Ciclo 3 - UsuarioMapper y Clase Generada
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Práctica Ciclo 3: Interfaz UsuarioMapper y Código Autogenerado',
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">Lo que declaramos: mapper/UsuarioMapper.java</div>
+    <pre><code class="language-java">@Mapper(componentModel = "spring")
+public interface UsuarioMapper {
+
+  @Mapping(target = "roles", source = "roles")
+  UsuarioResponseDTO toResponseDTO(Usuario usuario);
+
+  List&lt;UsuarioResponseDTO&gt; toResponseDTOList(List&lt;Usuario&gt; list);
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "active", ignore = true)
+  @Mapping(target = "roles", ignore = true)
+  Usuario toEntity(UsuarioRequestDTO requestDTO);
+
+  default Set&lt;String&gt; rolesToStrings(Set&lt;Rol&gt; roles) {
+    if (roles == null) return Collections.emptySet();
+    return roles.stream()
+        .map(Rol::getNombre)
+        .collect(Collectors.toSet());
+  }
+}</code></pre>
+    `,
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-green); margin-bottom:8px;">Lo que MapStruct genera en target/generated-sources</div>
+    <pre><code class="language-java">@Component
+public class UsuarioMapperImpl implements UsuarioMapper {
+
+  @Override
+  public UsuarioResponseDTO toResponseDTO(Usuario u) {
+    if (u == null) return null;
+
+    return UsuarioResponseDTO.builder()
+        .id(u.getId())
+        .nombre(u.getNombre())
+        .apellido(u.getApellido())
+        .correoInstitucional(u.getCorreoInstitucional())
+        .active(u.getActive())
+        .roles(rolesToStrings(u.getRoles()))
+        .build();
+  }
+  // + toEntity() y toResponseDTOList() sin reflexión
+}</code></pre>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 23: Separador Micro-Ciclo 4
+    // =========================================================================
+    icesi.sectionSlideEOrange(
+      '04. @RestController, Parámetros HTTP y ResponseEntity<T>',
+      'Mapeo de rutas versionadas, @PathVariable, @RequestParam, @RequestBody y construcción de respuestas HTTP.'
+    ),
+
+    // =========================================================================
+    // SLIDE 24: @RestController y @RequestMapping
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Enrutamiento Semántico: @RestController y @RequestMapping',
+      `
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">@RequestMapping("/api/v1/usuarios") en la Clase</div>
+        <div class="h-item-desc">Centraliza el prefijo del recurso y la versión de la API para evitar repetirlo en cada método del controlador.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Anotaciones Compuestas por Verbo HTTP</div>
+        <div class="h-item-desc"><code>@GetMapping</code>, <code>@PostMapping</code>, <code>@PutMapping</code>, <code>@PatchMapping</code> y <code>@DeleteMapping</code> enlazan cada método con un verbo HTTP exacto.</div>
+      </div>
+    </div>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-orange);">
+      <p style="margin:0; font-size:12.5px; color:#1e293b;">
+        <strong>Composición Jerárquica de la URI:</strong><br>
+        Prefijo de clase <code>/api/v1/usuarios</code> + sub-ruta del método <code>/{id}</code> ➔ <code>GET /api/v1/usuarios/{id}</code>
+      </p>
+    </div>
+    `,
+      `
+    <pre><code class="language-java">@RestController
+@RequestMapping("/api/v1/usuarios")
+@RequiredArgsConstructor
+public class UsuarioRestController {
+
+  private final IUsuarioService usuarioService;
+  private final UsuarioMapper usuarioMapper;
+
+  // GET    /api/v1/usuarios
+  @GetMapping
+  public ResponseEntity&lt;List&lt;UsuarioResponseDTO&gt;&gt; listar() { ... }
+
+  // GET    /api/v1/usuarios/{id}
+  @GetMapping("/{id}")
+  public ResponseEntity&lt;UsuarioResponseDTO&gt; obtener(
+      @PathVariable Long id) { ... }
+
+  // POST   /api/v1/usuarios
+  @PostMapping
+  public ResponseEntity&lt;UsuarioResponseDTO&gt; crear(
+      @RequestBody UsuarioRequestDTO dto) { ... }
+}</code></pre>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 25: Las 4 Formas de Extraer Datos HTTP - 9 positional arguments!
+    // =========================================================================
+    icesi.slideFourCards(
+      'Las 4 Formas de Extraer Datos de una Petición HTTP en Spring',
+      '1. @PathVariable',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Variables de Ruta</strong><br>Extrae identificadores incrustados en el segmento jerárquico de la URI:<br><code>GET /api/v1/usuarios/{id}</code><br><br>Ideal para localizar un recurso único de forma obligatoria.</p>`,
+      '2. @RequestParam',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Query Parameters</strong><br>Extrae pares clave=valor tras el signo <code>?</code> en la URL:<br><code>/api/v1/usuarios?active=true</code><br><br>Soporta <code>required = false</code> y <code>defaultValue</code> para filtros y paginación.</p>`,
+      '3. @RequestBody',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Cuerpo JSON (Payload)</strong><br>Deserializa automáticamente el cuerpo HTTP JSON hacia un DTO Java mediante Jackson:<br><code>@RequestBody UsuarioRequestDTO</code><br><br>Estándar en <code>POST</code> y <code>PUT</code>.</p>`,
+      '4. @RequestHeader',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Cabeceras HTTP</strong><br>Captura metadatos enviados en los headers de la petición:<br><code>X-Client-App: Mobile-Icesi</code><br><br>Útil para trazabilidad, auditoría, versión o idioma.</p>`
+    ),
+
+    // =========================================================================
+    // SLIDE 26: @PathVariable vs @RequestParam en Detalle
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Criterio de Diseño: ¿Cuándo Usar @PathVariable vs. @RequestParam?',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">Usa @PathVariable para Identidad Jerárquica</div>
+    <p style="font-size:13px; color:#334155; line-height:1.45; margin-bottom:10px;">
+      Cuando el dato es parte estructural de la URI que identifica <strong>qué recurso específico</strong> se está consultando o modificando:
+    </p>
+    <pre><code class="language-java">// Identifica de forma única al usuario con ID = 10
+@GetMapping("/{id}")
+public ResponseEntity&lt;UsuarioResponseDTO&gt; obtenerPorId(
+        @PathVariable("id") Long id) { ... }
+
+// Sub-recurso: modifica el estado del usuario con ID = 10
+@PatchMapping("/{id}/estado")
+public ResponseEntity&lt;UsuarioResponseDTO&gt; cambiarEstado(
+        @PathVariable Long id,
+        @RequestParam Boolean active) { ... }</code></pre>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-green); margin-bottom:8px;">Usa @RequestParam para Filtrado Opcional</div>
+    <p style="font-size:13px; color:#334155; line-height:1.45; margin-bottom:10px;">
+      Cuando aplicas criterios de filtrado, búsqueda o paginación sobre una colección y el parámetro puede omitirse:
+    </p>
+    <pre><code class="language-java">// Atiende tanto:
+// GET /api/v1/usuarios             (active == null -> todos)
+// GET /api/v1/usuarios?active=true (solo usuarios activos)
+@GetMapping
+public ResponseEntity&lt;List&lt;UsuarioResponseDTO&gt;&gt; listarUsuarios(
+        @RequestParam(name = "active", required = false) Boolean active,
+        @RequestHeader(name = "X-Client-App",
+                       defaultValue = "Postman") String clientApp) {
+    ...
+}</code></pre>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 27: ResponseEntity<T>
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Control Total de la Respuesta HTTP con ResponseEntity<T>',
+      `
+    <p style="font-size:13px; color:#334155; line-height:1.45; margin-bottom:12px;">
+      <code>ResponseEntity&lt;T&gt;</code> representa la respuesta HTTP completa: permite configurar el <strong>Status Code</strong>, los <strong>Headers</strong> (como <code>Location</code> o <code>Cache-Control</code>) y el <strong>Body tipado</strong>.
+    </p>
+    <div class="h-item h-item-green" style="margin-bottom:10px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">ResponseEntity.ok(dto)</div>
+        <div class="h-item-desc">Retorna <code>200 OK</code> con el DTO serializado en el cuerpo JSON.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-blue" style="margin-bottom:10px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">ResponseEntity.created(location).body(dto)</div>
+        <div class="h-item-desc">Retorna <code>201 Created</code> e incluye la cabecera <code>Location: .../api/v1/usuarios/7</code>.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-orange">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">ResponseEntity.noContent().build()</div>
+        <div class="h-item-desc">Retorna <code>204 No Content</code> sin cuerpo para eliminaciones <code>DELETE</code>.</div>
+      </div>
+    </div>
+    `,
+      `
+    <pre><code class="language-java">// 1. Construcción de URI Location dinámica en POST (201 Created)
+URI location = ServletUriComponentsBuilder
+    .fromCurrentRequest()
+    .path("/{id}")
+    .buildAndExpand(guardado.getId())
+    .toUri();
+
+return ResponseEntity
+    .created(location)
+    .body(usuarioMapper.toResponseDTO(guardado));
+
+// 2. Respuesta con Caché HTTP en GET (200 OK + Cache-Control)
+return ResponseEntity.ok()
+    .cacheControl(CacheControl.maxAge(30, TimeUnit.SECONDS))
+    .header("X-Processed-For-Client", clientApp)
+    .body(response);
+
+// 3. Respuesta de error semántico (404 Not Found / 409 Conflict)
+return ResponseEntity.status(HttpStatus.NOT_FOUND).build();</code></pre>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 28: Práctica Ciclo 4 (Parte A) - UsuarioRestController (GET y POST)
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Práctica Ciclo 4 (Parte A): GET y POST en UsuarioRestController',
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. GET Colección (con Filtro) y GET por ID</div>
+    <pre><code class="language-java">@RestController
+@RequestMapping("/api/v1/usuarios")
+@RequiredArgsConstructor
+public class UsuarioRestController {
+
+  @GetMapping
+  @PreAuthorize("hasAuthority('USER_READ')")
+  public ResponseEntity&lt;List&lt;UsuarioResponseDTO&gt;&gt; listar(
+      @RequestParam(required = false) Boolean active,
+      @RequestHeader(name = "X-Client-App", defaultValue = "Web") String app) {
+    List&lt;Usuario&gt; list = usuarioService.obtenerUsuariosPorEstado(active);
+    return ResponseEntity.ok()
+        .header("X-Processed-For-Client", app)
+        .body(usuarioMapper.toResponseDTOList(list));
+  }
+
+  @GetMapping("/{id}")
+  @PreAuthorize("hasAuthority('USER_READ')")
+  public ResponseEntity&lt;UsuarioResponseDTO&gt; obtener(@PathVariable Long id) {
+    try {
+      Usuario u = usuarioService.obtenerUsuarioPorId(id);
+      return ResponseEntity.ok(usuarioMapper.toResponseDTO(u));
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+  }</code></pre>
+    `,
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-green); margin-bottom:6px;">2. POST Creación (201 Created + 409 Conflict)</div>
+    <pre><code class="language-java">  @PostMapping
+  @PreAuthorize("hasAuthority('USER_CREATE')")
+  public ResponseEntity&lt;UsuarioResponseDTO&gt; crear(
+      @RequestBody UsuarioRequestDTO requestDTO) {
+
+    if (usuarioService.existeCorreo(
+            requestDTO.getCorreoInstitucional())) {
+      return ResponseEntity
+          .status(HttpStatus.CONFLICT).build();
+    }
+
+    Usuario entidad = usuarioMapper.toEntity(requestDTO);
+    Usuario guardado = usuarioService.crearUsuario(
+        entidad, requestDTO.getRoles()
+    );
+
+    URI location = ServletUriComponentsBuilder
+        .fromCurrentRequest()
+        .path("/{id}")
+        .buildAndExpand(guardado.getId())
+        .toUri();
+
+    return ResponseEntity
+        .created(location)
+        .body(usuarioMapper.toResponseDTO(guardado));
+  }</code></pre>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 29: Práctica Ciclo 4 (Parte B) - PUT, PATCH, DELETE y Puente a S2
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Práctica Ciclo 4 (Parte B): PUT, PATCH y DELETE en UsuarioRestController',
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-purple); margin-bottom:6px;">3. PUT (Reemplazo) y PATCH (Estado Parcial)</div>
+    <pre><code class="language-java">  @PutMapping("/{id}")
+  @PreAuthorize("hasAuthority('USER_UPDATE')")
+  public ResponseEntity&lt;UsuarioResponseDTO&gt; actualizar(
+      @PathVariable Long id, @RequestBody UsuarioRequestDTO req) {
+    try {
+      Usuario datos = usuarioMapper.toEntity(req);
+      Usuario act = usuarioService.actualizarUsuario(id, datos, req.getRoles());
+      return ResponseEntity.ok(usuarioMapper.toResponseDTO(act));
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+  }
+  @PatchMapping("/{id}/estado")
+  @PreAuthorize("hasAuthority('USER_UPDATE')")
+  public ResponseEntity&lt;UsuarioResponseDTO&gt; cambiarEstado(
+      @PathVariable Long id, @RequestParam Boolean active) {
+    try {
+      Usuario u = usuarioService.cambiarEstadoActivo(id, active);
+      return ResponseEntity.ok(usuarioMapper.toResponseDTO(u));
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+  }</code></pre>
+    `,
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-orange); margin-bottom:6px;">4. DELETE Semántico (204 No Content)</div>
+    <pre><code class="language-java">  @DeleteMapping("/{id}")
+  @PreAuthorize("hasAuthority('USER_DELETE')")
+  public ResponseEntity&lt;Void&gt; eliminar(@PathVariable Long id) {
+    try {
+      usuarioService.eliminarUsuario(id);
+      return ResponseEntity.noContent().build();
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+  }
+}</code></pre>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-blue); margin-top:12px;">
+      <p style="margin:0; font-size:12.5px; color:#1e293b;">
+        <strong>Puente hacia la Sesión 2:</strong> Al invocar <code>/api/v1/usuarios</code> en Postman sin sesión, un filtro <code>SecurityFilterChain</code> MVC tradicional redirige al HTML <code>/login</code>. En la Sesión 2 configuraremos una cadena Stateless con <strong>JWT</strong>.
+      </p>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 30: Cierre de la Sesión 1
+    // =========================================================================
+    icesi.titleSlideF(
+      'Fin de la Sesión 1',
+      'Próxima Sesión: Filtros, SecurityFilterChain Dual, OncePerRequestFilter y Autenticación Stateless con JWT'
+    )
+  ];
+
+  document.getElementById('icesi-slides').innerHTML = slides.join('\n');
+  icesi.init({
+    hash: true,
+    slideNumber: false,
+    controls: false,
+    progress: true,
+    center: false,
+    width: 1280,
+    height: 720,
+    margin: 0,
+    minScale: 0.2,
+    maxScale: 2.0
+  });
+</script>
+
+</body>
+</html>
+

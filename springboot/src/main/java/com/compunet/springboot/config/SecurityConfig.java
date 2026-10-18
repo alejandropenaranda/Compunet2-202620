@@ -18,10 +18,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/api/**")
+            )
             .authorizeHttpRequests(auth -> auth
                 // Rutas públicas accesibles sin autenticación
-                .requestMatchers("/css/**", "/js/**", "/public/**").permitAll()
-                .requestMatchers("/login", "/access-denied", "/acces-denied").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/public/**", "/api/v1/**").permitAll()
+                .requestMatchers("/login", "/access-denied").permitAll()
 
                 .requestMatchers("/roles-mvc/**", "/permisos-mvc/**").hasRole("ADMINISTRADOR")
 
@@ -42,7 +45,7 @@ public class SecurityConfig {
                 .permitAll()
             )
             .exceptionHandling(ex -> ex
-                .accessDeniedPage("/acces-denied")
+                .accessDeniedPage("/access-denied")
             )
             .build();
     }

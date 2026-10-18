@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -63,7 +64,7 @@ public class UsuarioServiceTest {
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         //2. Act
-        Usuario resultado = usuarioService.registrarUsuario(usuarioEjemplo, "ESTUDIANTE");
+        Usuario resultado = usuarioService.registrarUsuario(usuarioEjemplo);
 
         //3. Assert
         assertNotNull(resultado);
@@ -81,7 +82,7 @@ public class UsuarioServiceTest {
         //2. Act y 3. Assert
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            usuarioService.registrarUsuario(usuarioEjemplo, "ESTUDIANTE");
+            usuarioService.registrarUsuario(usuarioEjemplo);
         });
 
         assertTrue(exception.getMessage().contains("ya se encuentra registrado"));
@@ -100,7 +101,7 @@ public class UsuarioServiceTest {
         //2. Act and 3. Assert
 
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
-            usuarioService.registrarUsuario(usuarioEjemplo, "ROL_FANTASMA");
+            usuarioService.registrarUsuario(usuarioEjemplo, Set.of("ROL_FANTASMA"));
         });
 
         assertTrue(exception.getMessage().contains("El rol especificado no existe"));

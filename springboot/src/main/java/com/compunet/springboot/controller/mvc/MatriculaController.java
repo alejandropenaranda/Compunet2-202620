@@ -1,4 +1,4 @@
-package com.compunet.springboot.controller;
+package com.compunet.springboot.controller.mvc;
 
 import java.util.List;
 
@@ -46,9 +46,9 @@ public class MatriculaController {
     @GetMapping("/nueva")
     public String mostrarFormularioMatricula(Model model) {
         // En el sistema, los estudiantes son usuarios activos (preferiblemente con rol ESTUDIANTE)
-        List<Usuario> estudiantes = usuarioService.listarUsuariosActivosPorRol("ESTUDIANTE");
+        List<Usuario> estudiantes = usuarioService.listarUsuariosPorRol("ESTUDIANTE");
         if (estudiantes.isEmpty()) {
-            estudiantes = usuarioService.listarUsuariosActivos();
+            estudiantes = usuarioService.listarUsuarios();
         }
         List<Curso> cursos = cursoService.listarTodos();
         model.addAttribute("titulo", "Matricular Estudiante en Curso");

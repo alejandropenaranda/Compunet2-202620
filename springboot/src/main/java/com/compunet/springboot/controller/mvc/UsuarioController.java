@@ -1,4 +1,4 @@
-package com.compunet.springboot.controller;
+package com.compunet.springboot.controller.mvc;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class UsuarioController {
      */
     @GetMapping
     public String listarUsuarios(Model model) {
-        List<Usuario> lista = usuarioService.listarUsuariosActivos();
+        List<Usuario> lista = usuarioService.listarUsuarios();
         model.addAttribute("titulo", "Gestión de Usuarios Académicos");
         model.addAttribute("usuarios", lista);
         return "usuarios/lista";
@@ -118,7 +118,7 @@ public class UsuarioController {
      * 6. ELIMINAR FÍSICAMENTE: GET /usuarios/eliminar/{id}
      */
     @GetMapping("/eliminar/{id}")
-    @PreAuthorize("hasAuthoritiy(USER_DELETE)")
+    @PreAuthorize("hasAuthority('USER_DELETE')")
     public String eliminarUsuario(@PathVariable("id") Long id, RedirectAttributes flash) {
         try {
             usuarioService.eliminarUsuario(id);

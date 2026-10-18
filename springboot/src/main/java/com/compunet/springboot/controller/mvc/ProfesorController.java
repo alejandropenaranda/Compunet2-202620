@@ -1,4 +1,4 @@
-package com.compunet.springboot.controller;
+package com.compunet.springboot.controller.mvc;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class ProfesorController {
     @GetMapping("/nuevo")
     public String mostrarFormularioCreacion(Model model) {
         Profesor nuevo = new Profesor();
-        List<Usuario> usuarios = usuarioService.listarUsuariosActivos();
+        List<Usuario> usuarios = usuarioService.listarUsuarios();
         model.addAttribute("titulo", "Registrar Perfil Docente");
         model.addAttribute("profesor", nuevo);
         model.addAttribute("usuarios", usuarios);

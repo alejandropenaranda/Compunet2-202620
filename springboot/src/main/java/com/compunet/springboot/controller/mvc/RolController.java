@@ -1,4 +1,4 @@
-package com.compunet.springboot.controller;
+package com.compunet.springboot.controller.mvc;
 
 import java.util.List;
 

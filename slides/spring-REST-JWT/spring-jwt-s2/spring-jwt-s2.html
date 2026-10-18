@@ -1,0 +1,1520 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Seguridad Stateless con Filtros y JWT en Spring Boot — Sesión 2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Reveal.js Themes & Highlights -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css" id="theme">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+  <!-- ICESI Beamer Stylesheet -->
+  <link rel="stylesheet" href="../dist/main.css?v=28">
+
+  <style>
+    /* Strict 16:9 1280x720 Base Dimensions */
+    .reveal .slides {
+      width: 1280px !important;
+      height: 720px !important;
+      text-align: left;
+    }
+    .reveal section.slide {
+      width: 1280px !important;
+      height: 720px !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+      background: #ffffff;
+    }
+
+    /* Global Brand & Logo adjustments: logo placed at top: 32px, height: ~45px (ends at ~77px) */
+    .slide .logo-positive,
+    .slide .logo-negative {
+      position: absolute !important;
+      top: 32px !important;
+      left: 60px !important;
+      width: 160px !important;
+      height: auto !important;
+      z-index: 20 !important;
+    }
+    .slide.title-f .logo-positive {
+      filter: brightness(0) invert(1) !important;
+    }
+
+    /* REGLA 1: PADDING DE AL MENOS 1 CM DESDE EL LOGO Y EL CONTENIDO */
+    .slide.standard .slide-header,
+    .slide.two-cols .slide-header,
+    .slide.three-cols .slide-header,
+    .slide.four-cards .slide-header {
+      position: absolute !important;
+      left: 60px !important;
+      top: 125px !important;
+      width: 1160px !important;
+      height: 48px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      z-index: 10 !important;
+    }
+    .slide.standard .slide-header h2,
+    .slide.two-cols .slide-header h2,
+    .slide.three-cols .slide-header h2,
+    .slide.four-cards .slide-header h2 {
+      position: relative !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      font-size: 29px !important;
+      line-height: 36px !important;
+      font-weight: 700 !important;
+      color: var(--icesi-blue) !important;
+      margin: 0 !important;
+    }
+
+    /* Defined Content Box (Top 190px to 675px = 485px height) Vertically Centered */
+    .slide.standard .slide-content {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+    }
+
+    .slide.two-cols .cols-container {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 36px !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.two-cols .col {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+
+    .slide.three-cols .cols-container {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 20px !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.three-cols .col {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+
+    /* Cards Grids Vertically Centered */
+    .slide.four-cards .cards-grid {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      align-content: center !important;
+      gap: 16px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.four-cards .cards-grid.cards-grid-3 {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 24px !important;
+      align-content: center !important;
+    }
+    .slide.four-cards .cards-grid.cards-grid-2 {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 28px !important;
+      align-content: center !important;
+    }
+
+    .slide.four-cards .card {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 8px !important;
+      background: #FFFFFF !important;
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
+    }
+    .slide.four-cards .card-header {
+      font-size: 13.5px !important;
+      font-weight: 700 !important;
+      padding: 12px 14px !important;
+      letter-spacing: 0.03em !important;
+      text-transform: uppercase !important;
+    }
+    .slide.four-cards .card-body {
+      font-size: 13.2px !important;
+      line-height: 1.45 !important;
+      padding: 16px !important;
+      flex: 1 !important;
+    }
+
+    /* Sidebar Layout Vertically Centered */
+    .slide.sidebar-left .sidebar {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 420px !important;
+      height: 720px !important;
+    }
+    .slide.sidebar-left .sidebar .logo-negative {
+      top: 32px !important;
+      left: 45px !important;
+    }
+    .slide.sidebar-left .sidebar-title {
+      position: absolute !important;
+      left: 465px !important;
+      top: 125px !important;
+      width: 755px !important;
+      height: 48px !important;
+      margin: 0 !important;
+    }
+    .slide.sidebar-left .sidebar-title h2 {
+      position: relative !important;
+      left: 0 !important;
+      top: 0 !important;
+      margin: 0 !important;
+      font-size: 29px !important;
+      line-height: 36px !important;
+      font-weight: 700 !important;
+      color: var(--icesi-blue) !important;
+    }
+    .slide.sidebar-left .sidebar-content {
+      position: absolute !important;
+      left: 465px !important;
+      top: 190px !important;
+      width: 755px !important;
+      height: 485px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* Stripe Slides Vertically Centered */
+    .slide.stripe-top-left .slide-title,
+    .slide.stripe-top-right .slide-title {
+      position: absolute !important;
+      top: 172px !important;
+      height: 45px !important;
+      font-size: 26px !important;
+      line-height: 34px !important;
+      font-weight: 700 !important;
+      color: #ffffff !important;
+      margin: 0 !important;
+    }
+    .slide.stripe-top-left .slide-title {
+      left: 55px !important;
+      width: 720px !important;
+    }
+    .slide.stripe-top-right .slide-title {
+      left: 510px !important;
+      width: 710px !important;
+    }
+    .slide.stripe-top-left .slide-content,
+    .slide.stripe-top-right .slide-content {
+      position: absolute !important;
+      left: 55px !important;
+      top: 250px !important;
+      width: 1170px !important;
+      height: 425px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* REGLA 2: SEPARADORES DE TEMAS FULL COLOR CON TEXTO CENTRADO VERTICALMENTE */
+    .slide.section-e {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      text-align: center !important;
+      padding: 0 100px !important;
+      box-sizing: border-box !important;
+      width: 1280px !important;
+      height: 720px !important;
+    }
+    .slide.section-e .section-title {
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      width: 1080px !important;
+      font-size: 46px !important;
+      line-height: 1.25 !important;
+      font-weight: 700 !important;
+      margin: 0 0 20px 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+      color: #ffffff !important;
+      hyphens: none !important;
+    }
+    .slide.section-e .section-content {
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      width: 1080px !important;
+      height: auto !important;
+      font-size: 23px !important;
+      line-height: 1.45 !important;
+      font-weight: 400 !important;
+      color: rgba(255, 255, 255, 0.95) !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+    }
+    .slide.section-e.bg-yellow .section-content {
+      color: rgba(30, 41, 59, 0.95) !important;
+    }
+    .slide.section-e.bg-purple {
+      background: var(--icesi-purple) !important;
+      color: #ffffff !important;
+    }
+
+    /* Code styling enhancements */
+    pre {
+      margin: 0 !important;
+      width: 100% !important;
+    }
+    pre code {
+      font-size: 12.2px !important;
+      line-height: 1.35 !important;
+      border-radius: 8px !important;
+      padding: 12px 14px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      background: #1e1e2e !important;
+      color: #cdd6f4 !important;
+      box-sizing: border-box !important;
+      max-height: 460px !important;
+    }
+
+    .hljs-meta { color: #79c0ff !important; font-weight: bold; }
+    .hljs-keyword { color: #ff7b72 !important; font-weight: bold; }
+    .hljs-type, .hljs-title.class_ { color: #ffa657 !important; }
+    .hljs-title.function_ { color: #d2a8ff !important; }
+    .hljs-string { color: #7ee787 !important; }
+    .hljs-number, .hljs-literal { color: #f2cc60 !important; }
+    .hljs-comment { color: #8b949e !important; font-style: italic; }
+    .hljs-attr { color: #f472b6 !important; }
+
+    /* Horizontal Card Item Pattern */
+    .h-item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      padding: 10px 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .h-item-icon {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+    }
+    .h-item-blue { border-left: 4px solid var(--icesi-blue); }
+    .h-item-blue .h-item-icon { background: rgba(84,84,233,0.12); color: var(--icesi-blue); }
+    .h-item-green { border-left: 4px solid var(--icesi-green); }
+    .h-item-green .h-item-icon { background: rgba(76,185,121,0.12); color: var(--icesi-green); }
+    .h-item-orange { border-left: 4px solid var(--icesi-orange); }
+    .h-item-orange .h-item-icon { background: rgba(233,104,59,0.12); color: var(--icesi-orange); }
+    .h-item-purple { border-left: 4px solid var(--icesi-purple); }
+    .h-item-purple .h-item-icon { background: rgba(134,92,240,0.12); color: var(--icesi-purple); }
+
+    .h-item-title { font-size: 14px; font-weight: 700; color: #1e293b; line-height: 1.25; margin-bottom: 3px; }
+    .h-item-desc { font-size: 12.5px; color: #475569; line-height: 1.38; }
+
+    /* Callout Card */
+    .callout-box {
+      background: #f8fafc;
+      border: 1px solid #CBD5E1;
+      border-left: 5px solid var(--icesi-blue);
+      border-radius: 8px;
+      padding: 11px 15px;
+    }
+
+    /* Tables */
+    table.icesi-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid #cbd5e1;
+    }
+    table.icesi-table th {
+      background: var(--icesi-blue);
+      color: #ffffff;
+      padding: 10px 14px;
+      font-weight: 700;
+      text-align: left;
+      font-size: 13px;
+    }
+    table.icesi-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+      line-height: 1.35;
+    }
+    table.icesi-table tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* Hide Navigation Controls / Arrows */
+    .reveal .controls,
+    .reveal aside.controls {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides" id="icesi-slides"></div>
+</div>
+
+<!-- Reveal.js & Plugins -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/highlight/highlight.min.js"></script>
+
+<!-- ICESI Beamer Library -->
+<script src="../dist/main.js?v=28"></script>
+
+<script>
+  icesi.setBasePath('../../');
+
+  const slides = [
+
+    // =========================================================================
+    // SLIDE 1: Portada
+    // =========================================================================
+    icesi.titleSlideA(
+      'Filtros, SecurityFilterChain y Seguridad Stateless con JWT',
+      'Sesión 2: OncePerRequestFilter, Estándar RFC 7519 e Implementación con JJWT 0.12+<br><span class="slide-footer-tag">Computación en Internet II — Universidad Icesi</span>'
+    ),
+
+    // =========================================================================
+    // SLIDE 2: Ruta de Aprendizaje — 4 Micro-Ciclos
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Ruta de Aprendizaje — 4 Micro-Ciclos (Teoría ↔ Práctica)',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Primera Mitad: Criptografía JWT y JwtService</div>
+    <div class="h-item h-item-blue" style="margin-bottom:14px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">01. Stateful vs Stateless & Estándar RFC 7519</div>
+        <div class="h-item-desc">Anatomía Header.Payload.Signature, Base64URL vs Encriptación + Dependencias <code>JJWT 0.12.6</code>.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-purple" style="margin-bottom:14px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 2.5 2.5"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">02. Servicio Criptográfico JwtService</div>
+        <div class="h-item-desc">Generación de firma HMAC-SHA256, extracción de Claims + Codificación de <code>JwtServiceImpl.java</code>.</div>
+      </div>
+    </div>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-blue); margin-top:8px;">
+      <p style="margin:0; font-size:12.5px; color:#334155;">
+        <strong>Integración Estándar:</strong> Conectaremos la emisión y validación JWT directamente con los contratos <code>UserDetails</code> y <code>UserDetailsService</code> de Spring Security.
+      </p>
+    </div>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-green); margin-bottom:10px;">Segunda Mitad: OncePerRequestFilter, Dual Chain y Login</div>
+    <div class="h-item h-item-green" style="margin-bottom:14px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">03. Filtros, OncePerRequestFilter & Dual Chain</div>
+        <div class="h-item-desc">Implementación de <code>JwtAuthenticationFilter</code> y coexistencia <code>@Order(1)</code> API + <code>@Order(2)</code> MVC.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-orange" style="margin-bottom:14px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">04. Login REST & Escenarios en Producción</div>
+        <div class="h-item-desc"><code>AuthRestController</code>, robo de tokens, falsificación <code>401</code>, Stale Claims y pruebas en Postman + <code>jwt.io</code>.</div>
+      </div>
+    </div>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-green); margin-top:8px;">
+      <p style="margin:0; font-size:12.5px; color:#334155;">
+        <strong>Meta Final:</strong> Proteger los endpoints bajo <code>/api/**</code> de forma Stateless sin romper las vistas Thymeleaf MVC.
+      </p>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 3: Separador Micro-Ciclo 1
+    // =========================================================================
+    icesi.sectionSlideEBlue(
+      '01. Arquitectura Stateless y Anatomía de JWT (RFC 7519)',
+      'De la cookie JSESSIONID en memoria RAM al token autoportante firmado criptográficamente.'
+    ),
+
+    // =========================================================================
+    // SLIDE 4: Stateful vs Stateless (Diagrama SVG 920x460 estilo spring-security-s1)
+    // =========================================================================
+    icesi.slideStandard(
+      'Contraste Arquitectónico: Sesiones Stateful vs. Tokens Stateless (JWT)',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 460" width="100%" height="460" style="max-width:920px; display:block; margin:0 auto;">
+        <defs>
+          <style>
+            .title { font-family: system-ui, -apple-system, sans-serif; font-size: 20px; font-weight: 700; fill: #0f172a; }
+            .sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; fill: #64748b; }
+            .label { font-family: system-ui, -apple-system, sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+            .h-card{ font-family: system-ui, -apple-system, sans-serif; font-size: 15.5px; font-weight: 700; fill: #1e293b; }
+            .body  { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; fill: #475569; }
+            .mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+          </style>
+          <filter id="stf-shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="objectBoundingBox">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.08"/>
+          </filter>
+        </defs>
+
+        <rect width="920" height="460" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text class="title" x="32" y="36">Estado en Memoria del Servidor vs. Identidad Autoportante</text>
+        <text class="sub" x="32" y="56">Por qué las APIs RESTful reemplazan la HttpSession en RAM por tokens firmados digitalmente</text>
+
+        <!-- COLUMNA 1: STATEFUL -->
+        <g transform="translate(32, 78)">
+          <rect width="410" height="350" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#stf-shadow)"/>
+          <rect x="0" y="0" width="410" height="5" rx="2.5" fill="#ea580c"/>
+          <rect x="20" y="18" width="155" height="22" rx="6" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+          <text class="label" x="97" y="33" fill="#ea580c" text-anchor="middle">MODELO STATEFUL (MVC)</text>
+
+          <text class="h-card" x="20" y="64">1. Sesión Almacenada en Servidor</text>
+          <text class="body" x="20" y="84">Transporte: <tspan fill="#ea580c" font-weight="700">Cookie: JSESSIONID=8A5C1E...</tspan></text>
+
+          <g transform="translate(20, 100)">
+            <rect width="370" height="110" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+            <text class="mono" x="18" y="30" fill="#fdba74" font-weight="700">TOMCAT MEMORY (HttpSession Map)</text>
+            <text class="mono" x="18" y="54" fill="#e2e8f0">Key: "8A5C1E9D" ➔ SecurityContext</text>
+            <text class="mono" x="18" y="76" fill="#94a3b8">Principal: UserDetails (admin)</text>
+            <text class="mono" x="18" y="96" fill="#f87171">Problema: Consume RAM por cada usuario</text>
+          </g>
+
+          <g transform="translate(20, 228)">
+            <text class="label" x="0" y="12" fill="#64748b">LIMITACIONES EN ARQUITECTURAS REST</text>
+            <text class="body" x="0" y="36">• <tspan font-weight="700" fill="#1e293b">Escalamiento Horizontal:</tspan> Si un balanceador envía</text>
+            <text class="body" x="10" y="54">el request al Nodo B, ese nodo no tiene la sesión en RAM.</text>
+            <text class="body" x="0" y="78">• <tspan font-weight="700" fill="#1e293b">Acoplamiento a Cookies:</tspan> Exige soporte de cookies</text>
+            <text class="body" x="10" y="96">y protección adicional contra ataques CSRF.</text>
+          </g>
+        </g>
+
+        <!-- COLUMNA 2: STATELESS -->
+        <g transform="translate(478, 78)">
+          <rect width="410" height="350" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#stf-shadow)"/>
+          <rect x="0" y="0" width="410" height="5" rx="2.5" fill="#2563eb"/>
+          <rect x="20" y="18" width="165" height="22" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+          <text class="label" x="102" y="33" fill="#2563eb" text-anchor="middle">MODELO STATELESS (REST)</text>
+
+          <text class="h-card" x="20" y="64">2. Token Autoportante (JWT)</text>
+          <text class="body" x="20" y="84">Transporte: <tspan fill="#2563eb" font-weight="700">Authorization: Bearer &lt;JWT&gt;</tspan></text>
+
+          <g transform="translate(20, 100)">
+            <rect width="370" height="110" rx="8" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+            <text class="mono" x="18" y="30" fill="#38bdf8" font-weight="700">VERIFICACIÓN MATEMÁTICA EN CPU</text>
+            <text class="mono" x="18" y="54" fill="#e2e8f0">Jwts.parser().verifyWith(secretKey)</text>
+            <text class="mono" x="18" y="76" fill="#4ade80">0 Bytes de HttpSession en Memoria RAM</text>
+            <text class="mono" x="18" y="96" fill="#facc15">SessionCreationPolicy.STATELESS</text>
+          </g>
+
+          <g transform="translate(20, 228)">
+            <text class="label" x="0" y="12" fill="#64748b">VENTAJAS CLOUD-NATIVE Y MOBILE</text>
+            <text class="body" x="0" y="36">• <tspan font-weight="700" fill="#1e293b">100% Escalable:</tspan> Cualquier instancia del servidor</text>
+            <text class="body" x="10" y="54">valida el token usando la clave secreta compartida.</text>
+            <text class="body" x="0" y="78">• <tspan font-weight="700" fill="#1e293b">Clientes Nativos:</tspan> Ideal para apps móviles, SPAs</text>
+            <text class="body" x="10" y="96">y comunicación entre microservicios.</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 5: Anatomía Criptográfica del JWT (Diagrama SVG 960x450 estilo BCrypt)
+    // =========================================================================
+    icesi.slideStandard(
+      'Anatomía de un JSON Web Token (RFC 7519): Header . Payload . Signature',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
+        <defs>
+          <style>
+            .j-title { font-family: system-ui, -apple-system, sans-serif; font-size: 20px; font-weight: 700; fill: #0f172a; }
+            .j-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; fill: #64748b; }
+            .j-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+            .j-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11.5px; }
+            .j-card  { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; rx: 10px; }
+            .j-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; fill: #475569; }
+          </style>
+          <filter id="j-shadow" x="-3%" y="-4%" width="106%" height="110%" filterUnits="userSpaceOnUse">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.05"/>
+          </filter>
+        </defs>
+
+        <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text class="j-title" x="32" y="34">Estructura Compacta Separada por Puntos (xxxxx.yyyyy.zzzzz)</text>
+        <text class="j-sub" x="32" y="54">Tres segmentos codificados en Base64URL que viajan en la cabecera HTTP Authorization: Bearer</text>
+
+        <!-- Central Token Bar -->
+        <g transform="translate(32, 74)">
+          <rect width="896" height="92" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1.5" filter="url(#j-shadow)"/>
+
+          <!-- Part 1: Header -->
+          <rect x="20" y="16" width="235" height="38" rx="6" fill="#fff1f2" stroke="#e11d48" stroke-width="1.5"/>
+          <text class="j-mono" x="137" y="40" fill="#be123c" font-weight="700" font-size="13px" text-anchor="middle">eyJhbGciOiJIUzI1NiJ9</text>
+
+          <circle cx="266" cy="35" r="3.5" fill="#ffffff"/>
+
+          <!-- Part 2: Payload -->
+          <rect x="278" y="16" width="320" height="38" rx="6" fill="#faf5ff" stroke="#7c3aed" stroke-width="1.5"/>
+          <text class="j-mono" x="438" y="40" fill="#6b21a8" font-weight="700" font-size="13px" text-anchor="middle">eyJzdWIiOiJhZG1pbkBpY2VzaS...</text>
+
+          <circle cx="609" cy="35" r="3.5" fill="#ffffff"/>
+
+          <!-- Part 3: Signature -->
+          <rect x="620" y="16" width="256" height="38" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+          <text class="j-mono" x="748" y="40" fill="#047857" font-weight="700" font-size="13px" text-anchor="middle">SflKxwRJSMeKKF2QT4fwpMe</text>
+
+          <text class="j-label" x="137" y="74" fill="#fb7185" text-anchor="middle">1. HEADER (BASE64URL)</text>
+          <text class="j-label" x="438" y="74" fill="#c084fc" text-anchor="middle">2. PAYLOAD / CLAIMS (BASE64URL)</text>
+          <text class="j-label" x="748" y="74" fill="#34d399" text-anchor="middle">3. SIGNATURE (HMAC-SHA256)</text>
+        </g>
+
+        <!-- 3 Cards Breakdown -->
+        <g transform="translate(32, 188)">
+          <!-- Card 1 -->
+          <g transform="translate(0, 0)">
+            <rect class="j-card" width="285" height="182" stroke="#fecdd3" filter="url(#j-shadow)"/>
+            <rect width="285" height="4" rx="2" fill="#e11d48"/>
+            <text class="j-label" x="16" y="24" fill="#e11d48">1. HEADER (METADATOS)</text>
+            <text class="j-mono" x="16" y="48" fill="#0f172a" font-weight="700">{"alg": "HS256", "typ": "JWT"}</text>
+            <text class="j-body" x="16" y="74">• <tspan font-weight="700">alg:</tspan> Algoritmo criptográfico de</text>
+            <text class="j-body" x="24" y="92">firma (HMAC-SHA256 o RSA).</text>
+            <text class="j-body" x="16" y="114">• <tspan font-weight="700">typ:</tspan> Declara el estándar del</text>
+            <text class="j-body" x="24" y="132">token (JSON Web Token).</text>
+            <text class="j-body" x="16" y="156" fill="#be123c" font-weight="700">100% legible al decodificar Base64.</text>
+          </g>
+
+          <!-- Card 2 -->
+          <g transform="translate(305, 0)">
+            <rect class="j-card" width="285" height="182" stroke="#d8b4fe" filter="url(#j-shadow)"/>
+            <rect width="285" height="4" rx="2" fill="#7c3aed"/>
+            <text class="j-label" x="16" y="24" fill="#7c3aed">2. PAYLOAD (CLAIMS)</text>
+            <text class="j-mono" x="16" y="48" fill="#0f172a" font-weight="700">sub, iat, exp + authorities</text>
+            <text class="j-body" x="16" y="74">• <tspan font-weight="700">sub (Subject):</tspan> Correo del usuario.</text>
+            <text class="j-body" x="16" y="96">• <tspan font-weight="700">iat / exp:</tspan> Timestamps Unix de</text>
+            <text class="j-body" x="24" y="114">emisión y expiración obligatoria.</text>
+            <text class="j-body" x="16" y="136">• <tspan font-weight="700">Custom Claims:</tspan> Lista de roles y</text>
+            <text class="j-body" x="24" y="154">permisos (<tspan font-family="monospace">USER_READ</tspan>, etc.).</text>
+          </g>
+
+          <!-- Card 3 -->
+          <g transform="translate(611, 0)">
+            <rect class="j-card" width="285" height="182" stroke="#a7f3d0" filter="url(#j-shadow)"/>
+            <rect width="285" height="4" rx="2" fill="#059669"/>
+            <text class="j-label" x="16" y="24" fill="#059669">3. SIGNATURE (INTEGRIDAD)</text>
+            <text class="j-mono" x="16" y="48" fill="#0f172a" font-weight="700">HMACSHA256(H + "." + P, key)</text>
+            <text class="j-body" x="16" y="74">• Se calcula combinando el Header,</text>
+            <text class="j-body" x="24" y="92">el Payload y la <tspan font-weight="700">clave secreta</tspan>.</text>
+            <text class="j-body" x="16" y="114">• Impide que un atacante modifique</text>
+            <text class="j-body" x="24" y="132">su rol o extienda la fecha <tspan font-family="monospace">exp</tspan></text>
+            <text class="j-body" x="24" y="150">sin ser detectado al instante.</text>
+          </g>
+        </g>
+
+        <!-- Bottom Golden Rule -->
+        <g transform="translate(32, 390)">
+          <rect width="896" height="40" rx="8" fill="#ffffff" stroke="#e2e8f0"/>
+          <circle cx="18" cy="20" r="5" fill="#e11d48"/>
+          <text class="j-body" x="34" y="24">
+            <tspan font-weight="700" fill="#be123c">Regla de Oro:</tspan>
+            <tspan fill="#1e293b"> Un JWT estándar (JWS) está </tspan>
+            <tspan font-weight="700" fill="#0f172a">FIRMADO, NO ENCRIPTADO</tspan>
+            <tspan fill="#475569">. Jamás guardes contraseñas ni datos privados en el Payload.</tspan>
+          </text>
+        </g>
+      </svg>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 6: Base64URL vs Encriptación vs Firma Digital (3 Cards - 7 args!)
+    // =========================================================================
+    icesi.slideThreeCards(
+      'Tres Conceptos Distintos en un JWT: Base64URL, Firma e Integridad',
+      '1. Base64URL (Transporte)',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Reversible sin Clave</strong><br>El Header y el Payload se codifican en <code>Base64URL</code> únicamente para poder viajar como texto seguro en cabeceras HTTP.<br><br><span style="color:#dc2626; font-weight:700;">Cualquiera puede leerlos en jwt.io.</span></p>`,
+      '2. Firma HMAC (Integridad)',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Inmutable sin Secreto</strong><br>La tercera parte del token es un resumen criptográfico calculado con <code>jwt.secret</code>.<br><br><span style="color:#059669; font-weight:700;">Garantiza que ni un solo bit del Payload fue alterado.</span></p>`,
+      '3. ¿Qué Guardar en Claims?',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Solo Identidad y Vigencia</strong><br>Guarda únicamente el identificador (<code>sub: email</code>), tiempos (<code>iat</code>, <code>exp</code>) y permisos públicos.<br><br><span style="color:#2563eb; font-weight:700;">Nunca incluyas hashes ni secretos.</span></p>`
+    ),
+
+    // =========================================================================
+    // SLIDE 7: Simétrico (HS256) vs Asimétrico (RS256)
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Algoritmos de Firma: Simétrico (HS256) vs. Asimétrico (RS256)',
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">HS256 — Firma Simétrica (Clave Secreta Única)</div>
+    <p style="font-size:13px; color:#334155; line-height:1.45; margin-bottom:12px;">
+      Utiliza una <strong>única clave secreta</strong> (mínimo 256 bits / 32 bytes) tanto para <strong>firmar</strong> el token en el login como para <strong>verificarlo</strong> en cada petición entrante.
+    </p>
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Velocidad y Simplicidad</div>
+        <div class="h-item-desc">Cálculo ultrarrápido en CPU. Ideal cuando el mismo backend Spring Boot emite y valida sus propios tokens.</div>
+      </div>
+    </div>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-purple); margin-bottom:8px;">RS256 — Firma Asimétrica (Clave Privada / Pública)</div>
+    <p style="font-size:13px; color:#334155; line-height:1.45; margin-bottom:12px;">
+      El Servidor de Identidad firma el JWT con su <strong>Clave Privada</strong> exclusiva, y los microservicios consumidores lo validan con la <strong>Clave Pública</strong>.
+    </p>
+    <div class="h-item h-item-purple" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">Aislamiento en Microservicios (OAuth2 / OIDC)</div>
+        <div class="h-item-desc">Los microservicios secundarios pueden verificar tokens sin poseer jamás la capacidad de emitir tokens nuevos.</div>
+      </div>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 8: Práctica Ciclo 1 - Dependencias JJWT 0.12.6 y properties
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Práctica Ciclo 1: Dependencias JJWT 0.12.6 y Propiedades',
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. Dependencias Maven en pom.xml</div>
+    <pre><code class="language-xml">&lt;!-- 1. Contratos públicos de JJWT (Compilación) --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;io.jsonwebtoken&lt;/groupId&gt;
+    &lt;artifactId&gt;jjwt-api&lt;/artifactId&gt;
+    &lt;version&gt;0.12.6&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;!-- 2. Implementación criptográfica (Runtime) --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;io.jsonwebtoken&lt;/groupId&gt;
+    &lt;artifactId&gt;jjwt-impl&lt;/artifactId&gt;
+    &lt;version&gt;0.12.6&lt;/version&gt;
+    &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;!-- 3. Serializador JSON Jackson (Runtime) --&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;io.jsonwebtoken&lt;/groupId&gt;
+    &lt;artifactId&gt;jjwt-jackson&lt;/artifactId&gt;
+    &lt;version&gt;0.12.6&lt;/version&gt;
+    &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;</code></pre>
+    `,
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-green); margin-bottom:6px;">2. Configuración en application.properties</div>
+    <pre><code class="language-properties"># Clave secreta en Base64 (Mínimo 256 bits / 32 bytes)
+jwt.secret=NTRmZjg5YzI4NzRkNDllY2I5YzA3ZjM4ZTVhMWI2YzRk...
+
+# Tiempo de expiración en milisegundos (1 hora)
+jwt.expiration=3600000</code></pre>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-orange); margin-top:14px;">
+      <p style="margin:0; font-size:12.5px; color:#1e293b;">
+        <strong>Protección contra Claves Débiles:</strong> <code>Keys.hmacShaKeyFor(bytes)</code> valida que la clave tenga al menos 256 bits. Si es menor, lanza <code>WeakKeyException</code> en el arranque.
+      </p>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 9: Separador Micro-Ciclo 2
+    // =========================================================================
+    icesi.sectionSlideEPurple(
+      '02. Servicio Criptográfico JwtService (JJWT 0.12+)',
+      'Generación de tokens firmados, inyección de authorities y validación criptográfica.'
+    ),
+
+    // =========================================================================
+    // SLIDE 10: Práctica Ciclo 2 (Parte A) - IJwtService y generateToken
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Práctica Ciclo 2 (Parte A): Emisión del Token en JwtServiceImpl',
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-purple); margin-bottom:6px;">1. Interfaz security/jwt/IJwtService.java</div>
+    <pre><code class="language-java">import org.springframework.security.core.userdetails.UserDetails;
+
+public interface IJwtService {
+    String generateToken(UserDetails userDetails);
+    String extractUsername(String token);
+    boolean isTokenValid(String token, UserDetails userDetails);
+    long getExpirationTime();
+}</code></pre>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-purple); margin-top:12px;">
+      <p style="margin:0; font-size:12.5px; color:#1e293b;">
+        <strong>Uso de Java Streams en el Token:</strong> Transformamos <code>userDetails.getAuthorities()</code> en una <code>List&lt;String&gt;</code> limpia usando <code>.stream().map(GrantedAuthority::getAuthority).toList()</code>.
+      </p>
+    </div>
+    `,
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">2. Método generateToken() en JwtServiceImpl.java</div>
+    <pre><code class="language-java">@Service
+public class JwtServiceImpl implements IJwtService {
+
+  @Value("\${jwt.secret}")
+  private String secretKeyBase64;
+
+  @Value("\${jwt.expiration}")
+  private long jwtExpirationMs;
+
+  @Override
+  public String generateToken(UserDetails userDetails) {
+    Map&lt;String, Object&gt; extraClaims = new HashMap&lt;&gt;();
+    List&lt;String&gt; authorities = userDetails.getAuthorities().stream()
+        .map(GrantedAuthority::getAuthority).toList();
+    extraClaims.put("authorities", authorities);
+
+    Date now = new Date(System.currentTimeMillis());
+    return Jwts.builder()
+        .claims(extraClaims)
+        .subject(userDetails.getUsername())
+        .issuedAt(now)
+        .expiration(new Date(now.getTime() + jwtExpirationMs))
+        .signWith(getSigningKey(), Jwts.SIG.HS256)
+        .compact();
+  }</code></pre>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 11: Práctica Ciclo 2 (Parte B) - Verificación Criptográfica
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Práctica Ciclo 2 (Parte B): Verificación y Extracción de Claims',
+      `
+    <pre><code class="language-java">  @Override
+  public String extractUsername(String token) {
+    return extractClaim(token, Claims::getSubject);
+  }
+  @Override
+  public boolean isTokenValid(String token, UserDetails user) {
+    final String username = extractUsername(token);
+    return username.equals(user.getUsername()) &amp;&amp; !isTokenExpired(token);
+  }
+  private boolean isTokenExpired(String token) {
+    return extractClaim(token, Claims::getExpiration).before(new Date());
+  }
+  private Claims extractAllClaims(String token) {
+    return Jwts.parser()
+        .verifyWith(getSigningKey())
+        .build()
+        .parseSignedClaims(token)
+        .getPayload();
+  }
+  private SecretKey getSigningKey() {
+    byte[] keyBytes = Decoders.BASE64.decode(secretKeyBase64);
+    return Keys.hmacShaKeyFor(keyBytes);
+  }</code></pre>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">¿Qué Hace parseSignedClaims(token)?</div>
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">1. Verificación de Firma (SignatureException)</div>
+        <div class="h-item-desc">Recalcula el hash HMAC-SHA256 con <code>getSigningKey()</code>. Si el payload fue modificado en 1 bit, lanza excepción.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">2. Control de Vigencia (ExpiredJwtException)</div>
+        <div class="h-item-desc">Verifica automáticamente que la hora actual no supere el atributo <code>exp</code> del token.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-green">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">3. Extracción Funcional con Function&lt;Claims, T&gt;</div>
+        <div class="h-item-desc"><code>extractClaim(token, Claims::getSubject)</code> aplica referencias a métodos para extraer cualquier atributo de forma tipada.</div>
+      </div>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 12: Separador Micro-Ciclo 3
+    // =========================================================================
+    icesi.sectionSlideEGreen(
+      '03. Filtros, OncePerRequestFilter y SecurityFilterChain Dual',
+      'Intercepción HTTP antes del DispatcherServlet y coexistencia entre API Stateless y Vistas MVC.'
+    ),
+
+    // =========================================================================
+    // SLIDE 13: Arquitectura de JwtAuthenticationFilter en la Cadena (SVG 980x465)
+    // =========================================================================
+    icesi.slideStandard(
+      'Arquitectura de Intercepción: JwtAuthenticationFilter en la Filter Chain',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 465" width="100%" height="465" style="max-width:980px; display:block; margin:0 auto;">
+        <defs>
+          <style>
+            .f-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
+            .f-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
+            .f-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+            .f-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 10.5px; }
+            .f-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; fill: #475569; }
+          </style>
+          <filter id="flt-sh" x="-4%" y="-4%" width="108%" height="110%" filterUnits="objectBoundingBox">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.06"/>
+          </filter>
+          <marker id="fa-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+          <marker id="fa-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+          <marker id="fa-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+        </defs>
+
+        <rect width="980" height="465" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text class="f-title" x="30" y="34">Flujo de Autenticación Stateless por Petición (.addFilterBefore)</text>
+        <text class="f-sub" x="30" y="54">El filtro JWT intercepta el header Authorization antes de UsernamePasswordAuthenticationFilter</text>
+
+        <!-- Top Pipeline -->
+        <g transform="translate(30, 72)">
+          <!-- Client -->
+          <rect x="0" y="14" width="120" height="62" rx="8" fill="#1e293b"/>
+          <text class="f-label" x="60" y="36" fill="#38bdf8" text-anchor="middle">CLIENTE REST</text>
+          <text class="f-mono" x="60" y="54" fill="#e2e8f0" text-anchor="middle">Bearer eyJhbG...</text>
+
+          <path d="M122,45 L152,45" stroke="#2563eb" stroke-width="2" marker-end="url(#fa-blue)"/>
+
+          <!-- Chain Container -->
+          <rect x="156" y="0" width="560" height="90" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="6 4"/>
+          <rect x="168" y="8" width="255" height="16" rx="4" fill="#2563eb"/>
+          <text class="f-mono" x="295" y="19" fill="#ffffff" font-size="8.5px" font-weight="700" text-anchor="middle">SECURITY FILTER CHAIN (@Order(1) /api/**)</text>
+
+          <!-- Filter 1: JwtAuthenticationFilter -->
+          <rect x="168" y="30" width="185" height="48" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="2" filter="url(#flt-sh)"/>
+          <text class="f-mono" x="260" y="50" fill="#065f46" font-weight="700" text-anchor="middle">1. JwtAuthenticationFilter</text>
+          <text class="f-body" x="260" y="66" fill="#047857" font-size="10px" text-anchor="middle">OncePerRequestFilter</text>
+
+          <path d="M355,54 L375,54" stroke="#64748b" stroke-width="1.5" marker-end="url(#fa-gray)"/>
+
+          <!-- Filter 2: UsernamePassword -->
+          <rect x="378" y="30" width="160" height="48" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+          <text class="f-mono" x="458" y="50" fill="#64748b" font-weight="700" text-anchor="middle">2. UsernamePassword</text>
+          <text class="f-body" x="458" y="66" fill="#94a3b8" font-size="10px" text-anchor="middle">(Continúa sin acción)</text>
+
+          <path d="M540,54 L560,54" stroke="#64748b" stroke-width="1.5" marker-end="url(#fa-gray)"/>
+
+          <!-- Filter 3: AuthorizationFilter -->
+          <rect x="563" y="30" width="140" height="48" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.8" filter="url(#flt-sh)"/>
+          <text class="f-mono" x="633" y="50" fill="#581c87" font-weight="700" text-anchor="middle">3. AuthorizationFilter</text>
+          <text class="f-body" x="633" y="66" fill="#7c3aed" font-size="10px" text-anchor="middle">Evalúa Authorities</text>
+
+          <path d="M718,45 L748,45" stroke="#059669" stroke-width="2" marker-end="url(#fa-green)"/>
+
+          <!-- Controller -->
+          <rect x="752" y="14" width="168" height="62" rx="8" fill="#2563eb"/>
+          <text class="f-label" x="836" y="36" fill="#ffffff" text-anchor="middle">REST CONTROLLER</text>
+          <text class="f-mono" x="836" y="54" fill="#e0e7ff" text-anchor="middle">@PreAuthorize(...)</text>
+        </g>
+
+        <!-- Bottom 3 Cards: What JwtAuthenticationFilter interacts with -->
+        <g transform="translate(30, 195)">
+          <rect width="290" height="240" rx="12" fill="#ffffff" stroke="#93c5fd" stroke-width="1.8" filter="url(#flt-sh)"/>
+          <rect width="290" height="5" rx="2.5" fill="#2563eb"/>
+          <text class="f-label" x="18" y="24" fill="#2563eb">PASO A: VALIDACIÓN CRIPTOGRÁFICA</text>
+          <text x="18" y="48" font-family="system-ui" font-size="15" font-weight="700" fill="#0f172a">IJwtService</text>
+          <text class="f-body" x="18" y="72">1. Extrae el token tras <tspan font-family="monospace">"Bearer "</tspan>.</text>
+          <text class="f-body" x="18" y="94">2. Invoca <tspan font-family="monospace">extractUsername(jwt)</tspan></text>
+          <text class="f-body" x="26" y="112">verificando la firma HMAC-SHA256.</text>
+          <text class="f-body" x="18" y="134">3. Comprueba que el token no haya</text>
+          <text class="f-body" x="26" y="152">expirado (<tspan font-family="monospace">isTokenValid</tspan>).</text>
+          <rect x="18" y="175" width="254" height="44" rx="6" fill="#eff6ff"/>
+          <text class="f-mono" x="145" y="195" fill="#1e40af" font-weight="700" text-anchor="middle">Retorna: Subject (username)</text>
+          <text class="f-body" x="145" y="211" fill="#2563eb" font-size="10px" text-anchor="middle">Ej: "admin@icesi.edu.co"</text>
+
+          <rect x="315" width="290" height="240" rx="12" fill="#ffffff" stroke="#d8b4fe" stroke-width="1.8" filter="url(#flt-sh)"/>
+          <rect x="315" width="290" height="5" rx="2.5" fill="#7c3aed"/>
+          <text class="f-label" x="333" y="24" fill="#7c3aed">PASO B: HIDRATACIÓN DE PERMISOS</text>
+          <text x="333" y="48" font-family="system-ui" font-size="15" font-weight="700" fill="#0f172a">UserDetailsService</text>
+          <text class="f-body" x="333" y="72">1. Busca al usuario en BD mediante</text>
+          <text class="f-body" x="341" y="90"><tspan font-family="monospace">loadUserByUsername(email)</tspan>.</text>
+          <text class="f-body" x="333" y="112">2. Construye <tspan font-family="monospace">UserDetails</tspan> con</text>
+          <text class="f-body" x="341" y="130">sus roles y permisos actualizados.</text>
+          <text class="f-body" x="333" y="152">3. Verifica si la cuenta sigue activa.</text>
+          <rect x="333" y="175" width="254" height="44" rx="6" fill="#faf5ff"/>
+          <text class="f-mono" x="460" y="195" fill="#6b21a8" font-weight="700" text-anchor="middle">GrantedAuthorities Frescos</text>
+          <text class="f-body" x="460" y="211" fill="#7c3aed" font-size="10px" text-anchor="middle">ROLE_ADMIN, USER_READ, USER_DELETE</text>
+
+          <rect x="630" width="290" height="240" rx="12" fill="#ffffff" stroke="#86efac" stroke-width="1.8" filter="url(#flt-sh)"/>
+          <rect x="630" width="290" height="5" rx="2.5" fill="#059669"/>
+          <text class="f-label" x="648" y="24" fill="#059669">PASO C: INYECCIÓN EN EL HILO</text>
+          <text x="648" y="48" font-family="system-ui" font-size="15" font-weight="700" fill="#0f172a">SecurityContextHolder</text>
+          <text class="f-body" x="648" y="72">1. Instancia un objeto autenticado:</text>
+          <text class="f-mono" x="648" y="90" fill="#047857" font-size="10px">UsernamePasswordAuthenticationToken</text>
+          <text class="f-body" x="648" y="112">2. Lo registra en el <tspan font-family="monospace">ThreadLocal</tspan> de</text>
+          <text class="f-body" x="656" y="130">la petición actual.</text>
+          <text class="f-body" x="648" y="152">3. Continúa con <tspan font-family="monospace">filterChain.doFilter()</tspan>.</text>
+          <rect x="648" y="175" width="254" height="44" rx="6" fill="#ecfdf5"/>
+          <text class="f-mono" x="775" y="195" fill="#065f46" font-weight="700" text-anchor="middle">Petición Autenticada (OK)</text>
+          <text class="f-body" x="775" y="211" fill="#059669" font-size="10px" text-anchor="middle">Se destruye al terminar el Request</text>
+        </g>
+      </svg>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 14: ¿Por qué OncePerRequestFilter? (Sidebar Left Purple)
+    // =========================================================================
+    icesi.slideSidebarLeftPurple(
+      '¿Por Qué Extender OncePerRequestFilter?',
+      `
+    <div>
+      <div class="h-item h-item-orange" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">El Problema del Filter Estándar de Jakarta Servlet</div>
+          <div class="h-item-desc">En contenedores como Tomcat, un despacho interno (<code>RequestDispatcher.forward</code> o manejo de errores <code>/error</code>) puede provocar que un filtro normal se ejecute 2 o más veces en la misma petición HTTP.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Garantía de Ejecución Única por Request</div>
+          <div class="h-item-desc"><code>OncePerRequestFilter</code> registra un atributo de control en el request y garantiza que <code>doFilterInternal()</code> se ejecute <strong>exactamente una sola vez</strong> por cada petición del cliente.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-blue">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Regla Fundamental de Continuidad</div>
+          <div class="h-item-desc">Si la petición no trae header <code>Authorization: Bearer</code>, el filtro <strong>NO arroja error</strong>: simplemente invoca <code>filterChain.doFilter(request, response)</code> para permitir rutas públicas como <code>/api/v1/auth/login</code>.</div>
+        </div>
+      </div>
+    </div>
+    `,
+      {
+        type: 'icons',
+        items: [
+          { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>`, label: 'OncePerRequest' },
+          { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`, label: '1 Ejecución / Req' },
+          { icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`, label: 'doFilterInternal' }
+        ]
+      }
+    ),
+
+    // =========================================================================
+    // SLIDE 15: Práctica Ciclo 3 (Parte A) - JwtAuthenticationFilter.java
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Práctica Ciclo 3 (Parte A): Codificación de JwtAuthenticationFilter.java',
+      `
+    <div style="font-size:14px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. Extracción de Cabecera Bearer y Token</div>
+    <pre><code class="language-java">@Component
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+  private final IJwtService jwtService;
+  private final UserDetailsService userDetailsService;
+
+  @Override
+  protected void doFilterInternal(
+      @NonNull HttpServletRequest req,
+      @NonNull HttpServletResponse res,
+      @NonNull FilterChain chain)
+      throws ServletException, IOException {
+
+    final String authHeader = req.getHeader("Authorization");
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+      chain.doFilter(req, res);
+      return;
+    }
+    final String jwt = authHeader.substring(7);</code></pre>
+    `,
+      `
+    <div style="font-size:14px; font-weight:700; color:var(--icesi-green); margin-bottom:6px;">2. Validación e Inyección en SecurityContextHolder</div>
+    <pre><code class="language-java">    try {
+      final String email = jwtService.extractUsername(jwt);
+      if (email != null &amp;&amp; SecurityContextHolder.getContext()
+          .getAuthentication() == null) {
+        UserDetails user = userDetailsService
+            .loadUserByUsername(email);
+        if (jwtService.isTokenValid(jwt, user)) {
+          var authToken = new UsernamePasswordAuthenticationToken(
+              user, null, user.getAuthorities());
+          authToken.setDetails(new WebAuthenticationDetailsSource()
+              .buildDetails(req));
+          SecurityContextHolder.getContext()
+              .setAuthentication(authToken);
+        }
+      }
+    } catch (JwtException | IllegalArgumentException e) {
+      SecurityContextHolder.clearContext();
+    }
+    chain.doFilter(req, res);
+  }
+}</code></pre>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 16: Coexistencia de Múltiples SecurityFilterChain (@Order(1) vs @Order(2))
+    // =========================================================================
+    icesi.slideStandard(
+      'Coexistencia Arquitectónica: Dos SecurityFilterChain en el Mismo Proyecto',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
+        <defs>
+          <style>
+            .du-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
+            .du-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
+            .du-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+            .du-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+            .du-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; fill: #475569; }
+          </style>
+          <filter id="du-sh" x="-4%" y="-4%" width="108%" height="110%" filterUnits="objectBoundingBox">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.06"/>
+          </filter>
+          <marker id="dua-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+          <marker id="dua-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker>
+        </defs>
+
+        <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text class="du-title" x="32" y="34">Enrutamiento Selectivo en FilterChainProxy Mediante @Order</text>
+        <text class="du-sub" x="32" y="54">Protegemos /api/** con JWT Stateless sin romper las vistas Thymeleaf MVC existentes</text>
+
+        <!-- Left Dispatcher Box -->
+        <g transform="translate(32, 165)">
+          <rect width="205" height="125" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1.8" filter="url(#du-sh)"/>
+          <text class="du-label" x="102" y="32" fill="#38bdf8" text-anchor="middle">PUNTO DE ENTRADA</text>
+          <text x="102" y="58" font-family="system-ui" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">FilterChainProxy</text>
+          <text class="du-body" x="102" y="82" style="fill:#cbd5e1;" text-anchor="middle">Evalúa las cadenas en</text>
+          <text class="du-mono" x="102" y="102" fill="#facc15" text-anchor="middle">orden @Order(1), @Order(2)</text>
+        </g>
+
+        <path d="M237,205 L315,145" stroke="#2563eb" stroke-width="2.5" marker-end="url(#dua-blue)"/>
+        <path d="M237,250 L315,310" stroke="#ea580c" stroke-width="2.5" marker-end="url(#dua-orange)"/>
+
+        <!-- Top Chain: @Order(1) API -->
+        <g transform="translate(322, 74)">
+          <rect width="606" height="165" rx="12" fill="#ffffff" stroke="#93c5fd" stroke-width="2" filter="url(#du-sh)"/>
+          <rect width="606" height="5" rx="2.5" fill="#2563eb"/>
+          <rect x="20" y="16" width="140" height="22" rx="5" fill="#eff6ff" stroke="#bfdbfe"/>
+          <text class="du-label" x="90" y="31" fill="#2563eb" text-anchor="middle">@BEAN @ORDER(1)</text>
+          <text x="175" y="32" font-family="system-ui" font-size="16" font-weight="700" fill="#1e293b">apiSecurityFilterChain (Exclusivo para /api/**)</text>
+
+          <text class="du-mono" x="20" y="62" fill="#1e40af" font-weight="700">.securityMatcher("/api/**")</text>
+          <text class="du-body" x="20" y="86">• <tspan font-weight="700" fill="#0f172a">Estado:</tspan> <tspan font-family="monospace">SessionCreationPolicy.STATELESS</tspan> (Cero sesiones en RAM).</text>
+          <text class="du-body" x="20" y="108">• <tspan font-weight="700" fill="#0f172a">CSRF:</tspan> Deshabilitado (<tspan font-family="monospace">csrf.disable()</tspan>) porque no usa cookies de sesión.</text>
+          <text class="du-body" x="20" y="130">• <tspan font-weight="700" fill="#0f172a">Filtro:</tspan> <tspan font-family="monospace" fill="#059669" font-weight="700">.addFilterBefore(jwtAuthenticationFilter, UsernamePassword...)</tspan></text>
+          <text class="du-body" x="20" y="150">• <tspan font-weight="700" fill="#0f172a">Errores:</tspan> Responde JSON puro con códigos <tspan font-family="monospace">401</tspan> y <tspan font-family="monospace">403</tspan>.</text>
+        </g>
+
+        <!-- Bottom Chain: @Order(2) MVC -->
+        <g transform="translate(322, 260)">
+          <rect width="606" height="165" rx="12" fill="#ffffff" stroke="#fed7aa" stroke-width="2" filter="url(#du-sh)"/>
+          <rect width="606" height="5" rx="2.5" fill="#ea580c"/>
+          <rect x="20" y="16" width="140" height="22" rx="5" fill="#fff7ed" stroke="#fed7aa"/>
+          <text class="du-label" x="90" y="31" fill="#ea580c" text-anchor="middle">@BEAN @ORDER(2)</text>
+          <text x="175" y="32" font-family="system-ui" font-size="16" font-weight="700" fill="#1e293b">mvcSecurityFilterChain (Resto de rutas Web /**)</text>
+
+          <text class="du-mono" x="20" y="62" fill="#c2410c" font-weight="700">Sin securityMatcher (Captura /login, /home, /usuarios, /cursos)</text>
+          <text class="du-body" x="20" y="86">• <tspan font-weight="700" fill="#0f172a">Estado:</tspan> Stateful tradicional mediante cookie <tspan font-family="monospace">JSESSIONID</tspan>.</text>
+          <text class="du-body" x="20" y="108">• <tspan font-weight="700" fill="#0f172a">CSRF:</tspan> Activo en todos los formularios Thymeleaf.</text>
+          <text class="du-body" x="20" y="130">• <tspan font-weight="700" fill="#0f172a">Autenticación:</tspan> Formulario HTML <tspan font-family="monospace">.formLogin(f -&gt; f.loginPage("/login"))</tspan>.</text>
+          <text class="du-body" x="20" y="150">• <tspan font-weight="700" fill="#0f172a">Errores:</tspan> Redirige a la vista HTML <tspan font-family="monospace">/login</tspan> o <tspan font-family="monospace">/403</tspan>.</text>
+        </g>
+      </svg>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 17: Práctica Ciclo 3 (Parte B) - SecurityConfig.java
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Práctica Ciclo 3 (Parte B): SecurityConfig.java con @Order(1)',
+      `
+    <pre><code class="language-java">@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+  private final JwtAuthenticationFilter jwtAuthFilter;
+
+  @Bean
+  public AuthenticationManager authenticationManager(
+      AuthenticationConfiguration config) throws Exception {
+    return config.getAuthenticationManager();
+  }
+
+  @Bean
+  @Order(1)
+  public SecurityFilterChain apiFilterChain(HttpSecurity http)
+      throws Exception {
+    http
+      .securityMatcher("/api/**")
+      .csrf(csrf -&gt; csrf.disable())
+      .sessionManagement(sm -&gt; sm
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+      .authorizeHttpRequests(auth -&gt; auth
+        .requestMatchers("/api/v1/auth/**").permitAll()
+        .anyRequest().authenticated())</code></pre>
+    `,
+      `
+    <pre><code class="language-java">      .exceptionHandling(ex -&gt; ex
+        .authenticationEntryPoint((req, res, e) -&gt; {
+          res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+          res.setContentType("application/json");
+          res.getWriter().write(
+            "{\\"error\\": \\"Token JWT ausente o invalido\\"}");
+        })
+        .accessDeniedHandler((req, res, e) -&gt; {
+          res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+          res.setContentType("application/json");
+          res.getWriter().write(
+            "{\\"error\\": \\"Permisos insuficientes (403)\\"}");
+        })
+      )
+      .addFilterBefore(
+        jwtAuthFilter,
+        UsernamePasswordAuthenticationFilter.class
+      );
+
+    return http.build();
+  }
+  // @Bean @Order(2) mvcSecurityFilterChain(...) intacto
+}</code></pre>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 18: Separador Micro-Ciclo 4
+    // =========================================================================
+    icesi.sectionSlideEOrange(
+      '04. Endpoint de Login y Escenarios Críticos en Producción',
+      'Autenticación con AuthenticationManager, emisión del token y análisis de ataques reales.'
+    ),
+
+    // =========================================================================
+    // SLIDE 19: Flujo Completo de Login y Petición Protegida (SVG 960x450)
+    // =========================================================================
+    icesi.slideStandard(
+      'Ciclo de Vida Completo: De POST /api/v1/auth/login al Recurso Protegido',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
+        <defs>
+          <style>
+            .l-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
+            .l-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
+            .l-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+            .l-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; fill: #475569; }
+          </style>
+          <marker id="la-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+          <marker id="la-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker>
+          <marker id="la-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+        </defs>
+
+        <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text class="l-title" x="32" y="34">Secuencia de Emisión y Consumo de un Token JWT</text>
+        <text class="l-sub" x="32" y="54">Fase 1: Intercambio de credenciales por un token firmado | Fase 2: Acceso con Bearer Token</text>
+
+        <!-- Actors -->
+        <rect x="32" y="72" width="150" height="40" rx="6" fill="#1e293b"/>
+        <text x="107" y="97" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">Cliente (Postman)</text>
+
+        <rect x="280" y="72" width="175" height="40" rx="6" fill="#2563eb"/>
+        <text x="367" y="97" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">AuthRestController</text>
+
+        <rect x="545" y="72" width="185" height="40" rx="6" fill="#ea580c"/>
+        <text x="637" y="97" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">AuthManager + BD</text>
+
+        <rect x="780" y="72" width="150" height="40" rx="6" fill="#059669"/>
+        <text x="855" y="97" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">JwtFilter + API</text>
+
+        <!-- Lifelines -->
+        <line x1="107" y1="112" x2="107" y2="425" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="367" y1="112" x2="367" y2="425" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="637" y1="112" x2="637" y2="425" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="855" y1="112" x2="855" y2="425" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+        <!-- Step 1 -->
+        <path d="M112,148 L362,148" stroke="#2563eb" stroke-width="2" marker-end="url(#la-blue)"/>
+        <rect x="132" y="124" width="210" height="20" rx="4" fill="#eff6ff"/>
+        <text class="l-mono" x="237" y="138" fill="#1e40af" font-weight="700" text-anchor="middle">1. POST /api/v1/auth/login</text>
+
+        <!-- Step 2 -->
+        <path d="M372,188 L632,188" stroke="#ea580c" stroke-width="2" marker-end="url(#la-orange)"/>
+        <rect x="392" y="164" width="220" height="20" rx="4" fill="#fff7ed"/>
+        <text class="l-mono" x="502" y="178" fill="#c2410c" font-weight="700" text-anchor="middle">2. authenticate(email, pass)</text>
+
+        <!-- Step 3 -->
+        <path d="M362,235 L112,235" stroke="#059669" stroke-width="2" marker-end="url(#la-green)"/>
+        <rect x="125" y="208" width="224" height="22" rx="4" fill="#ecfdf5" stroke="#86efac"/>
+        <text class="l-mono" x="237" y="223" fill="#065f46" font-weight="700" text-anchor="middle">3. 200 OK: TokenResponseDTO</text>
+
+        <!-- Phase Divider -->
+        <line x1="32" y1="272" x2="928" y2="272" stroke="#cbd5e1" stroke-width="1.5"/>
+        <rect x="310" y="261" width="340" height="22" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
+        <text class="l-body" x="480" y="276" fill="#334155" font-weight="700" font-size="10.5px" text-anchor="middle">FASE 2: CONSUMO DE ENDPOINTS PROTEGIDOS</text>
+
+        <!-- Step 4 -->
+        <path d="M112,325 L850,325" stroke="#2563eb" stroke-width="2" marker-end="url(#la-blue)"/>
+        <rect x="290" y="298" width="380" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+        <text class="l-mono" x="480" y="313" fill="#1e40af" font-weight="700" text-anchor="middle">4. GET /api/v1/usuarios (Authorization: Bearer eyJ...)</text>
+
+        <!-- Step 5 -->
+        <path d="M850,390 L112,390" stroke="#059669" stroke-width="2" marker-end="url(#la-green)"/>
+        <rect x="260" y="362" width="440" height="22" rx="4" fill="#ecfdf5" stroke="#86efac"/>
+        <text class="l-mono" x="480" y="377" fill="#065f46" font-weight="700" text-anchor="middle">5. Verifica Firma + @PreAuthorize('USER_READ') ➔ 200 OK</text>
+      </svg>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 20: Práctica Ciclo 4 - DTOs de Login y AuthRestController
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Práctica Ciclo 4: DTOs de Login y AuthRestController',
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. LoginRequestDTO y TokenResponseDTO</div>
+    <pre><code class="language-java">@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class LoginRequestDTO {
+    private String correoInstitucional;
+    private String password;
+}
+
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class TokenResponseDTO {
+    private String token;
+    private String type;       // "Bearer"
+    private long expiresIn;    // 3600000
+    private String correoInstitucional;
+}</code></pre>
+    <div class="callout-box" style="border-left:4px solid var(--icesi-blue); margin-top:12px;">
+      <p style="margin:0; font-size:12.5px; color:#1e293b;">
+        <strong>Delegación en DaoAuthenticationProvider:</strong> Al llamar a <code>authManager.authenticate(...)</code>, Spring Security valida la contraseña contra el hash BCrypt consultando <code>UserDetailsService</code>.
+      </p>
+    </div>
+    `,
+      `
+    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-green); margin-bottom:6px;">2. controller/rest/AuthRestController.java</div>
+    <pre><code class="language-java">@RestController
+@RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
+public class AuthRestController {
+  private final AuthenticationManager authManager;
+  private final IJwtService jwtService;
+
+  @PostMapping("/login")
+  public ResponseEntity&lt;TokenResponseDTO&gt; login(@RequestBody LoginRequestDTO req) {
+    try {
+      Authentication auth = authManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+          req.getCorreoInstitucional(), req.getPassword()));
+      UserDetails user = (UserDetails) auth.getPrincipal();
+      String jwt = jwtService.generateToken(user);
+      return ResponseEntity.ok(TokenResponseDTO.builder()
+          .token(jwt).type("Bearer")
+          .expiresIn(jwtService.getExpirationTime())
+          .correoInstitucional(user.getUsername()).build());
+    } catch (BadCredentialsException e) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+  }
+}</code></pre>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 21: Escenarios Críticos en Producción (3 Cards - 7 args!)
+    // =========================================================================
+    icesi.slideThreeCards(
+      'Tres Escenarios Críticos de Seguridad JWT en Producción',
+      '1. Robo de Token Vigente',
+      `<p style="font-size:13px; line-height:1.45;"><strong>El Riesgo Stateless</strong><br>Si un atacante roba un JWT válido (por XSS), el servidor lo aceptará hasta que llegue su fecha <code>exp</code>.<br><br><strong>Mitigación:</strong> Emitir <em>Access Tokens</em> de vida corta (5–15 min) + <em>Refresh Tokens</em> en cookie <code>HttpOnly</code> o lista de revocación en Redis.</p>`,
+      '2. Alteración del Payload',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Escalación de Privilegios</strong><br>Un estudiante decodifica su JWT en Base64, cambia <code>ROLE_ESTUDIANTE</code> por <code>ROLE_ADMINISTRADOR</code> y lo reenvía.<br><br><strong>Defensa:</strong> Al no conocer la <code>jwt.secret</code>, el HMAC calculado falla (<code>SignatureException</code> ➔ <code>401 Unauthorized</code>).</p>`,
+      '3. Stale Claims (Datos Viejos)',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Revocación de Rol en Vivo</strong><br>¿Qué pasa si desactivamos un usuario cuyo token aún tiene 45 min de vida?<br><br><strong>Defensa por Hidratación BD:</strong> Al consultar <code>loadUserByUsername(email)</code> en el filtro, obtenemos permisos frescos de la BD al instante.</p>`
+    ),
+
+    // =========================================================================
+    // SLIDE 22: Comparativa Hidratación BD vs 100% Claims Stateless
+    // =========================================================================
+    icesi.slideStandard(
+      'Decisión de Arquitectura: Hidratación desde BD vs. 100% Claims del Token',
+      `
+      <table class="icesi-table" style="margin-bottom:16px;">
+        <thead>
+          <tr>
+            <th>Dimensión Arquitectónica</th>
+            <th>Enfoque A: Hidratación de UserDetails desde BD</th>
+            <th>Enfoque B: 100% Stateless Leyendo Claims del JWT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Costo en Base de Datos</strong></td>
+            <td>1 consulta rápida por clave única (<code>username</code> / <code>email</code>)</td>
+            <td><strong>0 consultas SQL</strong> (Solo verificación criptográfica en CPU)</td>
+          </tr>
+          <tr>
+            <td><strong>Revocación de Roles / Permisos</strong></td>
+            <td><strong>Efecto Inmediato</strong> en la siguiente petición HTTP</td>
+            <td>Diferido hasta que el token expire (<code>exp</code>)</td>
+          </tr>
+          <tr>
+            <td><strong>Desactivación de Cuenta (active=false)</strong></td>
+            <td><strong>Bloqueo Inmediato</strong> al evaluar el estado del usuario</td>
+            <td>El usuario sigue operando hasta que expire su JWT</td>
+          </tr>
+          <tr>
+            <td><strong>Caso de Uso Recomendado</strong></td>
+            <td>Sistemas académicos, financieros y empresariales críticos</td>
+            <td>Microservicios masivos con Access Tokens de 5 minutos</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-box" style="border-left:5px solid var(--icesi-purple);">
+        <p style="margin:0; font-size:13px; color:#1e293b;">
+          <strong>Balance de Ingeniería:</strong> Incluso consultando <code>UserDetailsService</code>, la arquitectura sigue siendo <strong>100% Stateless en la capa web</strong> porque el contenedor no almacena ningún objeto <code>HttpSession</code> en RAM entre peticiones.
+        </p>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 23: Laboratorio Final en Vivo (5 Pruebas en Postman y jwt.io)
+    // =========================================================================
+    icesi.slideStripeTopRight(
+      'Laboratorio Final en Vivo: 5 Pruebas en Postman y jwt.io',
+      `
+    <div style="display: flex; gap: 24px; align-items: center;">
+      <div style="flex: 1.15;">
+        <div class="h-item h-item-orange" style="margin-bottom:10px;">
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">1. Petición sin Token ➔ 401 Unauthorized (JSON)</div>
+            <div class="h-item-desc"><code>GET /api/v1/usuarios</code> sin header <code>Authorization</code> responde 401 en JSON (ya no redirige al HTML <code>/login</code>).</div>
+          </div>
+        </div>
+        <div class="h-item h-item-blue" style="margin-bottom:10px;">
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">2. Login con Rol Estudiante + Inspección en jwt.io</div>
+            <div class="h-item-desc"><code>POST /api/v1/auth/login</code> con credenciales de estudiante y decodificación de los <em>claims</em> en <code>jwt.io</code>.</div>
+          </div>
+        </div>
+        <div class="h-item h-item-purple" style="margin-bottom:10px;">
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">3. Estudiante Invoca GET /usuarios ➔ 403 Forbidden</div>
+            <div class="h-item-desc">El token es auténtico, pero carece del permiso <code>USER_READ</code> exigido por <code>@PreAuthorize</code>.</div>
+          </div>
+        </div>
+        <div class="h-item h-item-green">
+          <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div style="flex:1; min-width:0;">
+            <div class="h-item-title">4 y 5. Login Admin (200/201) y Sabotaje de Firma (401)</div>
+            <div class="h-item-desc">Autenticar con rol Administrador, ejecutar CRUD completo y alterar 1 carácter del token para verificar el rechazo criptográfico.</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex: 0.85; background:#1e1e2e; color:#cdd6f4; border-radius:10px; padding:18px; font-family:'Courier New', monospace; font-size:12px; line-height:1.42; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+        <div style="color:#79c0ff; font-weight:bold;">// POST /api/v1/auth/login</div>
+        <div style="color:#7ee787;">{</div>
+        <div style="color:#7ee787; padding-left:14px;">"correoInstitucional": "admin@icesi.edu.co",</div>
+        <div style="color:#7ee787; padding-left:14px;">"password": "admin123"</div>
+        <div style="color:#7ee787;">}</div>
+        <hr style="border:0; border-top:1px solid #334155; margin:10px 0;"/>
+        <div style="color:#ffa657; font-weight:bold;">// Respuesta 200 OK:</div>
+        <div style="color:#cdd6f4;">{</div>
+        <div style="color:#f2cc60; padding-left:14px;">"token": "eyJhbGciOiJIUzI1NiJ9...",</div>
+        <div style="color:#cdd6f4; padding-left:14px;">"type": "Bearer",</div>
+        <div style="color:#cdd6f4; padding-left:14px;">"expiresIn": 3600000,</div>
+        <div style="color:#cdd6f4; padding-left:14px;">"correoInstitucional": "admin@icesi.edu.co"</div>
+        <div style="color:#cdd6f4;">}</div>
+      </div>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 24: Cierre de la Semana 11
+    // =========================================================================
+    icesi.titleSlideF(
+      'Fin de la Sesión 2 — Semana 11',
+      'Seguridad Stateless con JWT, OncePerRequestFilter y Dual SecurityFilterChain'
+    )
+  ];
+
+  document.getElementById('icesi-slides').innerHTML = slides.join('\n');
+  icesi.init({
+    hash: true,
+    slideNumber: false,
+    controls: false,
+    progress: true,
+    center: false,
+    width: 1280,
+    height: 720,
+    margin: 0,
+    minScale: 0.2,
+    maxScale: 2.0
+  });
+</script>
+
+</body>
+</html>
+

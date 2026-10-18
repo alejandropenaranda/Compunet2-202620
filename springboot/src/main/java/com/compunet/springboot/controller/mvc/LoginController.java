@@ -1,4 +1,4 @@
-package com.compunet.springboot.controller;
+package com.compunet.springboot.controller.mvc;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,9 +11,9 @@ public class LoginController {
         return "login";
     }
 
-    @GetMapping({"/access-denied", "/acces-denied"})
+    @GetMapping({"/access-denied"})
     public String accessDenied() {
-        return "acces-denied"; // Renderiza templates/acces-denied.html
+        return "access-denied"; // Renderiza templates/access-denied.html
     }
     
 }

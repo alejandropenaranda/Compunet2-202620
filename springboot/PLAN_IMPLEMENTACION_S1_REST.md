@@ -22,7 +22,7 @@ Ten presente las características reales del proyecto:
 
 1. **Context Path:** En `src/main/resources/application.properties`:
    ```properties
-   server.servlet.context-path=/springboot-api
+   server.servlet.context-path=/springboot-app
    ```
    Todas las URLs en Postman comienzan por `http://localhost:8080/springboot-api/...`.
 2. **Paquete Raíz:** `com.compunet.springboot`.

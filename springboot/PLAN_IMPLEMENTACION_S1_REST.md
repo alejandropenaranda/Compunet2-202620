@@ -256,9 +256,62 @@ public class UsuarioRestController {
     }
     ```
 
-### 3.B. Práctica en Vivo — Paso 1.3: Interfaz `UsuarioMapper` con `@Named` (20 min)
+### 3.B. Práctica en Vivo — Paso 1.3: Configuración de MapStruct e Interfaz `UsuarioMapper` (20 min)
 
-#### 1. Crear `src/main/java/com/compunet/springboot/mapper/UsuarioMapper.java`
+#### 1. Configuración de MapStruct en `pom.xml`
+Para que MapStruct funcione en Spring Boot y conviva armoniosamente con Lombok (generando las clases de implementación `@Component` en tiempo de compilación sin errores de dependencias), se deben agregar 3 bloques en `springboot/pom.xml`:
+
+##### A. Declarar versiones en `<properties>`:
+```xml
+<properties>
+    <mapstruct.version>1.5.5.Final</mapstruct.version>
+    <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+</properties>
+```
+
+##### B. Añadir la dependencia en `<dependencies>`:
+```xml
+<!-- MapStruct: Anotaciones e interfaces para mapeo DTO <-> Entidad -->
+<dependency>
+    <groupId>org.mapstruct</groupId>
+    <artifactId>mapstruct</artifactId>
+    <version>${mapstruct.version}</version>
+</dependency>
+```
+
+##### C. Configurar `annotationProcessorPaths` en `maven-compiler-plugin`:
+> **¿Por qué es indispensable este orden?**  
+> Tanto Lombok como MapStruct funcionan como procesadores de anotaciones (JSR 269). Si no se declara este plugin con los 3 procesadores en orden estricto, o si se omite `lombok-mapstruct-binding`, MapStruct se ejecutará antes de que Lombok genere los getters, setters y builders, provocando que la clase `UsuarioMapperImpl` no compile o no se genere como bean `@Component` (disparando el error: *`required a bean of type 'UsuarioMapper' that could not be found`*).
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <configuration>
+        <annotationProcessorPaths>
+            <!-- 1. Lombok genera getters, setters y @Builder -->
+            <path>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+            </path>
+            <!-- 2. Binding oficial entre Lombok y MapStruct -->
+            <path>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-mapstruct-binding</artifactId>
+                <version>${lombok-mapstruct-binding.version}</version>
+            </path>
+            <!-- 3. Procesador de MapStruct que genera las clases *Impl.java -->
+            <path>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
+            </path>
+        </annotationProcessorPaths>
+    </configuration>
+</plugin>
+```
+
+#### 2. Crear `src/main/java/com/compunet/springboot/mapper/UsuarioMapper.java`
 Crea el paquete `mapper` y define la interfaz `UsuarioMapper`:
 
 ```java
@@ -279,9 +332,9 @@ public interface UsuarioMapper {
 
     // 1. Mapeo de Entidad a ResponseDTO usando qualifiedByName
     @Mapping(target = "roles", source = "roles", qualifiedByName = "rolesToStrings")
-    UsuarioResponseDTO toResponseDTO(Usuario usuario);
+    UsuarioResponseDTO toUsuarioResponseDTO(Usuario usuario);
 
-    List<UsuarioResponseDTO> toResponseDTOList(List<Usuario> usuarios);
+    List<UsuarioResponseDTO> toUsuarioResponseDTOList(List<Usuario> usuarios);
 
     // 2. Mapeo de RequestDTO a Entidad
     // Ignoramos id (lo genera la BD), active (se asigna en el servicio) y roles:
@@ -304,17 +357,17 @@ public interface UsuarioMapper {
 }
 ```
 
-#### 2. Compilar con Maven y mostrar el código autogenerado
+#### 3. Compilar con Maven y mostrar el código autogenerado
 Ejecuta en la terminal:
 ```bash
 mvn compile
 ```
 Abre en el IDE `target/generated-sources/annotations/com/compunet/springboot/mapper/UsuarioMapperImpl.java`. Muestra a los estudiantes cómo MapStruct:
 1. Generó la clase `@Component public class UsuarioMapperImpl implements UsuarioMapper`.
-2. Generó automáticamente un bucle que recorre `List<Rol>` invocando `rolToString(rol)` para poblar el `Set<String>` del builder de `UsuarioResponseDTO`.
+2. Generó automáticamente un bucle que recorre `List<Rol>` invocando `rolesToStrings(roles)` para poblar el `Set<String>` del builder de `UsuarioResponseDTO`.
 
-#### 3. Inyectar `UsuarioMapper` en `UsuarioRestController`
-Ahora el endpoint `getUsuarios` reemplaza el bloque manual de mapeo por una sola llamada:
+#### 4. Inyectar `UsuarioMapper` en `UsuarioRestController`
+Ahora el endpoint `getUsuarios` reemplaza el bloque manual de mapeo por una sola llamada limpia:
 ```java
 @GetMapping
 public List<UsuarioResponseDTO> getUsuarios(@RequestParam(name = "activo", required = false) Boolean active) {
@@ -322,7 +375,7 @@ public List<UsuarioResponseDTO> getUsuarios(@RequestParam(name = "activo", requi
             ? usuarioService.listarUsuarios(active) 
             : usuarioService.listarUsuarios();
 
-    return usuarioMapper.toResponseDTOList(usuarios);
+    return usuarioMapper.toUsuarioResponseDTOList(usuarios);
 }
 ```
 
@@ -436,7 +489,7 @@ public class UsuarioRestController {
                 ? usuarioService.listarUsuarios(active) 
                 : usuarioService.listarUsuarios();
 
-        return ResponseEntity.ok(usuarioMapper.toResponseDTOList(usuarios));
+        return ResponseEntity.ok(usuarioMapper.toUsuarioResponseDTOList(usuarios));
     }
 
     /**
@@ -451,7 +504,7 @@ public class UsuarioRestController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        UsuarioResponseDTO response = usuarioMapper.toResponseDTO(usuarioOpt.get());
+        UsuarioResponseDTO response = usuarioMapper.toUsuarioResponseDTO(usuarioOpt.get());
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.maxAge(30, TimeUnit.SECONDS).cachePrivate())
                 .eTag(String.valueOf(response.hashCode()))
@@ -475,7 +528,7 @@ public class UsuarioRestController {
                     .buildAndExpand(creado.getId())
                     .toUri();
 
-            return ResponseEntity.created(location).body(usuarioMapper.toResponseDTO(creado));
+            return ResponseEntity.created(location).body(usuarioMapper.toUsuarioResponseDTO(creado));
         } catch (IllegalArgumentException e) {
             // El correo institucional ya se encuentra registrado
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -507,7 +560,7 @@ public class UsuarioRestController {
     public ResponseEntity<UsuarioResponseDTO> alternarEstado(@PathVariable Long id) {
         try {
             Usuario usuarioModificado = usuarioService.alternarEstado(id);
-            return ResponseEntity.ok(usuarioMapper.toResponseDTO(usuarioModificado));
+            return ResponseEntity.ok(usuarioMapper.toUsuarioResponseDTO(usuarioModificado));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }

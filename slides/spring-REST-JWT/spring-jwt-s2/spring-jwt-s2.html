@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -431,13 +431,13 @@
       'Sesión 2: OncePerRequestFilter, Estándar RFC 7519 e Implementación con JJWT 0.12+<br><span class="slide-footer-tag">Computación en Internet II — Universidad Icesi</span>'
     ),
 
-    // =========================================================================
+// =========================================================================
     // SLIDE 2: Ruta de Aprendizaje — 4 Micro-Ciclos
     // =========================================================================
     icesi.slideTwoCols(
       'Ruta de Aprendizaje — 4 Micro-Ciclos (Teoría ↔ Práctica)',
       `
-    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Primera Mitad: Criptografía JWT y JwtService</div>
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Primera Mitad: Estándar JWT y Flujo de Login</div>
     <div class="h-item h-item-blue" style="margin-bottom:14px;">
       <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
       <div style="flex:1; min-width:0;">
@@ -448,30 +448,30 @@
     <div class="h-item h-item-purple" style="margin-bottom:14px;">
       <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 2.5 2.5"/></svg></div>
       <div style="flex:1; min-width:0;">
-        <div class="h-item-title">02. Servicio Criptográfico JwtService</div>
-        <div class="h-item-desc">Generación de firma HMAC-SHA256, extracción de Claims + Codificación de <code>JwtServiceImpl.java</code>.</div>
+        <div class="h-item-title">02. Flujo de Autenticación, Login & Emisión</div>
+        <div class="h-item-desc">DTOs, <code>JwtService.generateToken()</code>, <code>AuthRestController</code> y prueba inmediata en Postman + <code>jwt.io</code>.</div>
       </div>
     </div>
     <div class="callout-box" style="border-left:4px solid var(--icesi-blue); margin-top:8px;">
       <p style="margin:0; font-size:12.5px; color:#334155;">
-        <strong>Integración Estándar:</strong> Conectaremos la emisión y validación JWT directamente con los contratos <code>UserDetails</code> y <code>UserDetailsService</code> de Spring Security.
+        <strong>Enfoque Práctico:</strong> Primero entendemos cómo nace el token (Login) antes de construir la capa de intercepción que lo consume.
       </p>
     </div>
     `,
       `
-    <div style="font-size:15px; font-weight:700; color:var(--icesi-green); margin-bottom:10px;">Segunda Mitad: OncePerRequestFilter, Dual Chain y Login</div>
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-green); margin-bottom:10px;">Segunda Mitad: Autorización, Filtros y Seguridad Dual</div>
     <div class="h-item h-item-green" style="margin-bottom:14px;">
       <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>
       <div style="flex:1; min-width:0;">
-        <div class="h-item-title">03. Filtros, OncePerRequestFilter & Dual Chain</div>
-        <div class="h-item-desc">Implementación de <code>JwtAuthenticationFilter</code> y coexistencia <code>@Order(1)</code> API + <code>@Order(2)</code> MVC.</div>
+        <div class="h-item-title">03. OncePerRequestFilter & Dual Chain</div>
+        <div class="h-item-desc">Verificación criptográfica, <code>JwtAuthenticationFilter</code> y coexistencia <code>@Order(1)</code> API + <code>@Order(2)</code> MVC.</div>
       </div>
     </div>
     <div class="h-item h-item-orange" style="margin-bottom:14px;">
       <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
       <div style="flex:1; min-width:0;">
-        <div class="h-item-title">04. Login REST & Escenarios en Producción</div>
-        <div class="h-item-desc"><code>AuthRestController</code>, robo de tokens, falsificación <code>401</code>, Stale Claims y pruebas en Postman + <code>jwt.io</code>.</div>
+        <div class="h-item-title">04. Escenarios en Producción & Laboratorio Final</div>
+        <div class="h-item-desc">Robo de token, sabotaje de firma (<code>401</code>), Stale Claims y batería completa de 5 pruebas en Postman.</div>
       </div>
     </div>
     <div class="callout-box" style="border-left:4px solid var(--icesi-green); margin-top:8px;">
@@ -482,7 +482,7 @@
     `
     ),
 
-    // =========================================================================
+// =========================================================================
     // SLIDE 3: Separador Micro-Ciclo 1
     // =========================================================================
     icesi.sectionSlideEBlue(
@@ -490,7 +490,7 @@
       'De la cookie JSESSIONID en memoria RAM al token autoportante firmado criptográficamente.'
     ),
 
-    // =========================================================================
+// =========================================================================
     // SLIDE 4: Stateful vs Stateless (Diagrama SVG 920x460 estilo spring-security-s1)
     // =========================================================================
     icesi.slideStandard(
@@ -574,7 +574,7 @@
     `
     ),
 
-    // =========================================================================
+// =========================================================================
     // SLIDE 5: Anatomía Criptográfica del JWT (Diagrama SVG 960x450 estilo BCrypt)
     // =========================================================================
     icesi.slideStandard(
@@ -683,7 +683,7 @@
     `
     ),
 
-    // =========================================================================
+// =========================================================================
     // SLIDE 6: Base64URL vs Encriptación vs Firma Digital (3 Cards - 7 args!)
     // =========================================================================
     icesi.slideThreeCards(
@@ -696,7 +696,7 @@
       `<p style="font-size:13px; line-height:1.45;"><strong>Solo Identidad y Vigencia</strong><br>Guarda únicamente el identificador (<code>sub: email</code>), tiempos (<code>iat</code>, <code>exp</code>) y permisos públicos.<br><br><span style="color:#2563eb; font-weight:700;">Nunca incluyas hashes ni secretos.</span></p>`
     ),
 
-    // =========================================================================
+// =========================================================================
     // SLIDE 7: Simétrico (HS256) vs Asimétrico (RS256)
     // =========================================================================
     icesi.slideTwoCols(
@@ -729,7 +729,7 @@
     `
     ),
 
-    // =========================================================================
+// =========================================================================
     // SLIDE 8: Práctica Ciclo 1 - Dependencias JJWT 0.12.6 y properties
     // =========================================================================
     icesi.slideTwoCols(
@@ -776,33 +776,148 @@ jwt.expiration=3600000</code></pre>
     // SLIDE 9: Separador Micro-Ciclo 2
     // =========================================================================
     icesi.sectionSlideEPurple(
-      '02. Servicio Criptográfico JwtService (JJWT 0.12+)',
-      'Generación de tokens firmados, inyección de authorities y validación criptográfica.'
+      '02. Flujo de Autenticación, Emisión de Tokens y Login REST',
+      'De las credenciales de usuario a la validación con BCrypt y la firma de un token JWT.'
     ),
 
     // =========================================================================
-    // SLIDE 10: Práctica Ciclo 2 (Parte A) - IJwtService y generateToken
+    // SLIDE 10: Flujo de Autenticación REST (Login) - SVG 960x450
+    // =========================================================================
+    icesi.slideStandard(
+      'Arquitectura del Flujo de Autenticación: ¿Cómo Nace un Token JWT?',
+      `
+    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
+        <defs>
+          <style>
+            .as-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
+            .as-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
+            .as-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+            .as-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 10.5px; }
+            .as-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11px; fill: #475569; }
+          </style>
+          <filter id="as-sh" x="-4%" y="-4%" width="108%" height="110%" filterUnits="objectBoundingBox">
+            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.06"/>
+          </filter>
+          <marker id="asa-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+          <marker id="asa-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker>
+          <marker id="asa-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+        </defs>
+
+        <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+        <text class="as-title" x="32" y="34">Flujo de Autenticación REST: Emisión del Token JWT (Login)</text>
+        <text class="as-sub" x="32" y="54">Intercambio de credenciales JSON por un token firmado criptográficamente con HMAC-SHA256</text>
+
+        <!-- 4 Lifeline Actors -->
+        <!-- Actor 1: Cliente REST (center x=105) -->
+        <rect x="30" y="70" width="150" height="42" rx="8" fill="#1e293b" filter="url(#as-sh)"/>
+        <text class="as-label" x="105" y="87" fill="#38bdf8" text-anchor="middle">CLIENTE REST</text>
+        <text x="105" y="103" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">Postman / Frontend</text>
+
+        <!-- Actor 2: AuthRestController (center x=330) -->
+        <rect x="235" y="70" width="190" height="42" rx="8" fill="#2563eb" filter="url(#as-sh)"/>
+        <text class="as-label" x="330" y="87" fill="#bfdbfe" text-anchor="middle">CONTROLADOR REST</text>
+        <text x="330" y="103" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">AuthRestController (/login)</text>
+
+        <!-- Actor 3: AuthenticationManager + BD (center x=575) -->
+        <rect x="470" y="70" width="210" height="42" rx="8" fill="#ea580c" filter="url(#as-sh)"/>
+        <text class="as-label" x="575" y="87" fill="#fed7aa" text-anchor="middle">SPRING SECURITY</text>
+        <text x="575" y="103" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">AuthManager + Provider + BD</text>
+
+        <!-- Actor 4: JwtService (center x=825) -->
+        <rect x="735" y="70" width="180" height="42" rx="8" fill="#059669" filter="url(#as-sh)"/>
+        <text class="as-label" x="825" y="87" fill="#a7f3d0" text-anchor="middle">SERVICIO CRIPTOGRÁFICO</text>
+        <text x="825" y="103" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">IJwtService (JJWT)</text>
+
+        <!-- Lifelines -->
+        <line x1="105" y1="112" x2="105" y2="400" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="330" y1="112" x2="330" y2="400" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="575" y1="112" x2="575" y2="400" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <line x1="825" y1="112" x2="825" y2="400" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+        <!-- Step 1: POST /api/v1/auth/login -->
+        <path d="M105,142 L322,142" stroke="#2563eb" stroke-width="2" marker-end="url(#asa-blue)"/>
+        <rect x="122" y="122" width="185" height="18" rx="4" fill="#eff6ff" stroke="#bfdbfe"/>
+        <text class="as-mono" x="214" y="135" fill="#1e40af" font-weight="700" text-anchor="middle">1. POST /login {email, pass}</text>
+
+        <!-- Step 2: authenticate(...) -->
+        <path d="M330,172 L567,172" stroke="#ea580c" stroke-width="2" marker-end="url(#asa-orange)"/>
+        <rect x="350" y="152" width="200" height="18" rx="4" fill="#fff7ed" stroke="#fed7aa"/>
+        <text class="as-mono" x="450" y="165" fill="#c2410c" font-weight="700" text-anchor="middle">2. authenticate(email, pass)</text>
+
+        <!-- Provider inner box -->
+        <rect x="495" y="184" width="160" height="48" rx="6" fill="#fff7ed" stroke="#ea580c" stroke-width="1.2" stroke-dasharray="3 3"/>
+        <text class="as-body" x="575" y="199" fill="#9a3412" font-size="10px" font-weight="700" text-anchor="middle">DaoAuthenticationProvider:</text>
+        <text class="as-body" x="575" y="213" fill="#c2410c" font-size="9.5px" text-anchor="middle">• loadUserByUsername(email)</text>
+        <text class="as-body" x="575" y="225" fill="#c2410c" font-size="9.5px" text-anchor="middle">• BCrypt.matches(pass, hash)</text>
+
+        <!-- Step 3: Return Authentication -->
+        <path d="M575,248 L338,248" stroke="#ea580c" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#asa-orange)"/>
+        <rect x="352" y="234" width="205" height="18" rx="4" fill="#ffffff" stroke="#fed7aa"/>
+        <text class="as-mono" x="454" y="247" fill="#9a3412" font-size="9.5px" font-weight="700" text-anchor="middle">3. Authentication (UserDetails)</text>
+
+        <!-- Step 4: generateToken(...) -->
+        <path d="M330,280 L817,280" stroke="#059669" stroke-width="2" marker-end="url(#asa-green)"/>
+        <rect x="460" y="262" width="220" height="18" rx="4" fill="#ecfdf5" stroke="#a7f3d0"/>
+        <text class="as-mono" x="570" y="275" fill="#065f46" font-weight="700" text-anchor="middle">4. generateToken(userDetails)</text>
+
+        <!-- JwtService inner box -->
+        <rect x="745" y="292" width="160" height="44" rx="6" fill="#ecfdf5" stroke="#059669" stroke-width="1.2" stroke-dasharray="3 3"/>
+        <text class="as-body" x="825" y="306" fill="#065f46" font-size="10px" font-weight="700" text-anchor="middle">JJWT Builder:</text>
+        <text class="as-body" x="825" y="319" fill="#047857" font-size="9.5px" text-anchor="middle">• Claims: subject, authorities, exp</text>
+        <text class="as-body" x="825" y="331" fill="#047857" font-size="9.5px" text-anchor="middle">• Firma: HMAC-SHA256(secret)</text>
+
+        <!-- Step 5: Return JWT String -->
+        <path d="M825,350 L338,350" stroke="#059669" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#asa-green)"/>
+        <rect x="475" y="336" width="190" height="18" rx="4" fill="#ffffff" stroke="#a7f3d0"/>
+        <text class="as-mono" x="570" y="349" fill="#065f46" font-size="9.5px" font-weight="700" text-anchor="middle">5. Token JWT: "eyJhbGci..."</text>
+
+        <!-- Step 6: 200 OK TokenResponseDTO -->
+        <path d="M330,380 L113,380" stroke="#2563eb" stroke-width="2" marker-end="url(#asa-blue)"/>
+        <rect x="120" y="364" width="195" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
+        <text class="as-mono" x="217" y="379" fill="#1e40af" font-weight="700" text-anchor="middle">6. 200 OK: TokenResponseDTO</text>
+
+        <!-- Bottom callout -->
+        <g transform="translate(30, 410)">
+          <rect width="895" height="26" rx="6" fill="#f1f5f9" stroke="#cbd5e1"/>
+          <text class="as-body" x="447" y="17" fill="#334155" font-size="10.5px" text-anchor="middle">
+            <tspan font-weight="700" fill="#2563eb">Punto Clave:</tspan>
+            <tspan> /api/v1/auth/** está en permitAll(). El filtro JWT no exige token en este endpoint porque es donde el token nace.</tspan>
+          </text>
+        </g>
+      </svg>
+    </div>
+    `
+    ),
+
+    // =========================================================================
+    // SLIDE 11: Práctica Ciclo 2 (Parte A) - DTOs y generateToken()
     // =========================================================================
     icesi.slideTwoCols(
-      'Práctica Ciclo 2 (Parte A): Emisión del Token en JwtServiceImpl',
+      'Práctica Ciclo 2 (Parte A): DTOs de Login y generateToken()',
       `
-    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-purple); margin-bottom:6px;">1. Interfaz security/jwt/IJwtService.java</div>
-    <pre><code class="language-java">import org.springframework.security.core.userdetails.UserDetails;
+    <div style="font-size:14px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. DTOs de Login y Respuesta de Token</div>
+    <pre><code class="language-java">@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class LoginRequestDTO {
+    private String correoInstitucional;
+    private String password;
+}
 
-public interface IJwtService {
-    String generateToken(UserDetails userDetails);
-    String extractUsername(String token);
-    boolean isTokenValid(String token, UserDetails userDetails);
-    long getExpirationTime();
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class TokenResponseDTO {
+    private String token;
+    private String type;       // "Bearer"
+    private long expiresIn;    // 3600000
+    private String correoInstitucional;
 }</code></pre>
-    <div class="callout-box" style="border-left:4px solid var(--icesi-purple); margin-top:12px;">
-      <p style="margin:0; font-size:12.5px; color:#1e293b;">
-        <strong>Uso de Java Streams en el Token:</strong> Transformamos <code>userDetails.getAuthorities()</code> en una <code>List&lt;String&gt;</code> limpia usando <code>.stream().map(GrantedAuthority::getAuthority).toList()</code>.
+    <div class="callout-box" style="border-left:4px solid var(--icesi-blue); margin-top:8px;">
+      <p style="margin:0; font-size:12px; color:#1e293b;">
+        <strong>Desacoplamiento:</strong> Los DTOs aíslan la entidad interna <code>Usuario</code> del contrato público JSON del endpoint REST.
       </p>
     </div>
     `,
       `
-    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">2. Método generateToken() en JwtServiceImpl.java</div>
+    <div style="font-size:14px; font-weight:700; color:var(--icesi-purple); margin-bottom:6px;">2. generateToken() en JwtServiceImpl.java</div>
     <pre><code class="language-java">@Service
 public class JwtServiceImpl implements IJwtService {
 
@@ -832,71 +947,75 @@ public class JwtServiceImpl implements IJwtService {
     ),
 
     // =========================================================================
-    // SLIDE 11: Práctica Ciclo 2 (Parte B) - Verificación Criptográfica
+    // SLIDE 12: Práctica Ciclo 2 (Parte B) - AuthRestController y Verificación en Postman
     // =========================================================================
     icesi.slideTwoCols(
-      'Práctica Ciclo 2 (Parte B): Verificación y Extracción de Claims',
+      'Práctica Ciclo 2 (Parte B): AuthRestController y Verificación en Postman',
       `
-    <pre><code class="language-java">  @Override
-  public String extractUsername(String token) {
-    return extractClaim(token, Claims::getSubject);
+    <div style="font-size:14px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. controller/rest/AuthRestController.java</div>
+    <pre><code class="language-java">@RestController
+@RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
+public class AuthRestController {
+
+  private final AuthenticationManager authManager;
+  private final IJwtService jwtService;
+
+  @PostMapping("/login")
+  public ResponseEntity&lt;TokenResponseDTO&gt; login(
+      @RequestBody LoginRequestDTO req) {
+    try {
+      Authentication auth = authManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+          req.getCorreoInstitucional(), req.getPassword()));
+      UserDetails user = (UserDetails) auth.getPrincipal();
+      String jwt = jwtService.generateToken(user);
+      return ResponseEntity.ok(TokenResponseDTO.builder()
+          .token(jwt).type("Bearer")
+          .expiresIn(jwtService.getExpirationTime())
+          .correoInstitucional(user.getUsername()).build());
+    } catch (BadCredentialsException e) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
   }
-  @Override
-  public boolean isTokenValid(String token, UserDetails user) {
-    final String username = extractUsername(token);
-    return username.equals(user.getUsername()) &amp;&amp; !isTokenExpired(token);
-  }
-  private boolean isTokenExpired(String token) {
-    return extractClaim(token, Claims::getExpiration).before(new Date());
-  }
-  private Claims extractAllClaims(String token) {
-    return Jwts.parser()
-        .verifyWith(getSigningKey())
-        .build()
-        .parseSignedClaims(token)
-        .getPayload();
-  }
-  private SecretKey getSigningKey() {
-    byte[] keyBytes = Decoders.BASE64.decode(secretKeyBase64);
-    return Keys.hmacShaKeyFor(keyBytes);
-  }</code></pre>
+}</code></pre>
     `,
       `
-    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">¿Qué Hace parseSignedClaims(token)?</div>
-    <div class="h-item h-item-blue" style="margin-bottom:12px;">
-      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+    <div style="font-size:14px; font-weight:700; color:var(--icesi-green); margin-bottom:6px;">2. Exponer Bean y Verificación en Postman + jwt.io</div>
+    <div class="h-item h-item-blue" style="margin-bottom:10px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
       <div style="flex:1; min-width:0;">
-        <div class="h-item-title">1. Verificación de Firma (SignatureException)</div>
-        <div class="h-item-desc">Recalcula el hash HMAC-SHA256 con <code>getSigningKey()</code>. Si el payload fue modificado en 1 bit, lanza excepción.</div>
+        <div class="h-item-title">Exponer AuthenticationManager en SecurityConfig</div>
+        <div class="h-item-desc"><code>@Bean public AuthenticationManager authenticationManager(AuthenticationConfiguration c) throws Exception { return c.getAuthenticationManager(); }</code></div>
       </div>
     </div>
-    <div class="h-item h-item-orange" style="margin-bottom:12px;">
-      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+    <div class="h-item h-item-green" style="margin-bottom:10px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
       <div style="flex:1; min-width:0;">
-        <div class="h-item-title">2. Control de Vigencia (ExpiredJwtException)</div>
-        <div class="h-item-desc">Verifica automáticamente que la hora actual no supere el atributo <code>exp</code> del token.</div>
+        <div class="h-item-title">Test en Postman: POST /api/v1/auth/login</div>
+        <div class="h-item-desc">Enviar JSON con <code>admin@icesi.edu.co</code> / <code>admin123</code>. Recibimos <code>200 OK</code> con el token.</div>
       </div>
     </div>
-    <div class="h-item h-item-green">
-      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+    <div class="h-item h-item-purple">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
       <div style="flex:1; min-width:0;">
-        <div class="h-item-title">3. Extracción Funcional con Function&lt;Claims, T&gt;</div>
-        <div class="h-item-desc"><code>extractClaim(token, Claims::getSubject)</code> aplica referencias a métodos para extraer cualquier atributo de forma tipada.</div>
+        <div class="h-item-title">Inspección Inmediata en jwt.io</div>
+        <div class="h-item-desc">Pega el token en <strong>jwt.io</strong>: Comprueba que <code>sub</code> sea el email, <code>authorities</code> contenga los roles y la firma coincida.</div>
       </div>
     </div>
     `
     ),
 
     // =========================================================================
-    // SLIDE 12: Separador Micro-Ciclo 3
+    // SLIDE 13: Separador Micro-Ciclo 3
     // =========================================================================
     icesi.sectionSlideEGreen(
-      '03. Filtros, OncePerRequestFilter y SecurityFilterChain Dual',
-      'Intercepción HTTP antes del DispatcherServlet y coexistencia entre API Stateless y Vistas MVC.'
+      '03. Flujo de Autorización: OncePerRequestFilter y SecurityFilterChain Dual',
+      'Una vez emitido el token: ¿cómo interceptar peticiones entrantes, verificar firmas y proteger los endpoints /api/**?'
     ),
 
-    // =========================================================================
-    // SLIDE 13: Arquitectura de JwtAuthenticationFilter en la Cadena (SVG 980x465)
+// =========================================================================
+    // SLIDE 14: Arquitectura de JwtAuthenticationFilter en la Cadena (SVG 980x465)
     // =========================================================================
     icesi.slideStandard(
       'Arquitectura de Intercepción: JwtAuthenticationFilter en la Filter Chain',
@@ -1010,8 +1129,8 @@ public class JwtServiceImpl implements IJwtService {
     `
     ),
 
-    // =========================================================================
-    // SLIDE 14: ¿Por qué OncePerRequestFilter? (Sidebar Left Purple)
+// =========================================================================
+    // SLIDE 15: ¿Por qué OncePerRequestFilter? (Sidebar Left Purple)
     // =========================================================================
     icesi.slideSidebarLeftPurple(
       '¿Por Qué Extender OncePerRequestFilter?',
@@ -1050,11 +1169,67 @@ public class JwtServiceImpl implements IJwtService {
       }
     ),
 
-    // =========================================================================
-    // SLIDE 15: Práctica Ciclo 3 (Parte A) - JwtAuthenticationFilter.java
+// =========================================================================
+    // SLIDE 16: Práctica Ciclo 3 (Parte A) - Verificación Criptográfica en JwtServiceImpl
     // =========================================================================
     icesi.slideTwoCols(
-      'Práctica Ciclo 3 (Parte A): Codificación de JwtAuthenticationFilter.java',
+      'Práctica Ciclo 3 (Parte A): Verificación Criptográfica en JwtServiceImpl',
+      `
+    <pre><code class="language-java">  @Override
+  public String extractUsername(String token) {
+    return extractClaim(token, Claims::getSubject);
+  }
+  @Override
+  public boolean isTokenValid(String token, UserDetails user) {
+    final String username = extractUsername(token);
+    return username.equals(user.getUsername()) &amp;&amp; !isTokenExpired(token);
+  }
+  private boolean isTokenExpired(String token) {
+    return extractClaim(token, Claims::getExpiration).before(new Date());
+  }
+  private Claims extractAllClaims(String token) {
+    return Jwts.parser()
+        .verifyWith(getSigningKey())
+        .build()
+        .parseSignedClaims(token)
+        .getPayload();
+  }
+  private SecretKey getSigningKey() {
+    byte[] keyBytes = Decoders.BASE64.decode(secretKeyBase64);
+    return Keys.hmacShaKeyFor(keyBytes);
+  }</code></pre>
+    `,
+      `
+    <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">¿Qué Hace parseSignedClaims(token)?</div>
+    <div class="h-item h-item-blue" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">1. Verificación de Firma (SignatureException)</div>
+        <div class="h-item-desc">Recalcula el hash HMAC-SHA256 con <code>getSigningKey()</code>. Si el payload fue modificado en 1 bit, lanza excepción.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-orange" style="margin-bottom:12px;">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">2. Control de Vigencia (ExpiredJwtException)</div>
+        <div class="h-item-desc">Verifica automáticamente que la hora actual no supere el atributo <code>exp</code> del token.</div>
+      </div>
+    </div>
+    <div class="h-item h-item-green">
+      <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="flex:1; min-width:0;">
+        <div class="h-item-title">3. Extracción Funcional con Function&lt;Claims, T&gt;</div>
+        <div class="h-item-desc"><code>extractClaim(token, Claims::getSubject)</code> aplica referencias a métodos para extraer cualquier atributo de forma tipada.</div>
+      </div>
+    </div>
+    `
+    ),
+
+// =========================================================================
+    // SLIDE 17: Práctica Ciclo 3 (Parte B) - Codificación de JwtAuthenticationFilter.java
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Práctica Ciclo 3 (Parte B): Codificación de JwtAuthenticationFilter.java',
       `
     <div style="font-size:14px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. Extracción de Cabecera Bearer y Token</div>
     <pre><code class="language-java">@Component
@@ -1104,8 +1279,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     `
     ),
 
-    // =========================================================================
-    // SLIDE 16: Coexistencia de Múltiples SecurityFilterChain (@Order(1) vs @Order(2))
+// =========================================================================
+    // SLIDE 18: Coexistencia de Múltiples SecurityFilterChain (@Order(1) vs @Order(2))
     // =========================================================================
     icesi.slideStandard(
       'Coexistencia Arquitectónica: Dos SecurityFilterChain en el Mismo Proyecto',
@@ -1177,11 +1352,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     `
     ),
 
-    // =========================================================================
-    // SLIDE 17: Práctica Ciclo 3 (Parte B) - SecurityConfig.java
+// =========================================================================
+    // SLIDE 19: Práctica Ciclo 3 (Parte C) - SecurityConfig.java con @Order(1)
     // =========================================================================
     icesi.slideTwoCols(
-      'Práctica Ciclo 3 (Parte B): SecurityConfig.java con @Order(1)',
+      'Práctica Ciclo 3 (Parte C): SecurityConfig.java con @Order(1)',
       `
     <pre><code class="language-java">@Configuration
 @EnableWebSecurity
@@ -1238,146 +1413,14 @@ public class SecurityConfig {
     ),
 
     // =========================================================================
-    // SLIDE 18: Separador Micro-Ciclo 4
+    // SLIDE 20: Separador Micro-Ciclo 4
     // =========================================================================
     icesi.sectionSlideEOrange(
-      '04. Endpoint de Login y Escenarios Críticos en Producción',
-      'Autenticación con AuthenticationManager, emisión del token y análisis de ataques reales.'
+      '04. Escenarios Críticos en Producción y Laboratorio Integral',
+      'Vulnerabilidades reales, robo de tokens, escalación de privilegios y validación exhaustiva de 5 pruebas.'
     ),
 
-    // =========================================================================
-    // SLIDE 19: Flujo Completo de Login y Petición Protegida (SVG 960x450)
-    // =========================================================================
-    icesi.slideStandard(
-      'Ciclo de Vida Completo: De POST /api/v1/auth/login al Recurso Protegido',
-      `
-    <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
-        <defs>
-          <style>
-            .l-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
-            .l-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
-            .l-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
-            .l-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; fill: #475569; }
-          </style>
-          <marker id="la-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
-          <marker id="la-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker>
-          <marker id="la-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
-        </defs>
-
-        <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
-        <text class="l-title" x="32" y="34">Secuencia de Emisión y Consumo de un Token JWT</text>
-        <text class="l-sub" x="32" y="54">Fase 1: Intercambio de credenciales por un token firmado | Fase 2: Acceso con Bearer Token</text>
-
-        <!-- Actors -->
-        <rect x="32" y="72" width="150" height="40" rx="6" fill="#1e293b"/>
-        <text x="107" y="97" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">Cliente (Postman)</text>
-
-        <rect x="280" y="72" width="175" height="40" rx="6" fill="#2563eb"/>
-        <text x="367" y="97" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">AuthRestController</text>
-
-        <rect x="545" y="72" width="185" height="40" rx="6" fill="#ea580c"/>
-        <text x="637" y="97" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">AuthManager + BD</text>
-
-        <rect x="780" y="72" width="150" height="40" rx="6" fill="#059669"/>
-        <text x="855" y="97" text-anchor="middle" fill="#ffffff" font-family="system-ui" font-size="12" font-weight="700">JwtFilter + API</text>
-
-        <!-- Lifelines -->
-        <line x1="107" y1="112" x2="107" y2="425" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
-        <line x1="367" y1="112" x2="367" y2="425" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
-        <line x1="637" y1="112" x2="637" y2="425" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
-        <line x1="855" y1="112" x2="855" y2="425" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4"/>
-
-        <!-- Step 1 -->
-        <path d="M112,148 L362,148" stroke="#2563eb" stroke-width="2" marker-end="url(#la-blue)"/>
-        <rect x="132" y="124" width="210" height="20" rx="4" fill="#eff6ff"/>
-        <text class="l-mono" x="237" y="138" fill="#1e40af" font-weight="700" text-anchor="middle">1. POST /api/v1/auth/login</text>
-
-        <!-- Step 2 -->
-        <path d="M372,188 L632,188" stroke="#ea580c" stroke-width="2" marker-end="url(#la-orange)"/>
-        <rect x="392" y="164" width="220" height="20" rx="4" fill="#fff7ed"/>
-        <text class="l-mono" x="502" y="178" fill="#c2410c" font-weight="700" text-anchor="middle">2. authenticate(email, pass)</text>
-
-        <!-- Step 3 -->
-        <path d="M362,235 L112,235" stroke="#059669" stroke-width="2" marker-end="url(#la-green)"/>
-        <rect x="125" y="208" width="224" height="22" rx="4" fill="#ecfdf5" stroke="#86efac"/>
-        <text class="l-mono" x="237" y="223" fill="#065f46" font-weight="700" text-anchor="middle">3. 200 OK: TokenResponseDTO</text>
-
-        <!-- Phase Divider -->
-        <line x1="32" y1="272" x2="928" y2="272" stroke="#cbd5e1" stroke-width="1.5"/>
-        <rect x="310" y="261" width="340" height="22" rx="4" fill="#f1f5f9" stroke="#cbd5e1"/>
-        <text class="l-body" x="480" y="276" fill="#334155" font-weight="700" font-size="10.5px" text-anchor="middle">FASE 2: CONSUMO DE ENDPOINTS PROTEGIDOS</text>
-
-        <!-- Step 4 -->
-        <path d="M112,325 L850,325" stroke="#2563eb" stroke-width="2" marker-end="url(#la-blue)"/>
-        <rect x="290" y="298" width="380" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd"/>
-        <text class="l-mono" x="480" y="313" fill="#1e40af" font-weight="700" text-anchor="middle">4. GET /api/v1/usuarios (Authorization: Bearer eyJ...)</text>
-
-        <!-- Step 5 -->
-        <path d="M850,390 L112,390" stroke="#059669" stroke-width="2" marker-end="url(#la-green)"/>
-        <rect x="260" y="362" width="440" height="22" rx="4" fill="#ecfdf5" stroke="#86efac"/>
-        <text class="l-mono" x="480" y="377" fill="#065f46" font-weight="700" text-anchor="middle">5. Verifica Firma + @PreAuthorize('USER_READ') ➔ 200 OK</text>
-      </svg>
-    </div>
-    `
-    ),
-
-    // =========================================================================
-    // SLIDE 20: Práctica Ciclo 4 - DTOs de Login y AuthRestController
-    // =========================================================================
-    icesi.slideTwoCols(
-      'Práctica Ciclo 4: DTOs de Login y AuthRestController',
-      `
-    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. LoginRequestDTO y TokenResponseDTO</div>
-    <pre><code class="language-java">@Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class LoginRequestDTO {
-    private String correoInstitucional;
-    private String password;
-}
-
-@Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class TokenResponseDTO {
-    private String token;
-    private String type;       // "Bearer"
-    private long expiresIn;    // 3600000
-    private String correoInstitucional;
-}</code></pre>
-    <div class="callout-box" style="border-left:4px solid var(--icesi-blue); margin-top:12px;">
-      <p style="margin:0; font-size:12.5px; color:#1e293b;">
-        <strong>Delegación en DaoAuthenticationProvider:</strong> Al llamar a <code>authManager.authenticate(...)</code>, Spring Security valida la contraseña contra el hash BCrypt consultando <code>UserDetailsService</code>.
-      </p>
-    </div>
-    `,
-      `
-    <div style="font-size:14.5px; font-weight:700; color:var(--icesi-green); margin-bottom:6px;">2. controller/rest/AuthRestController.java</div>
-    <pre><code class="language-java">@RestController
-@RequestMapping("/api/v1/auth")
-@RequiredArgsConstructor
-public class AuthRestController {
-  private final AuthenticationManager authManager;
-  private final IJwtService jwtService;
-
-  @PostMapping("/login")
-  public ResponseEntity&lt;TokenResponseDTO&gt; login(@RequestBody LoginRequestDTO req) {
-    try {
-      Authentication auth = authManager.authenticate(
-        new UsernamePasswordAuthenticationToken(
-          req.getCorreoInstitucional(), req.getPassword()));
-      UserDetails user = (UserDetails) auth.getPrincipal();
-      String jwt = jwtService.generateToken(user);
-      return ResponseEntity.ok(TokenResponseDTO.builder()
-          .token(jwt).type("Bearer")
-          .expiresIn(jwtService.getExpirationTime())
-          .correoInstitucional(user.getUsername()).build());
-    } catch (BadCredentialsException e) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-  }
-}</code></pre>
-    `
-    ),
-
-    // =========================================================================
+// =========================================================================
     // SLIDE 21: Escenarios Críticos en Producción (3 Cards - 7 args!)
     // =========================================================================
     icesi.slideThreeCards(
@@ -1390,7 +1433,7 @@ public class AuthRestController {
       `<p style="font-size:13px; line-height:1.45;"><strong>Revocación de Rol en Vivo</strong><br>¿Qué pasa si desactivamos un usuario cuyo token aún tiene 45 min de vida?<br><br><strong>Defensa por Hidratación BD:</strong> Al consultar <code>loadUserByUsername(email)</code> en el filtro, obtenemos permisos frescos de la BD al instante.</p>`
     ),
 
-    // =========================================================================
+// =========================================================================
     // SLIDE 22: Comparativa Hidratación BD vs 100% Claims Stateless
     // =========================================================================
     icesi.slideStandard(
@@ -1435,7 +1478,7 @@ public class AuthRestController {
       `
     ),
 
-    // =========================================================================
+// =========================================================================
     // SLIDE 23: Laboratorio Final en Vivo (5 Pruebas en Postman y jwt.io)
     // =========================================================================
     icesi.slideStripeTopRight(
@@ -1491,7 +1534,7 @@ public class AuthRestController {
     `
     ),
 
-    // =========================================================================
+// =========================================================================
     // SLIDE 24: Cierre de la Semana 11
     // =========================================================================
     icesi.titleSlideF(

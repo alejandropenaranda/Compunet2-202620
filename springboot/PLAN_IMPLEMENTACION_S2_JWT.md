@@ -14,19 +14,20 @@
 | Micro-Ciclo | Tiempo | Bloque Teórico (`spring-jwt-s2` — 24 Diapositivas) | Práctica en Vivo (`springboot` — Seguridad `/api/**`) |
 | :--- | :--- | :--- | :--- |
 | **Ciclo 1** | `00:00 - 00:30` (30 min) | **Slides 1–8:** Contraste Arquitectónico: Sesiones Stateful (`JSESSIONID`) vs. Tokens Stateless (`JWT`), Estándar RFC 7519 (`Header.Payload.Signature`), Base64URL vs Encriptación, Algoritmos de Firma (HS256 vs RS256). | **Paso 2.1:** Adición de dependencias `JJWT 0.12.6` en `pom.xml` y parametrización de `jwt.secret` (Base64 $\ge$ 256 bits) y `jwt.expiration` en `application.properties`. |
-| **Ciclo 2** | `00:30 - 00:55` (25 min) | **Slides 9–11:** Arquitectura del servicio criptográfico `JwtService`: Generación de firma HMAC-SHA256 con `Keys.hmacShaKeyFor`, inyección de Claims personalizados (`authorities`) y validación de expiración/firma con `parseSignedClaims`. | **Paso 2.2:** Creación de la interfaz `IJwtService.java` y su implementación `JwtServiceImpl.java` basada en el contrato estándar `UserDetails`. |
-| **Ciclo 3** | `00:55 - 01:30` (35 min) | **Slides 12–17:** Cadena de Filtros de Spring Security, ¿Por qué extender `OncePerRequestFilter`?, Algoritmo de intercepción de `JwtAuthenticationFilter` y Coexistencia Arquitectónica Dual (`@Order(1)` para `/api/**` vs `@Order(2)` para `/**`). | **Paso 2.3:** Implementación de `JwtAuthenticationFilter.java` y refactorización de `SecurityConfig.java` con dos cadenas `SecurityFilterChain` independientes. |
-| **Ciclo 4** | `01:30 - 02:00` (30 min) | **Slides 18–24:** Flujo del ciclo de vida de autenticación `POST /api/v1/auth/login`, delegación en `AuthenticationManager`, y Análisis de 3 Escenarios Críticos en Producción (Robo de Token, Falsificación de Firma `401`, *Stale Claims* e Hidratación BD). | **Paso 2.4:** Implementación de `LoginRequestDTO`, `TokenResponseDTO`, `AuthRestController` y ejecución del laboratorio en vivo de 5 pruebas en Postman + `jwt.io`. |
+| **Ciclo 2** | `00:30 - 01:00` (30 min) | **Slides 9–12:** Flujo de Autenticación REST: Secuencia completa de `POST /api/v1/auth/login`, delegación en `AuthenticationManager` + `DaoAuthenticationProvider`, emisión del token firmado con `JwtService.generateToken()`, respuesta en `TokenResponseDTO` e inspección en `jwt.io`. | **Paso 2.2:** Creación de `LoginRequestDTO`, `TokenResponseDTO`, `IJwtService.java` y `JwtServiceImpl.generateToken()`, `AuthRestController.java`, exposición del bean `AuthenticationManager` en `SecurityConfig` y primera prueba en Postman con decodificación en `jwt.io`. |
+| **Ciclo 3** | `01:00 - 01:35` (35 min) | **Slides 13–19:** Flujo de Autorización: ¿Cómo se consume el token emitido? Cadena de filtros, ¿Por qué extender `OncePerRequestFilter`?, Verificación criptográfica con `parseSignedClaims`, Algoritmo de intercepción de `JwtAuthenticationFilter`, y Coexistencia Arquitectónica Dual (`@Order(1)` stateless para `/api/**` vs `@Order(2)` stateful para `/**`). | **Paso 2.3:** Implementación de métodos de verificación en `JwtServiceImpl.java` (`extractUsername`, `isTokenValid`), codificación de `JwtAuthenticationFilter.java` y configuración de la cadena dual `@Order(1)` en `SecurityConfig.java`. |
+| **Ciclo 4** | `01:35 - 02:00` (25 min) | **Slides 20–24:** Análisis de 3 Escenarios Críticos en Producción (Robo de Token Vigente, Falsificación de Payload / Firma rota `401`, *Stale Claims* y Decisión Arquitectónica de Hidratación BD vs 100% Stateless Claims). | **Paso 2.4:** Ejecución del laboratorio integral de 5 pruebas en Postman (Petición sin token `401`, Login Estudiante en `jwt.io`, Acceso Estudiante `403`, Admin CRUD completo `200`/`201`, Sabotaje de firma `401`). |
 
 ---
 
 ## 2. Contexto de Entrada de la Sesión 2
 
 Al iniciar esta clase, el proyecto ya cuenta con los contratos y controladores REST construidos durante la Sesión 1:
-- `UsuarioRequestDTO.java` y `UsuarioResponseDTO.java` en `dto/`.
+- `UsuarioRequestDTO.java` y `UsuarioResponseDTO.java` en `dto/Usuarios/`.
 - `UsuarioMapper.java` en `mapper/`.
 - `UsuarioRestController.java` en `controller/rest/` mapeado a `/api/v1/usuarios`.
-- La configuración de seguridad actual redirige cualquier petición no autenticada hacia `/login` (HTML), generando una experiencia incompatible con clientes API REST (móviles, SPAs o Postman).
+- La configuración de seguridad actual permite llamar a `/api/v1/**` sin autenticación porque en la Sesión 1 añadimos `.requestMatchers("/api/v1/**").permitAll()` y desactivamos CSRF en `/api/**`.
+- **El reto de la Sesión 2:** Reemplazar ese `permitAll()` temporal por una arquitectura de seguridad real basada en tokens JWT firmados, con roles y permisos finos (`@PreAuthorize`), cerrando la API a clientes anónimos sin alterar el login web HTML existente en Thymeleaf.
 
 ---
 
@@ -90,30 +91,75 @@ Añade las propiedades del token criptográfico:
 # CONFIGURACIÓN CRIPTOGRÁFICA JWT (HMAC-SHA256)
 # ==========================================
 # Clave secreta codificada en Base64 (mínimo 256 bits / 32 bytes requeridos por RFC 7519)
-jwt.secret=NTRmZjg5YzI4NzRkNDllY2I5YzA3ZjM4ZTVhMWI2YzRkOGU5ZjBhMWIyYzNkNGU1ZjZhN2I4YzlkMGUxZjJhMw==
+jwt.secret=dGhpc0lzQVZlcnlTZWN1cmVTZWNyZXRLZXlGb3JKV1RBdXRoZW50aWNhdGlvbkluU3ByaW5nQm9vdDIwMjY=
 # Tiempo de expiración del token en milisegundos (3600000 ms = 1 hora)
 jwt.expiration=3600000
 ```
 
 ---
 
-## Micro-Ciclo 2: Servicio Criptográfico `JwtService` (JJWT 0.12+)
+## Micro-Ciclo 2: Flujo de Autenticación, Emisión de Tokens y Login REST (`POST /api/v1/auth/login`)
 
-### 2.A. Guía Teórica (Slides 9 a 11 — 10 min)
-- **Responsabilidad Única:** Encapsular la construcción, firma, decodificación y validación matemática de tokens.
-- **Emisión con Fluent API:** `Jwts.builder().claims(...).subject(...).issuedAt(...).expiration(...).signWith(key, Jwts.SIG.HS256).compact()`.
-- **Verificación Criptográfica:** `Jwts.parser().verifyWith(key).build().parseSignedClaims(token)`.
-  - Si un atacante altera un solo carácter del payload, se dispara `SignatureException`.
-  - Si la hora actual supera `exp`, se dispara `ExpiredJwtException`.
-- **Extracción Funcional:** Empleo de referencias a métodos y `Function<Claims, T>` para resolver claims de manera tipada (`Claims::getSubject`, `Claims::getExpiration`).
+### 2.A. Guía Teórica (Slides 9 y 10 — 12 min)
+- **¿Cómo Nace un Token JWT? (Slide 10):**
+  Antes de hablar de filtros o de cómo proteger endpoints, el estudiante debe entender cómo se genera el primer token:
+  1. El cliente (Postman o frontend SPA) envía `POST /api/v1/auth/login` con credenciales JSON (`correoInstitucional`, `password`).
+  2. `AuthRestController` no valida contraseñas manualmente; delega en el bean central `AuthenticationManager` de Spring Security mediante `authManager.authenticate(new UsernamePasswordAuthenticationToken(email, pass))`.
+  3. El `DaoAuthenticationProvider` llama a `UserDetailsService.loadUserByUsername(email)` para consultar el usuario en la BD (recuperando el hash BCrypt y la colección de roles/permisos).
+  4. Compara la contraseña en texto plano recibida con el hash BCrypt usando `passwordEncoder.matches()`. Si no coincide, lanza `BadCredentialsException` (retorna `401 Unauthorized`).
+  5. Si las credenciales son válidas, retorna un objeto `Authentication` autenticado cuyo `principal` es el `UserDetails`.
+  6. `AuthRestController` pasa ese `UserDetails` a `jwtService.generateToken(userDetails)`:
+     - Extrae la lista de authorities usando Java Stream: `.map(GrantedAuthority::getAuthority).toList()`.
+     - Inyecta los claims (`subject: email`, `iat: now`, `exp: now + 1h`, `authorities: [...]`).
+     - Firma criptográficamente con `Jwts.SIG.HS256` y la clave secreta `jwt.secret`.
+  7. Retorna `200 OK` con `TokenResponseDTO` conteniendo el token JWT, el prefijo `"Bearer"` y el tiempo de expiración.
+- **Punto Clave Pedagógico:** Este endpoint debe ser público (`permitAll()`), ya que es el punto de partida donde el cliente aún no posee ningún token.
 
-### 2.B. Práctica en Vivo — Paso 2.2: Implementación de `IJwtService` y `JwtServiceImpl` (Slide 10 y 11 — 15 min)
+### 2.B. Práctica en Vivo — Paso 2.2: DTOs, Emisión en `JwtService`, `AuthRestController` y Verificación en Postman (Slides 11 y 12 — 18 min)
 
-#### Archivo 1: `src/main/java/co/edu/icesi/next/springboot/security/jwt/IJwtService.java`
-Crea el paquete `security.jwt` y define la interfaz desacoplada:
-
+#### Archivo 1: `src/main/java/com/compunet/springboot/dto/Auth/LoginRequestDTO.java`
 ```java
-package co.edu.icesi.next.springboot.security.jwt;
+package com.compunet.springboot.dto.Auth;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class LoginRequestDTO {
+    private String correoInstitucional;
+    private String password;
+}
+```
+
+#### Archivo 2: `src/main/java/com/compunet/springboot/dto/Auth/TokenResponseDTO.java`
+```java
+package com.compunet.springboot.dto.Auth;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class TokenResponseDTO {
+    private String token;
+    private String type;       // "Bearer"
+    private long expiresIn;    // 3600000
+    private String correoInstitucional;
+}
+```
+
+#### Archivo 3: Interfaz `src/main/java/com/compunet/springboot/security/jwt/IJwtService.java`
+```java
+package com.compunet.springboot.security.jwt;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -125,11 +171,9 @@ public interface IJwtService {
 }
 ```
 
-#### Archivo 2: `src/main/java/co/edu/icesi/next/springboot/security/jwt/JwtServiceImpl.java`
-Implementa el servicio usando la API moderna de JJWT 0.12+:
-
+#### Archivo 4: `src/main/java/com/compunet/springboot/security/jwt/JwtServiceImpl.java` (Parte de Emisión)
 ```java
-package co.edu.icesi.next.springboot.security.jwt;
+package com.compunet.springboot.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -179,6 +223,134 @@ public class JwtServiceImpl implements IJwtService {
     }
 
     @Override
+    public long getExpirationTime() {
+        return jwtExpirationMs;
+    }
+
+    private SecretKey getSigningKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKeyBase64);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    // Los métodos de verificación (extractUsername, isTokenValid) se completarán en el Micro-Ciclo 3
+    @Override
+    public String extractUsername(String token) { return null; }
+    @Override
+    public boolean isTokenValid(String token, UserDetails userDetails) { return false; }
+}
+```
+
+#### Archivo 5: Exponer `AuthenticationManager` en `src/main/java/com/compunet/springboot/config/SecurityConfig.java`
+Para poder inyectar `AuthenticationManager` en `AuthRestController`, añade este `@Bean` en `SecurityConfig`:
+
+```java
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+
+// Dentro de public class SecurityConfig:
+@Bean
+public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    return config.getAuthenticationManager();
+}
+```
+
+#### Archivo 6: `src/main/java/com/compunet/springboot/controller/rest/AuthRestController.java`
+```java
+package com.compunet.springboot.controller.rest;
+
+import com.compunet.springboot.dto.Auth.LoginRequestDTO;
+import com.compunet.springboot.dto.Auth.TokenResponseDTO;
+import com.compunet.springboot.security.jwt.IJwtService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
+public class AuthRestController {
+
+    private final AuthenticationManager authenticationManager;
+    private final IJwtService jwtService;
+
+    @PostMapping("/login")
+    public ResponseEntity<TokenResponseDTO> login(@RequestBody LoginRequestDTO request) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getCorreoInstitucional(),
+                            request.getPassword()
+                    )
+            );
+
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String jwtToken = jwtService.generateToken(userDetails);
+
+            TokenResponseDTO response = TokenResponseDTO.builder()
+                    .token(jwtToken)
+                    .type("Bearer")
+                    .expiresIn(jwtService.getExpirationTime())
+                    .correoInstitucional(userDetails.getUsername())
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+}
+```
+
+#### 7. Verificación Inmediata en Vivo (Slide 12)
+1. Iniciar la aplicación Spring Boot.
+2. Abrir Postman y crear la petición:
+   - **Método:** `POST`
+   - **URL:** `http://localhost:8080/springboot-api/api/v1/auth/login`
+   - **Headers:** `Content-Type: application/json`
+   - **Body (raw JSON):**
+     ```json
+     {
+       "correoInstitucional": "admin@icesi.edu.co",
+       "password": "admin123"
+     }
+     ```
+3. Ejecutar: El servidor responde `200 OK` con el token generado.
+4. **Inspección en `jwt.io`:** Copiar el token recibido y pegarlo en [https://jwt.io](https://jwt.io). Mostrar a los estudiantes cómo se decodifica en vivo:
+   - **Header:** `{"alg": "HS256", "typ": "JWT"}`
+   - **Payload:** `sub: "admin@icesi.edu.co"`, `authorities: ["ROLE_ADMINISTRADOR", "USER_READ", "USER_CREATE", ...]`, `iat`, `exp`.
+   - **Signature:** Verificada cuando se ingresa la clave secreta.
+
+---
+
+## Micro-Ciclo 3: Flujo de Autorización: `OncePerRequestFilter`, Verificación y `SecurityFilterChain` Dual
+
+### 3.A. Guía Teórica (Slides 13 a 16, 18 — 15 min)
+- **La Gran Pregunta (Slide 13):**
+  *"Ya tenemos un token en Postman. Ahora, ¿cómo lo consume el cliente para acceder a endpoints protegidos como `/api/v1/usuarios` y cómo hace el servidor para verificar que no haya sido alterado ni haya expirado?"*
+- **Pipeline de Intercepción y `OncePerRequestFilter` (Slides 14 y 15):**
+  - Antes de llegar al `DispatcherServlet`, cada petición HTTP pasa por la cadena de filtros.
+  - Intercalamos `JwtAuthenticationFilter` **antes** de `UsernamePasswordAuthenticationFilter`.
+  - ¿Por qué extender `OncePerRequestFilter`? Un filtro estándar de Jakarta Servlet puede ejecutarse varias veces en despachos internos (`RequestDispatcher.forward` o errores `/error`). `OncePerRequestFilter` garantiza **estrictamente una sola ejecución por petición HTTP**.
+  - **Regla de Continuidad:** Si no hay header `Authorization: Bearer`, el filtro **no bloquea**: invoca `chain.doFilter(req, res)` para que rutas públicas como `/api/v1/auth/login` pasen libremente.
+- **Verificación Criptográfica en JJWT 0.12+ (Slide 16):**
+  - `parseSignedClaims(token)` recalculando el HMAC con `getSigningKey()`. Si un atacante modificó un solo carácter del payload, se dispara `SignatureException`. Si expiró, se dispara `ExpiredJwtException`.
+- **Coexistencia Arquitectónica Dual (Slide 18):**
+  - `@Order(1) apiSecurityFilterChain`: Exclusivo para `/api/**`. `STATELESS`, CSRF deshabilitado, maneja errores 401/403 en JSON.
+  - `@Order(2) mvcSecurityFilterChain`: Captura el resto de rutas (`/**`). Mantiene sesiones `JSESSIONID`, protección CSRF para formularios Thymeleaf y redirecciones HTML al `/login`.
+
+### 3.B. Práctica en Vivo — Paso 2.3: Verificación Criptográfica, Filtro y Dual Chain (Slides 16, 17, 19 — 20 min)
+
+#### 1. Completar métodos de verificación en `JwtServiceImpl.java`
+Añade los métodos en `src/main/java/com/compunet/springboot/security/jwt/JwtServiceImpl.java`:
+
+```java
+    @Override
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -187,11 +359,6 @@ public class JwtServiceImpl implements IJwtService {
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-    }
-
-    @Override
-    public long getExpirationTime() {
-        return jwtExpirationMs;
     }
 
     private boolean isTokenExpired(String token) {
@@ -210,35 +377,11 @@ public class JwtServiceImpl implements IJwtService {
                 .parseSignedClaims(token)
                 .getPayload();
     }
-
-    private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKeyBase64);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
-}
 ```
 
----
-
-## Micro-Ciclo 3: Filtros, `OncePerRequestFilter` y `SecurityFilterChain` Dual
-
-### 3.A. Guía Teórica (Slides 12 a 16 — 15 min)
-- **Pipeline de Intercepción (Slide 13):** Antes de ingresar al `DispatcherServlet`, la petición HTTP transita por la cadena de filtros de Spring Security (`SecurityFilterChain`).
-- **Garantía de Ejecución Única (`OncePerRequestFilter` — Slide 14):**
-  - Un filtro Jakarta Servlet estándar puede invocarse varias veces en despachos internos (`RequestDispatcher.forward` o redirecciones de manejo de error `/error`).
-  - `OncePerRequestFilter` marca un atributo en la solicitud HTTP para garantizar que `doFilterInternal()` corra **estrictamente una sola vez por petición entrante**.
-  - Si la petición no contiene encabezado Bearer, no se aborta la ejecución: se invoca `chain.doFilter(request, response)` para permitir el paso a rutas públicas como login.
-- **Coexistencia Arquitectónica Dual (Slide 16):**
-  - `@Bean @Order(1) apiSecurityFilterChain`: Aplica exclusivamente a `/api/**` mediante `.securityMatcher("/api/**")`. Configura `STATELESS`, deshabilita CSRF (inútil al no existir cookies de sesión) e intercala `JwtAuthenticationFilter` antes de `UsernamePasswordAuthenticationFilter`. Responde en JSON con `401 Unauthorized` y `403 Forbidden`.
-  - `@Bean @Order(2) mvcSecurityFilterChain`: Aplica al resto de rutas web (`/**`). Mantiene sesiones `JSESSIONID`, protección CSRF para formularios Thymeleaf y redirecciones HTML al login `/login`.
-
-### 3.B. Práctica en Vivo — Paso 2.3: `JwtAuthenticationFilter` y `SecurityConfig` Dual (Slides 15 y 17 — 20 min)
-
-#### Archivo 1: `src/main/java/co/edu/icesi/next/springboot/security/jwt/JwtAuthenticationFilter.java`
-Implementa el filtro de intercepción:
-
+#### 2. Crear `src/main/java/com/compunet/springboot/security/jwt/JwtAuthenticationFilter.java`
 ```java
-package co.edu.icesi.next.springboot.security.jwt;
+package com.compunet.springboot.security.jwt;
 
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -266,9 +409,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
     ) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
@@ -279,7 +422,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Paso 2: Extraer el token
+        // Paso 2: Extraer el token (eliminar el prefijo "Bearer ")
         final String jwt = authHeader.substring(7);
 
         try {
@@ -302,7 +445,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (JwtException | IllegalArgumentException e) {
-            // Si el token es inválido o expiró, garantizamos que el contexto quede limpio
+            // Si el token es inválido, manipulado o expiró, garantizamos que el contexto quede limpio
             SecurityContextHolder.clearContext();
         }
 
@@ -312,13 +455,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 }
 ```
 
-#### Archivo 2: Actualizar `src/main/java/co/edu/icesi/next/springboot/config/SecurityConfig.java`
-Configura las dos cadenas con orden de precedencia:
+#### 3. Refactorizar `src/main/java/com/compunet/springboot/config/SecurityConfig.java` con Dos Cadenas
+Actualiza `SecurityConfig` para declarar las dos cadenas independientes con `@Order`:
 
 ```java
-package co.edu.icesi.next.springboot.config;
+package com.compunet.springboot.config;
 
-import co.edu.icesi.next.springboot.security.jwt.JwtAuthenticationFilter;
+import com.compunet.springboot.security.jwt.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -394,21 +537,26 @@ public class SecurityConfig {
     public SecurityFilterChain mvcSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/css/**", "/js/**").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/public/**").permitAll()
+                .requestMatchers("/login", "/access-denied").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers("/roles-mvc/**", "/permisos-mvc/**").hasRole("ADMINISTRADOR")
+                .requestMatchers("/profesores-mvc/**").hasAnyRole("ADMINISTRADOR", "PROFESOR")
+                .requestMatchers("/usuarios/**", "/cursos-mvc/**", "/matriculas-mvc/**").authenticated()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/home", true)
+                .defaultSuccessUrl("/usuarios", true)
                 .permitAll()
             )
             .logout(logout -> logout
+                .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
             )
             .exceptionHandling(ex -> ex
-                .accessDeniedPage("/403")
+                .accessDeniedPage("/access-denied")
             )
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/h2-console/**")
@@ -424,116 +572,17 @@ public class SecurityConfig {
 
 ---
 
-## Micro-Ciclo 4: Endpoint de Login (`/api/v1/auth/login`) y Escenarios de Seguridad en Producción
+## Micro-Ciclo 4: Escenarios Críticos en Producción y Laboratorio Integral
 
-### 4.A. Guía Teórica (Slides 18 a 22 — 15 min)
-- **Flujo de Login (Slides 19 y 20):**
-  1. Cliente envía credenciales en `LoginRequestDTO`.
-  2. `AuthenticationManager` valida contra la BD mediante `DaoAuthenticationProvider` y `BCryptPasswordEncoder`.
-  3. `JwtService` emite el token firmado con `expiresIn` en milisegundos y lo devuelve en `TokenResponseDTO`.
-- **Análisis de 3 Escenarios Críticos en Producción (Slides 21–22):**
-  1. **Robo de Token Vigente:** En caso de filtración de un token, el atacante tiene acceso hasta su expiración. **Mitigación:** Access Tokens con tiempo de expiración corto (15 min) + Refresh Tokens en cookies HttpOnly o listas negras en Redis.
-  2. **Manipulación del Payload (Escalación de Privilegios):** Si un atacante modifica `"ROLE_ESTUDIANTE"` por `"ROLE_ADMINISTRADOR"`, la firma no cuadrará sin conocer `jwt.secret` y la petición será rechazada con `401`.
-  3. **Stale Claims e Hidratación BD (Slide 22):** Si un usuario es desactivado o sus permisos cambian en la BD, la rehidratación en `loadUserByUsername(email)` dentro del filtro garantiza revocación inmediata de privilegios sin esperar a que el token expire.
+### 4.A. Guía Teórica (Slides 20 a 22 — 15 min)
+- **Análisis de 3 Escenarios Críticos en Producción (Slide 21):**
+  1. **Robo de Token Vigente (El Riesgo Stateless):** Si un atacante roba un JWT válido (mediante un ataque XSS en el frontend), el servidor lo aceptará hasta que llegue su fecha `exp`. **Mitigación:** Emitir *Access Tokens* de vida corta (5–15 min) + *Refresh Tokens* en cookies `HttpOnly` o listas de revocación en Redis.
+  2. **Manipulación del Payload (Escalación de Privilegios):** Un estudiante decodifica su JWT en Base64, cambia `"ROLE_ESTUDIANTE"` por `"ROLE_ADMINISTRADOR"` y lo reenvía. **Defensa:** Al no conocer la `jwt.secret`, el HMAC-SHA256 calculado fallará inmediatamente (`SignatureException` $\rightarrow$ `401 Unauthorized`).
+  3. **Stale Claims e Hidratación BD (Slide 22):** Si desactivamos una cuenta (`active = false`) o revocamos un permiso en la BD mientras el usuario tiene un token con 45 min restantes de vida:
+     - Si la aplicación confiara 100% en los claims del token sin consultar BD, el usuario seguiría operando.
+     - En nuestro diseño, al consultar `loadUserByUsername(email)` en `JwtAuthenticationFilter`, obtenemos el estado y authorities frescos de la BD en cada petición, bloqueando de inmediato al usuario sin perder el carácter stateless web.
 
-### 4.B. Práctica en Vivo — Paso 2.4: DTOs, Controlador y Laboratorio de Pruebas (Slides 20 y 23 — 15 min)
-
-#### Archivo 1: `src/main/java/co/edu/icesi/next/springboot/dto/LoginRequestDTO.java`
-```java
-package co.edu.icesi.next.springboot.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class LoginRequestDTO {
-    private String correoInstitucional;
-    private String password;
-}
-```
-
-#### Archivo 2: `src/main/java/co/edu/icesi/next/springboot/dto/TokenResponseDTO.java`
-```java
-package co.edu.icesi.next.springboot.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class TokenResponseDTO {
-    private String token;
-    private String type;
-    private long expiresIn;
-    private String correoInstitucional;
-}
-```
-
-#### Archivo 3: `src/main/java/co/edu/icesi/next/springboot/controller/rest/AuthRestController.java`
-```java
-package co.edu.icesi.next.springboot.controller.rest;
-
-import co.edu.icesi.next.springboot.dto.LoginRequestDTO;
-import co.edu.icesi.next.springboot.dto.TokenResponseDTO;
-import co.edu.icesi.next.springboot.security.jwt.IJwtService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
-
-@RestController
-@RequestMapping("/api/v1/auth")
-@RequiredArgsConstructor
-public class AuthRestController {
-
-    private final AuthenticationManager authenticationManager;
-    private final IJwtService jwtService;
-
-    @PostMapping("/login")
-    public ResponseEntity<TokenResponseDTO> login(@RequestBody LoginRequestDTO request) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getCorreoInstitucional(),
-                            request.getPassword()
-                    )
-            );
-
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String jwtToken = jwtService.generateToken(userDetails);
-
-            TokenResponseDTO response = TokenResponseDTO.builder()
-                    .token(jwtToken)
-                    .type("Bearer")
-                    .expiresIn(jwtService.getExpirationTime())
-                    .correoInstitucional(userDetails.getUsername())
-                    .build();
-
-            return ResponseEntity.ok(response);
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-}
-```
-
----
-
-## 3. Laboratorio Final en Vivo: 5 Pruebas en Postman y `jwt.io` (Slide 23)
+### 4.B. Práctica en Vivo — Paso 2.4: Laboratorio Final de 5 Pruebas en Postman (Slide 23 — 15 min)
 
 Ejecuta estas 5 pruebas en vivo para demostrar el funcionamiento integral de la arquitectura:
 

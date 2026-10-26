@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Seguridad Stateless con Filtros y JWT en Spring Boot — Sesión 3: Cierre y Autorización</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Reveal.js Themes & Highlights -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css" id="theme">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+  <!-- ICESI Beamer Stylesheet -->
+  <link rel="stylesheet" href="../dist/main.css?v=28">
+
+  <style>
+    /* Strict 16:9 1280x720 Base Dimensions */
+    .reveal .slides {
+      width: 1280px !important;
+      height: 720px !important;
+      text-align: left;
+    }
+    .reveal section.slide {
+      width: 1280px !important;
+      height: 720px !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+      background: #ffffff;
+    }
+
+    /* Global Brand & Logo adjustments: logo placed at top: 32px, height: ~45px (ends at ~77px) */
+    .slide .logo-positive,
+    .slide .logo-negative {
+      position: absolute !important;
+      top: 32px !important;
+      left: 60px !important;
+      width: 160px !important;
+      height: auto !important;
+      z-index: 20 !important;
+    }
+    .slide.title-f .logo-positive {
+      filter: brightness(0) invert(1) !important;
+    }
+
+    /* REGLA 1: PADDING DE AL MENOS 1 CM DESDE EL LOGO Y EL CONTENIDO */
+    .slide.standard .slide-header,
+    .slide.two-cols .slide-header,
+    .slide.three-cols .slide-header,
+    .slide.four-cards .slide-header {
+      position: absolute !important;
+      left: 60px !important;
+      top: 125px !important;
+      width: 1160px !important;
+      height: 48px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      z-index: 10 !important;
+    }
+    .slide.standard .slide-header h2,
+    .slide.two-cols .slide-header h2,
+    .slide.three-cols .slide-header h2,
+    .slide.four-cards .slide-header h2 {
+      position: relative !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      font-size: 29px !important;
+      line-height: 36px !important;
+      font-weight: 700 !important;
+      color: var(--icesi-blue) !important;
+      margin: 0 !important;
+    }
+
+    /* Defined Content Box (Top 190px to 675px = 485px height) Vertically Centered */
+    .slide.standard .slide-content {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+    }
+
+    .slide.two-cols .cols-container {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 36px !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.two-cols .col {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+
+    .slide.three-cols .cols-container {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 20px !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.three-cols .col {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+
+    /* Cards Grids Vertically Centered */
+    .slide.four-cards .cards-grid {
+      position: absolute !important;
+      left: 60px !important;
+      top: 190px !important;
+      width: 1160px !important;
+      height: 485px !important;
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      align-content: center !important;
+      gap: 16px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* Stripe Slides Vertically Centered */
+    .slide.stripe-top-left .slide-title,
+    .slide.stripe-top-right .slide-title {
+      position: absolute !important;
+      top: 172px !important;
+      height: 45px !important;
+      font-size: 26px !important;
+      line-height: 34px !important;
+      font-weight: 700 !important;
+      color: #ffffff !important;
+      margin: 0 !important;
+    }
+    .slide.stripe-top-left .slide-title {
+      left: 55px !important;
+      width: 720px !important;
+    }
+    .slide.stripe-top-right .slide-title {
+      left: 510px !important;
+      width: 710px !important;
+    }
+    .slide.stripe-top-left .slide-content,
+    .slide.stripe-top-right .slide-content {
+      position: absolute !important;
+      left: 55px !important;
+      top: 250px !important;
+      width: 1170px !important;
+      height: 425px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* REGLA 2: SEPARADORES DE TEMAS FULL COLOR CON TEXTO CENTRADO VERTICALMENTE */
+    .slide.section-e {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      text-align: center !important;
+      padding: 0 100px !important;
+      box-sizing: border-box !important;
+      width: 1280px !important;
+      height: 720px !important;
+    }
+    .slide.section-e .section-title {
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      width: 1080px !important;
+      font-size: 46px !important;
+      line-height: 1.25 !important;
+      font-weight: 700 !important;
+      margin: 0 0 20px 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+      color: #ffffff !important;
+      hyphens: none !important;
+    }
+    .slide.section-e .section-content {
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      width: 1080px !important;
+      height: auto !important;
+      font-size: 23px !important;
+      line-height: 1.45 !important;
+      font-weight: 400 !important;
+      color: rgba(255, 255, 255, 0.95) !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+    }
+    .slide.section-e.bg-yellow .section-content {
+      color: rgba(30, 41, 59, 0.95) !important;
+    }
+    .slide.section-e.bg-purple {
+      background: var(--icesi-purple) !important;
+      color: #ffffff !important;
+    }
+
+    /* Code styling enhancements */
+    pre {
+      margin: 0 !important;
+      width: 100% !important;
+    }
+    pre code {
+      font-size: 12px !important;
+      line-height: 1.34 !important;
+      border-radius: 8px !important;
+      padding: 12px 14px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      background: #1e1e2e !important;
+      color: #cdd6f4 !important;
+      box-sizing: border-box !important;
+      max-height: 460px !important;
+    }
+
+    .hljs-meta { color: #79c0ff !important; font-weight: bold; }
+    .hljs-keyword { color: #ff7b72 !important; font-weight: bold; }
+    .hljs-type, .hljs-title.class_ { color: #ffa657 !important; }
+    .hljs-title.function_ { color: #d2a8ff !important; }
+    .hljs-string { color: #7ee787 !important; }
+    .hljs-number, .hljs-literal { color: #f2cc60 !important; }
+    .hljs-comment { color: #8b949e !important; font-style: italic; }
+    .hljs-attr { color: #f472b6 !important; }
+
+    /* Horizontal Card Item Pattern */
+    .h-item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      padding: 10px 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .h-item-icon {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+    }
+    .h-item-blue { border-left: 4px solid var(--icesi-blue); }
+    .h-item-blue .h-item-icon { background: rgba(84,84,233,0.12); color: var(--icesi-blue); }
+    .h-item-green { border-left: 4px solid var(--icesi-green); }
+    .h-item-green .h-item-icon { background: rgba(76,185,121,0.12); color: var(--icesi-green); }
+    .h-item-orange { border-left: 4px solid var(--icesi-orange); }
+    .h-item-orange .h-item-icon { background: rgba(233,104,59,0.12); color: var(--icesi-orange); }
+    .h-item-purple { border-left: 4px solid var(--icesi-purple); }
+    .h-item-purple .h-item-icon { background: rgba(134,92,240,0.12); color: var(--icesi-purple); }
+
+    .h-item-title { font-size: 14px; font-weight: 700; color: #1e293b; line-height: 1.25; margin-bottom: 3px; }
+    .h-item-desc { font-size: 12.5px; color: #475569; line-height: 1.38; }
+
+    /* Callout Card */
+    .callout-box {
+      background: #f8fafc;
+      border: 1px solid #CBD5E1;
+      border-left: 5px solid var(--icesi-blue);
+      border-radius: 8px;
+      padding: 11px 15px;
+    }
+
+    /* Tables */
+    table.icesi-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid #cbd5e1;
+    }
+    table.icesi-table th {
+      background: var(--icesi-blue);
+      color: #ffffff;
+      padding: 10px 14px;
+      font-weight: 700;
+      text-align: left;
+      font-size: 13px;
+    }
+    table.icesi-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+      line-height: 1.35;
+    }
+    table.icesi-table tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* Hide Navigation Controls / Arrows */
+    .reveal .controls,
+    .reveal aside.controls {
+      display: none !important;
+    }
+    .reveal .progress { height: 4px !important; color: var(--icesi-blue) !important; }
+  </style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides" id="icesi-slides"></div>
+</div>
+
+<!-- Reveal.js & Plugins -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/highlight/highlight.min.js"></script>
+
+<!-- ICESI Beamer Library -->
+<script src="../dist/main.js?v=28"></script>
+
+<script>
+  icesi.setBasePath('../../');
+
+  const slides = [
+
+    // =========================================================================
+    // SLIDE 1: Portada
+    // =========================================================================
+    icesi.titleSlideA(
+      'Cierre de Seguridad REST & JWT',
+      'Sesión 3: Ensamble Dual, Autorización RBAC con @PreAuthorize, Errores JSON y Forense Postman<br><span class="slide-footer-tag">Computación en Internet II — Universidad Icesi</span>'
+    ),
+
+    // =========================================================================
+    // SLIDE 2: Ruta de Aprendizaje — 4 Micro-Ciclos de Cierre
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Ruta de Aprendizaje — 4 Micro-Ciclos de Cierre (Teoría ↔ Práctica)',
+      `
+      <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Primera Mitad: Corrección Dual y Errores REST</div>
+      <div class="h-item h-item-blue" style="margin-bottom:14px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">01. Diagnóstico de Quiebre & Ajustes del Filtro</div>
+          <div class="h-item-desc">Por qué <code>@Order(1)</code> sin matcher secuestra rutas web y ajuste de <code>UserDetails</code> como principal.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-purple" style="margin-bottom:14px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">02. Ensamble Dual & Manejo de Errores JSON</div>
+          <div class="h-item-desc"><code>securityMatcher("/api/**")</code>, <code>addFilterBefore</code> y respuestas HTTP nativas 401/403 en JSON.</div>
+        </div>
+      </div>
+      <div class="callout-box" style="border-left:4px solid var(--icesi-blue); margin-top:8px;">
+        <p style="margin:0; font-size:12.5px; color:#334155;">
+          <strong>Enfoque Práctico:</strong> Blindamos el pipeline REST desacoplándolo totalmente de las redirecciones de sesión HTML de Thymeleaf.
+        </p>
+      </div>
+      `,
+      `
+      <div style="font-size:15px; font-weight:700; color:var(--icesi-green); margin-bottom:10px;">Segunda Mitad: Autorización y Producción</div>
+      <div class="h-item h-item-green" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">03. Autorización RBAC con @PreAuthorize</div>
+          <div class="h-item-desc">Aseguramiento granular en <code>UsuarioRestController</code> con <code>hasRole()</code> y permisos atómicos <code>hasAuthority()</code>.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-orange" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">04. Laboratorio Postman & Sabotaje de Firma</div>
+          <div class="h-item-desc">Suite de 5 pruebas: anónimo (401), login y jwt.io, estudiante (403), admin CRUD y sabotaje HMAC.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-blue" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">05. Hidratación BD vs. 100% Stateless & Stale Claims</div>
+          <div class="h-item-desc">Dilema de roles obsoletos, revocación en vivo, consulta BD en filtro y Refresh Tokens.</div>
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 3: Separador Micro-Ciclo 1
+    // =========================================================================
+    icesi.sectionSlideEBlue(
+      '01. Diagnóstico de Quiebre y Ajustes del Filtro',
+      '¿Por qué la cadena @Order(1) sin securityMatcher secuestra el tráfico web de la aplicación?'
+    ),
+
+    // =========================================================================
+    // SLIDE 4: El Secuestro de Rutas (Bespoke SVG 960x450)
+    // =========================================================================
+    icesi.slideStandard(
+      'El Secuestro de Rutas: ¿Por qué colapsa el MVC sin securityMatcher?',
+      `
+      <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
+          <defs>
+            <style>
+              .sq-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
+              .sq-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
+              .sq-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+              .sq-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+              .sq-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; fill: #475569; }
+            </style>
+            <filter id="sq-sh" x="-4%" y="-4%" width="108%" height="110%" filterUnits="objectBoundingBox">
+              <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.06"/>
+            </filter>
+            <marker id="sqa-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker>
+            <marker id="sqa-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+          </defs>
+
+          <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text class="sq-title" x="32" y="34">Anatomía del Error: Selección de Cadena en FilterChainProxy</text>
+          <text class="sq-sub" x="32" y="54">La ausencia de un RequestMatcher restrictivo en la primera cadena causa el bloqueo total de rutas HTML</text>
+
+          <!-- ESCENARIO INCORRECTO -->
+          <g transform="translate(32, 74)">
+            <rect width="425" height="348" rx="12" fill="#ffffff" stroke="#fecaca" stroke-width="1.8" filter="url(#sq-sh)"/>
+            <rect width="425" height="5" rx="2.5" fill="#dc2626"/>
+            <rect x="18" y="14" width="170" height="22" rx="5" fill="#fef2f2" stroke="#fca5a5"/>
+            <text class="sq-label" x="103" y="29" fill="#dc2626" text-anchor="middle">ESTADO INICIAL (CON ERROR)</text>
+
+            <text x="18" y="58" font-family="system-ui" font-size="14.5" font-weight="700" fill="#991b1b">@Order(1) sin .securityMatcher()</text>
+            <text class="sq-body" x="18" y="80">Al no tener matcher, asume <tspan class="sq-mono" fill="#dc2626" font-weight="700">/**</tspan> por omisión.</text>
+
+            <g transform="translate(18, 98)">
+              <rect width="389" height="72" rx="8" fill="#1e293b"/>
+              <text class="sq-mono" x="14" y="24" fill="#f87171">// Petición desde Navegador:</text>
+              <text class="sq-mono" x="14" y="44" fill="#ffffff">GET /login  o  GET /usuarios</text>
+              <text class="sq-mono" x="14" y="62" fill="#94a3b8">➔ Atrapado por Cadena 1 (STATELESS)</text>
+            </g>
+
+            <g transform="translate(18, 185)">
+              <text class="sq-label" x="0" y="12" fill="#dc2626">CONSECUENCIA INMEDIATA:</text>
+              <text class="sq-body" x="0" y="34">• No hay sesión <tspan class="sq-mono">JSESSIONID</tspan> permitida.</text>
+              <text class="sq-body" x="0" y="54">• No hay formulario <tspan class="sq-mono">formLogin()</tspan> configurado.</text>
+              <text class="sq-body" x="0" y="74">• <tspan font-weight="700" fill="#991b1b">La cadena @Order(2) MVC queda muerta.</tspan></text>
+              <text class="sq-body" x="0" y="94">• El usuario recibe 403 Forbidden o error blanco.</text>
+            </g>
+          </g>
+
+          <!-- ESCENARIO CORRECTO -->
+          <g transform="translate(503, 74)">
+            <rect width="425" height="348" rx="12" fill="#ffffff" stroke="#a7f3d0" stroke-width="1.8" filter="url(#sq-sh)"/>
+            <rect width="425" height="5" rx="2.5" fill="#059669"/>
+            <rect x="18" y="14" width="170" height="22" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/>
+            <text class="sq-label" x="103" y="29" fill="#059669" text-anchor="middle">SOLUCIÓN ARQUITECTÓNICA</text>
+
+            <text x="18" y="58" font-family="system-ui" font-size="14.5" font-weight="700" fill="#065f46">.securityMatcher("/api/**") Explícito</text>
+            <text class="sq-body" x="18" y="80">Delimita con precisión quirúrgica el dominio REST.</text>
+
+            <g transform="translate(18, 98)">
+              <rect width="389" height="72" rx="8" fill="#1e293b"/>
+              <text class="sq-mono" x="14" y="24" fill="#34d399">// Bifurcación Inteligente:</text>
+              <text class="sq-mono" x="14" y="44" fill="#60a5fa">GET /api/**  ➔ Cadena 1 (@Order 1)</text>
+              <text class="sq-mono" x="14" y="62" fill="#fb923c">GET /** (MVC) ➔ Cadena 2 (@Order 2)</text>
+            </g>
+
+            <g transform="translate(18, 185)">
+              <text class="sq-label" x="0" y="12" fill="#059669">BENEFICIO EN PRODUCCIÓN:</text>
+              <text class="sq-body" x="0" y="34">• La API REST opera 100% Stateless con JWT.</text>
+              <text class="sq-body" x="0" y="54">• Thymeleaf mantiene sus cookies y formulario.</text>
+              <text class="sq-body" x="0" y="74">• <tspan font-weight="700" fill="#065f46">Cero colisiones entre ambos paradigmas.</tspan></text>
+              <text class="sq-body" x="0" y="94">• Coexistencia limpia en un único monolito Spring.</text>
+            </g>
+          </g>
+        </svg>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 5: Ajuste del Principal en JwtAuthenticationFilter
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Ajuste en JwtAuthenticationFilter: Hidratando el Principal UserDetails',
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. src/.../security/jwt/JwtAuthenticationFilter.java</div>
+      <pre><code class="language-java">// En doFilterInternal():
+final String userEmail = jwtService.extractUsername(token);
+
+if (userEmail != null &amp;&amp; 
+    SecurityContextHolder.getContext().getAuthentication() == null) {
+
+    UserDetails userDetails = 
+        userDetailsService.loadUserByUsername(userEmail);
+
+    if (jwtService.isTokenValid(token, userDetails)) {
+        // AJUSTE CRÍTICO:
+        // Pasar el objeto userDetails completo como principal,
+        // NO únicamente el String del email
+        UsernamePasswordAuthenticationToken authToken = 
+            new UsernamePasswordAuthenticationToken(
+                userDetails,          // &lt;-- Principal Tipado
+                null,                 // Credentials (null en JWT)
+                userDetails.getAuthorities() // Authorities
+            );
+
+        authToken.setDetails(
+            new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
+}</code></pre>
+      `,
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-green); margin-bottom:6px;">2. Justificación Arquitectónica del Cambio</div>
+      <div class="h-item h-item-blue" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Soporte para @AuthenticationPrincipal</div>
+          <div class="h-item-desc">Permite inyectar directamente <code>@AuthenticationPrincipal UserDetails user</code> en los métodos de cualquier controlador REST.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-purple" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Compatibilidad con SpEL en @PreAuthorize</div>
+          <div class="h-item-desc">Expresiones como <code>authentication.principal.username</code> acceden a métodos reales del objeto de seguridad sin casteos riesgosos.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Consistencia de Contexto</div>
+          <div class="h-item-desc">El hilo de Tomcat preserva exactamente la misma estructura de identidad tanto en la cadena REST como en la cadena MVC.</div>
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 6: Separador Micro-Ciclo 2
+    // =========================================================================
+    icesi.sectionSlideEGreen(
+      '02. Ensamble Definitivo de la Dual FilterChain y Errores JSON',
+      'Configuración de SecurityConfig, eliminación de redirecciones HTML 302 y manejo de 401/403 en JSON.'
+    ),
+
+    // =========================================================================
+    // SLIDE 7: Pipeline de Errores REST (Bespoke SVG 960x450)
+    // =========================================================================
+    icesi.slideStandard(
+      'Pipeline de Excepciones REST: Eliminando Redirecciones HTML (302)',
+      `
+      <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
+          <defs>
+            <style>
+              .ex-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
+              .ex-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
+              .ex-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+              .ex-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+              .ex-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; fill: #475569; }
+            </style>
+            <filter id="ex-sh" x="-4%" y="-4%" width="108%" height="110%" filterUnits="objectBoundingBox">
+              <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.06"/>
+            </filter>
+            <marker id="exa-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+            <marker id="exa-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker>
+            <marker id="exa-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker>
+          </defs>
+
+          <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text class="ex-title" x="32" y="34">Despacho de Errores: Devolviendo JSON Puro a Clientes Desacoplados</text>
+          <text class="ex-sub" x="32" y="54">Configuración de AuthenticationEntryPoint y AccessDeniedHandler en la cadena REST</text>
+
+          <!-- Request Origin -->
+          <g transform="translate(32, 140)">
+            <rect width="180" height="150" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1.8" filter="url(#ex-sh)"/>
+            <text class="ex-label" x="90" y="30" fill="#38bdf8" text-anchor="middle">CLIENTE API REST</text>
+            <text x="90" y="56" font-family="system-ui" font-size="14.5" font-weight="700" fill="#ffffff" text-anchor="middle">React / Flutter</text>
+            <text class="ex-body" x="90" y="80" style="fill:#94a3b8;" text-anchor="middle">Invoca endpoint</text>
+            <text class="ex-mono" x="90" y="100" fill="#facc15" text-anchor="middle">/api/v1/usuarios</text>
+            <text class="ex-body" x="90" y="125" style="fill:#cbd5e1;" text-anchor="middle">Espera respuesta JSON</text>
+          </g>
+
+          <path d="M214,190 L285,145" stroke="#dc2626" stroke-width="2.2" marker-end="url(#exa-red)"/>
+          <path d="M214,240 L285,285" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#exa-purple)"/>
+
+          <!-- Top Branch: 401 Unauthorized -->
+          <g transform="translate(292, 75)">
+            <rect width="636" height="150" rx="12" fill="#ffffff" stroke="#fca5a5" stroke-width="1.8" filter="url(#ex-sh)"/>
+            <rect width="636" height="5" rx="2.5" fill="#dc2626"/>
+            <rect x="18" y="14" width="225" height="22" rx="5" fill="#fef2f2" stroke="#fca5a5"/>
+            <text class="ex-label" x="130" y="29" fill="#dc2626" text-anchor="middle">FALLO 1: NO AUTENTICADO (HTTP 401)</text>
+            <text x="255" y="30" font-family="system-ui" font-size="14.5" font-weight="700" fill="#991b1b">AuthenticationEntryPoint</text>
+
+            <text class="ex-body" x="18" y="60"><tspan font-weight="700" fill="#0f172a">Causa:</tspan> Header <tspan class="ex-mono">Authorization</tspan> ausente, token mal formado, firma rota o expirado.</text>
+            <text class="ex-body" x="18" y="80"><tspan font-weight="700" fill="#0f172a">Comportamiento MVC Clásico:</tspan> <tspan style="fill:#dc2626; text-decoration:line-through;">302 Found ➔ Redirige a /login (ROMPE LA API)</tspan></text>
+            
+            <g transform="translate(18, 92)">
+              <rect width="600" height="44" rx="6" fill="#1e293b"/>
+              <text class="ex-mono" x="14" y="18" fill="#fca5a5">res.setStatus(401); res.setContentType("application/json");</text>
+              <text class="ex-mono" x="14" y="34" fill="#86efac">res.getWriter().write("{\"error\": \"No autenticado: Token JWT ausente o invalido\"}");</text>
+            </g>
+          </g>
+
+          <!-- Bottom Branch: 403 Forbidden -->
+          <g transform="translate(292, 245)">
+            <rect width="636" height="150" rx="12" fill="#ffffff" stroke="#d8b4fe" stroke-width="1.8" filter="url(#ex-sh)"/>
+            <rect width="636" height="5" rx="2.5" fill="#7c3aed"/>
+            <rect x="18" y="14" width="225" height="22" rx="5" fill="#faf5ff" stroke="#d8b4fe"/>
+            <text class="ex-label" x="130" y="29" fill="#7c3aed" text-anchor="middle">FALLO 2: ACCESO DENEGADO (HTTP 403)</text>
+            <text x="255" y="30" font-family="system-ui" font-size="14.5" font-weight="700" fill="#581c87">AccessDeniedHandler</text>
+
+            <text class="ex-body" x="18" y="60"><tspan font-weight="700" fill="#0f172a">Causa:</tspan> El usuario está autenticado legítimamente, pero carece del rol exigido por <tspan class="ex-mono">@PreAuthorize</tspan>.</text>
+            <text class="ex-body" x="18" y="80"><tspan font-weight="700" fill="#0f172a">Comportamiento MVC Clásico:</tspan> <tspan style="fill:#7c3aed; text-decoration:line-through;">Redirige a la vista HTML /access-denied</tspan></text>
+
+            <g transform="translate(18, 92)">
+              <rect width="600" height="44" rx="6" fill="#1e293b"/>
+              <text class="ex-mono" x="14" y="18" fill="#d8b4fe">res.setStatus(403); res.setContentType("application/json");</text>
+              <text class="ex-mono" x="14" y="34" fill="#86efac">res.getWriter().write("{\"error\": \"Acceso denegado: No posees privilegios suficientes\"}");</text>
+            </g>
+          </g>
+        </svg>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 8: Implementación Definitiva en SecurityConfig
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Implementación Definitiva: apiSecurityFilterChain en SecurityConfig',
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. Declaración de Cadena 1 (@Order(1))</div>
+      <pre><code class="language-java">@Bean
+@Order(1)
+public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) 
+        throws Exception {
+    return http
+        // 1. Aislar únicamente endpoints bajo /api/**
+        .securityMatcher("/api/**")
+        // 2. Desactivar CSRF (Stateless / sin cookies)
+        .csrf(csrf -> csrf.disable())
+        // 3. Sesiones 100% en token (cero RAM en Tomcat)
+        .sessionManagement(s -> s
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        )
+        // 4. Reglas públicas vs protegidas
+        .authorizeHttpRequests(authz -> authz
+            .requestMatchers("/api/v1/auth/**").permitAll()
+            .anyRequest().authenticated()
+        )
+        // ... continua en columna derecha ...</code></pre>
+      `,
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-green); margin-bottom:6px;">2. Excepciones JSON y Registro del Filtro</div>
+      <pre><code class="language-java">        // 5. Manejadores de error nativos en JSON
+        .exceptionHandling(ex -> ex
+            .authenticationEntryPoint((req, res, err) -> {
+                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                res.setContentType("application/json");
+                res.getWriter().write(
+                  "{\"error\": \"Token JWT ausente o invalido\"}");
+            })
+            .accessDeniedHandler((req, res, err) -> {
+                res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                res.setContentType("application/json");
+                res.getWriter().write(
+                  "{\"error\": \"Permisos insuficientes\"}");
+            })
+        )
+        // 6. Posicionar filtro JWT antes de UsernamePassword
+        .addFilterBefore(jwtAuthenticationFilter, 
+            UsernamePasswordAuthenticationFilter.class)
+        .build();
+}</code></pre>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 9: Comparativa de Contratos Cadena 1 vs Cadena 2
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Comparativa de Contratos: Cadena 1 (REST) vs. Cadena 2 (MVC)',
+      `
+      <div style="background:#ffffff; border:1px solid #cbd5e1; border-top:4px solid var(--icesi-blue); border-radius:8px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="font-weight:700; color:var(--icesi-blue); font-size:15px; margin-bottom:8px;">Cadena 1: @Order(1) — REST API (/api/**)</div>
+        <ul style="margin:0; padding-left:18px; font-size:12.5px; color:#334155; line-height:1.65;">
+          <li><strong>Matcher:</strong> <code>/api/**</code> (Aisla la API móvil y SPA).</li>
+          <li><strong>Gestión de Sesión:</strong> <code>STATELESS</code> (Cero memoria en servidor).</li>
+          <li><strong>Mecanismo de Auth:</strong> Header <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+          <li><strong>Protección CSRF:</strong> Deshabilitada (Seguro por ser Stateless sin cookies).</li>
+          <li><strong>Respuestas de Error:</strong> Códigos HTTP <code>401</code> y <code>403</code> en payload JSON.</li>
+          <li><strong>Filtro Personalizado:</strong> <code>JwtAuthenticationFilter</code> registrado.</li>
+        </ul>
+      </div>
+      `,
+      `
+      <div style="background:#ffffff; border:1px solid #cbd5e1; border-top:4px solid var(--icesi-orange); border-radius:8px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="font-weight:700; color:var(--icesi-orange); font-size:15px; margin-bottom:8px;">Cadena 2: @Order(2) — Web MVC (/**)</div>
+        <ul style="margin:0; padding-left:18px; font-size:12.5px; color:#334155; line-height:1.65;">
+          <li><strong>Matcher:</strong> <code>/**</code> por omisión (Captura vistas Thymeleaf).</li>
+          <li><strong>Gestión de Sesión:</strong> Stateful indexado por cookie <code>JSESSIONID</code>.</li>
+          <li><strong>Mecanismo de Auth:</strong> Formulario HTML clásico con <code>formLogin()</code>.</li>
+          <li><strong>Protección CSRF:</strong> Activa obligatoria para evitar ataques en formularios.</li>
+          <li><strong>Respuestas de Error:</strong> Redirección <code>302 Found</code> a <code>/login</code> o <code>/access-denied</code>.</li>
+          <li><strong>Filtro Personalizado:</strong> Ninguno; opera con la cadena base de Spring.</li>
+        </ul>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 10: Separador Micro-Ciclo 3
+    // =========================================================================
+    icesi.sectionSlideEPurple(
+      '03. Autorización Granular con @PreAuthorize y RBAC',
+      'De la identidad a los privilegios: consumo de Authorities e inyección declarativa con SpEL.'
+    ),
+
+    // =========================================================================
+    // SLIDE 11: Flujo de Autorización RBAC (Bespoke SVG 960x450)
+    // =========================================================================
+    icesi.slideStandard(
+      'Flujo de Autorización RBAC: De los Claims en el JWT a @PreAuthorize',
+      `
+      <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
+          <defs>
+            <style>
+              .rb-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
+              .rb-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
+              .rb-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+              .rb-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 10.5px; }
+              .rb-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; fill: #475569; }
+            </style>
+            <filter id="rb-sh" x="-4%" y="-4%" width="108%" height="110%" filterUnits="objectBoundingBox">
+              <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.06"/>
+            </filter>
+            <marker id="rba-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+            <marker id="rba-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker>
+            <marker id="rba-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+          </defs>
+
+          <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text class="rb-title" x="32" y="34">Secuencia de Autorización Sin Consulta a Base de Datos (Zero-DB Hit)</text>
+          <text class="rb-sub" x="32" y="54">Cómo el claim "authorities" en el JWT alimenta la evaluación SpEL en cada método del Controller</text>
+
+          <!-- 4 Sequential Cards -->
+          <!-- Card 1 -->
+          <g transform="translate(32, 78)">
+            <rect width="205" height="340" rx="12" fill="#ffffff" stroke="#93c5fd" stroke-width="1.8" filter="url(#rb-sh)"/>
+            <rect width="205" height="5" rx="2.5" fill="#2563eb"/>
+            <text class="rb-label" x="14" y="24" fill="#2563eb">PASO 1: TOKEN ENTRANTE</text>
+            <text x="14" y="48" font-family="system-ui" font-size="14.5" font-weight="700" fill="#0f172a">Payload Claims</text>
+            <text class="rb-body" x="14" y="70">El cliente envía el JWT con los claims de roles:</text>
+
+            <rect x="12" y="85" width="181" height="115" rx="6" fill="#1e293b"/>
+            <text class="rb-mono" x="20" y="105" fill="#facc15">{</text>
+            <text class="rb-mono" x="20" y="123" fill="#38bdf8"> "sub": "admin@icesi...",</text>
+            <text class="rb-mono" x="20" y="141" fill="#4ade80"> "authorities": [</text>
+            <text class="rb-mono" x="26" y="159" fill="#fca5a5">  "ROLE_ADMIN",</text>
+            <text class="rb-mono" x="26" y="177" fill="#fca5a5">  "USER_READ"</text>
+            <text class="rb-mono" x="20" y="193" fill="#4ade80"> ]</text>
+            <text class="rb-mono" x="20" y="209" fill="#facc15">}</text>
+
+            <text class="rb-body" x="14" y="240">Firmado con HMAC-SHA256.</text>
+            <text class="rb-body" x="14" y="260">No requiere ir a la BD</text>
+            <text class="rb-body" x="14" y="278">para conocer los roles.</text>
+          </g>
+
+          <path d="M242,245 L268,245" stroke="#2563eb" stroke-width="2" marker-end="url(#rba-blue)"/>
+
+          <!-- Card 2 -->
+          <g transform="translate(274, 78)">
+            <rect width="205" height="340" rx="12" fill="#ffffff" stroke="#c4b5fd" stroke-width="1.8" filter="url(#rb-sh)"/>
+            <rect width="205" height="5" rx="2.5" fill="#7c3aed"/>
+            <text class="rb-label" x="14" y="24" fill="#7c3aed">PASO 2: FILTRO JWT</text>
+            <text x="14" y="48" font-family="system-ui" font-size="14.5" font-weight="700" fill="#0f172a">Hidratación Contexto</text>
+            <text class="rb-body" x="14" y="70">Extrae las autoridades y crea el token de Spring:</text>
+
+            <rect x="12" y="85" width="181" height="115" rx="6" fill="#f5f3ff" stroke="#ddd6fe"/>
+            <text class="rb-mono" x="18" y="105" fill="#581c87" font-weight="700">SimpleGrantedAuthority</text>
+            <text class="rb-mono" x="18" y="130" fill="#6d28d9">➔ ROLE_ADMIN</text>
+            <text class="rb-mono" x="18" y="152" fill="#6d28d9">➔ USER_READ</text>
+            <text class="rb-mono" x="18" y="180" fill="#475569" font-size="9px">Inyectado en:</text>
+            <text class="rb-mono" x="18" y="194" fill="#0f172a" font-weight="700" font-size="9.5px">SecurityContextHolder</text>
+
+            <text class="rb-body" x="14" y="240">Disponible para todo el</text>
+            <text class="rb-body" x="14" y="260">hilo HTTP actual en</text>
+            <text class="rb-body" x="14" y="278">forma inmutable.</text>
+          </g>
+
+          <path d="M484,245 L510,245" stroke="#7c3aed" stroke-width="2" marker-end="url(#rba-purple)"/>
+
+          <!-- Card 3 -->
+          <g transform="translate(516, 78)">
+            <rect width="205" height="340" rx="12" fill="#ffffff" stroke="#a7f3d0" stroke-width="1.8" filter="url(#rb-sh)"/>
+            <rect width="205" height="5" rx="2.5" fill="#059669"/>
+            <text class="rb-label" x="14" y="24" fill="#059669">PASO 3: INTERCEPTOR AOP</text>
+            <text x="14" y="48" font-family="system-ui" font-size="14.5" font-weight="700" fill="#0f172a">@EnableMethodSecurity</text>
+            <text class="rb-body" x="14" y="70">Intercepta antes de invocar el método de Controller:</text>
+
+            <rect x="12" y="85" width="181" height="115" rx="6" fill="#ecfdf5" stroke="#a7f3d0"/>
+            <text class="rb-mono" x="18" y="105" fill="#065f46" font-weight="700">Expresión SpEL:</text>
+            <text class="rb-mono" x="18" y="128" fill="#047857">hasRole('ADMIN')</text>
+            <text class="rb-mono" x="18" y="148" fill="#047857">hasAuthority('READ')</text>
+            <text class="rb-mono" x="18" y="175" fill="#1e293b" font-weight="700">Evaluación:</text>
+            <text class="rb-mono" x="18" y="192" fill="#059669" font-weight="700">TRUE ➔ Acceso Concedido</text>
+
+            <text class="rb-body" x="14" y="240">Si evalúa FALSE, arroja</text>
+            <text class="rb-body" x="14" y="260"><tspan font-family="monospace" fill="#dc2626">AccessDeniedException</tspan></text>
+            <text class="rb-body" x="14" y="278">sin ejecutar el método.</text>
+          </g>
+
+          <path d="M726,245 L752,245" stroke="#059669" stroke-width="2" marker-end="url(#rba-green)"/>
+
+          <!-- Card 4 -->
+          <g transform="translate(758, 78)">
+            <rect width="170" height="340" rx="12" fill="#ffffff" stroke="#fed7aa" stroke-width="1.8" filter="url(#rb-sh)"/>
+            <rect width="170" height="5" rx="2.5" fill="#ea580c"/>
+            <text class="rb-label" x="14" y="24" fill="#ea580c">PASO 4: RESULTADO</text>
+            <text x="14" y="48" font-family="system-ui" font-size="14.5" font-weight="700" fill="#0f172a">Ejecución</text>
+            <text class="rb-body" x="14" y="70">Respuesta limpia:</text>
+
+            <rect x="12" y="85" width="146" height="60" rx="6" fill="#eff6ff"/>
+            <text class="rb-mono" x="73" y="110" fill="#2563eb" font-weight="700" text-anchor="middle">200 OK</text>
+            <text class="rb-body" x="73" y="130" fill="#1e40af" font-size="10px" text-anchor="middle">JSON con Datos</text>
+
+            <rect x="12" y="155" width="146" height="60" rx="6" fill="#fef2f2"/>
+            <text class="rb-mono" x="73" y="180" fill="#dc2626" font-weight="700" text-anchor="middle">403 Forbidden</text>
+            <text class="rb-body" x="73" y="200" fill="#991b1b" font-size="10px" text-anchor="middle">AccessDenied JSON</text>
+
+            <text class="rb-body" x="14" y="250">Máximo rendimiento y</text>
+            <text class="rb-body" x="14" y="270">desacoplamiento total.</text>
+          </g>
+        </svg>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 12: Expresiones SpEL en Métodos
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Habilitación Declarativa: Expresiones SpEL en @PreAuthorize',
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. Roles (RBAC) vs. Permisos Atómicos</div>
+      <div class="h-item h-item-blue" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">hasRole('ADMINISTRADOR')</div>
+          <div class="h-item-desc">Busca automáticamente la autoridad con prefijo <code>ROLE_ADMINISTRADOR</code>. Ideal para jerarquías amplias.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-purple" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">hasAuthority('USER_READ')</div>
+          <div class="h-item-desc">Evalúa el permiso directo sin asumir ningún prefijo. Permite un control de privilegios granular por acción.</div>
+        </div>
+      </div>
+      `,
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-green); margin-bottom:6px;">2. Catálogo de Expresiones SpEL</div>
+      <table class="icesi-table">
+        <thead>
+          <tr>
+            <th>Expresión SpEL</th>
+            <th>Significado y Uso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>hasRole('ADMIN')</code></td>
+            <td>Requiere <code>ROLE_ADMIN</code>.</td>
+          </tr>
+          <tr>
+            <td><code>hasAnyRole('A', 'B')</code></td>
+            <td>Permite acceso si posee el rol A o el rol B.</td>
+          </tr>
+          <tr>
+            <td><code>hasAuthority('READ')</code></td>
+            <td>Exige el permiso puntual <code>READ</code>.</td>
+          </tr>
+          <tr>
+            <td><code>hasRole('A') or hasAuthority('B')</code></td>
+            <td>Combina roles con permisos usando operadores booleanos.</td>
+          </tr>
+          <tr>
+            <td><code>isAuthenticated()</code></td>
+            <td>Cualquier usuario autenticado legítimamente.</td>
+          </tr>
+        </tbody>
+      </table>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 13: Código UsuarioRestController con @PreAuthorize
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Asegurando UsuarioRestController con @PreAuthorize',
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. Endpoints de Consulta (Lectura Flexible)</div>
+      <pre><code class="language-java">@RestController
+@RequestMapping("/api/v1/usuarios")
+@RequiredArgsConstructor
+public class UsuarioRestController {
+
+    // Lectura permitida a Admin, Profesor o quien tenga USER_READ
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESOR') " + 
+                  "or hasAuthority('USER_READ')")
+    public List<UsuarioResponseDTO> obtenerUsuarios(
+            @RequestParam(required = false) Boolean active) {
+        return usuarioMapper.toListUsuarioResponseDTO(
+            usuarioService.listarUsuarios(active));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESOR') " + 
+                  "or hasAuthority('USER_READ')")
+    public ResponseEntity<UsuarioResponseDTO> obtnerUsuarioPorId(
+            @PathVariable Long id) {
+        return usuarioService.obtenerPorId(id)
+            .map(u -> ResponseEntity.ok(usuarioMapper.toUsuarioResponseDTO(u)))
+            .orElse(ResponseEntity.notFound().build());
+    }</code></pre>
+      `,
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-green); margin-bottom:6px;">2. Endpoints de Mutación (Exclusivos Admin)</div>
+      <pre><code class="language-java">    // Creación, actualización y eliminación restringidas a ADMIN
+    @PostMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<UsuarioResponseDTO> crearUsuario(
+            @RequestBody UsuarioRequestDTO dto) {
+        // ... creación con 201 Created ...
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<UsuarioResponseDTO> actualizarUsuario(
+            @PathVariable Long id, @RequestBody UsuarioRequestDTO dto) {
+        // ... actualización ...
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
+        usuarioService.eliminarUsuario(id);
+        return ResponseEntity.noContent().build();
+    }
+}</code></pre>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 14: Separador Micro-Ciclo 4
+    // =========================================================================
+    icesi.sectionSlideEOrange(
+      '04. Laboratorio Forense en Postman y Sabotaje de Firma',
+      'Protocolo de 5 pruebas: verificación de permisos, inspección de claims y ruptura matemática del HMAC.'
+    ),
+
+    // =========================================================================
+    // SLIDE 15: Matriz de Pruebas Casos 1, 2 y 3
+    // =========================================================================
+    icesi.slideStripeTopRight(
+      'Matriz de Pruebas en Postman (Casos 1, 2 y 3)',
+      `
+      <div style="display:flex; gap:24px; align-items:center;">
+        <div style="flex:1.15;">
+          <div class="h-item h-item-orange" style="margin-bottom:10px;">
+            <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div style="flex:1; min-width:0;">
+              <div class="h-item-title">1. Petición sin Token ➔ 401 Unauthorized (JSON)</div>
+              <div class="h-item-desc"><code>GET /api/v1/usuarios</code> sin header <code>Authorization</code> responde 401 en JSON (ya no redirige al HTML <code>/login</code>).</div>
+            </div>
+          </div>
+          <div class="h-item h-item-blue" style="margin-bottom:10px;">
+            <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
+            <div style="flex:1; min-width:0;">
+              <div class="h-item-title">2. Login con Rol Estudiante + Inspección en jwt.io</div>
+              <div class="h-item-desc"><code>POST /api/v1/auth/login</code> con credenciales de estudiante y decodificación de los <em>claims</em> en <code>jwt.io</code>.</div>
+            </div>
+          </div>
+          <div class="h-item h-item-purple">
+            <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+            <div style="flex:1; min-width:0;">
+              <div class="h-item-title">3. Estudiante Invoca DELETE /usuarios/1 ➔ 403 Forbidden</div>
+              <div class="h-item-desc">El token es auténtico, pero carece del rol <code>ROLE_ADMINISTRADOR</code> exigido por <code>@PreAuthorize</code>.</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:0.85; background:#1e1e2e; color:#cdd6f4; border-radius:10px; padding:18px; font-family:'Courier New', monospace; font-size:11.5px; line-height:1.45; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+          <div style="color:#79c0ff; font-weight:bold;">// POST /api/v1/auth/login</div>
+          <div style="color:#7ee787;">{</div>
+          <div style="color:#7ee787; padding-left:14px;">"correoInstitucional": "estudiante@icesi.edu.co",</div>
+          <div style="color:#7ee787; padding-left:14px;">"password": "user123"</div>
+          <div style="color:#7ee787;">}</div>
+          <hr style="border:0; border-top:1px solid #334155; margin:10px 0;"/>
+          <div style="color:#ffa657; font-weight:bold;">// Respuesta 200 OK:</div>
+          <div style="color:#cdd6f4;">{</div>
+          <div style="color:#f2cc60; padding-left:14px;">"token": "eyJhbGciOiJIUzI1NiJ9...",</div>
+          <div style="color:#cdd6f4; padding-left:14px;">"type": "Bearer",</div>
+          <div style="color:#cdd6f4; padding-left:14px;">"expiresIn": 3600000,</div>
+          <div style="color:#cdd6f4; padding-left:14px;">"correoInstitucional": "estudiante@icesi.edu.co"</div>
+          <div style="color:#cdd6f4;">}</div>
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 16: Matriz de Pruebas Casos 4 y 5
+    // =========================================================================
+    icesi.slideStripeTopRight(
+      'Matriz de Pruebas en Postman (Casos 4 y 5: Admin & Sabotaje)',
+      `
+      <div style="display:flex; gap:24px; align-items:center;">
+        <div style="flex:1.15;">
+          <div class="h-item h-item-green" style="margin-bottom:14px;">
+            <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div style="flex:1; min-width:0;">
+              <div class="h-item-title">4. Login Admin y Operación CRUD Completa (200 / 201)</div>
+              <div class="h-item-desc">Autenticar como <code>admin@icesi.edu.co</code> con <code>admin123</code>. Ejecutar <code>GET /usuarios</code> y crear un usuario con <code>POST</code>. Acceso total concedido.</div>
+            </div>
+          </div>
+          <div class="h-item h-item-orange">
+            <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div style="flex:1; min-width:0;">
+              <div class="h-item-title">5. Sabotaje Criptográfico de Firma (401 Unauthorized)</div>
+              <div class="h-item-desc">Tomar el token de admin y alterar 4 caracteres de la firma en Postman. JJWT detecta la alteración, lanza <code>SignatureException</code> y rechaza la petición.</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:0.85; background:#1e1e2e; color:#cdd6f4; border-radius:10px; padding:18px; font-family:'Courier New', monospace; font-size:11.5px; line-height:1.45; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+          <div style="color:#79c0ff; font-weight:bold;">// Token Original de Administrador:</div>
+          <div style="color:#7ee787; word-break:break-all;">eyJhbGciOiJIUzI1NiJ9...<span style="color:#d2a8ff; font-weight:bold;">W5v8</span></div>
+          <hr style="border:0; border-top:1px solid #334155; margin:10px 0;"/>
+          <div style="color:#ff7b72; font-weight:bold;">// Token Saboteado en Postman:</div>
+          <div style="color:#7ee787; word-break:break-all;">eyJhbGciOiJIUzI1NiJ9...<span style="color:#ff7b72; font-weight:bold; background:rgba(255,123,114,0.3); padding:0 3px;">xxxx</span></div>
+          <hr style="border:0; border-top:1px solid #334155; margin:10px 0;"/>
+          <div style="color:#f2cc60; font-weight:bold;">// Respuesta 401 del Servidor:</div>
+          <div style="color:#ff7b72;">HTTP/1.1 401 Unauthorized</div>
+          <div style="color:#cdd6f4;">{"error": "No autenticado: Token JWT ausente, invalido o expirado"}</div>
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 17: Anatomía Forense del Sabotaje (Bespoke SVG 960x450)
+    // =========================================================================
+    icesi.slideStandard(
+      'Anatomía Forense: ¿Por qué falla la firma alterada en JJWT?',
+      `
+      <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
+          <defs>
+            <style>
+              .cr-title { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; font-weight: 700; fill: #0f172a; }
+              .cr-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12.5px; fill: #64748b; }
+              .cr-label { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+              .cr-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+              .cr-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 11.5px; fill: #475569; }
+            </style>
+            <filter id="cr-sh" x="-4%" y="-4%" width="108%" height="110%" filterUnits="objectBoundingBox">
+              <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.06"/>
+            </filter>
+            <marker id="cra-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+            <marker id="cra-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker>
+          </defs>
+
+          <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text class="cr-title" x="32" y="34">Verificación Criptográfica: Integridad Matemática Imposible de Falsificar</text>
+          <text class="cr-sub" x="32" y="54">El servidor recalcula el HMAC del payload entrante contra la clave secreta privada jwt.secret</text>
+
+          <!-- Top: Token arriving from attacker -->
+          <g transform="translate(32, 75)">
+            <rect width="896" height="120" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#cr-sh)"/>
+            <text class="cr-label" x="20" y="24" fill="#64748b">PETICIÓN INTERCEPTADA EN TRÁNSITO</text>
+
+            <rect x="20" y="38" width="190" height="60" rx="6" fill="#eff6ff" stroke="#93c5fd"/>
+            <text class="cr-mono" x="115" y="60" fill="#1e40af" font-weight="700" text-anchor="middle">HEADER (H)</text>
+            <text class="cr-mono" x="115" y="80" fill="#60a5fa" font-size="9.5px" text-anchor="middle">{"alg":"HS256"}</text>
+
+            <text x="220" y="74" font-family="monospace" font-size="20" fill="#64748b" text-anchor="middle">.</text>
+
+            <rect x="230" y="38" width="370" height="60" rx="6" fill="#fef2f2" stroke="#fca5a5"/>
+            <text class="cr-mono" x="415" y="58" fill="#991b1b" font-weight="700" text-anchor="middle">PAYLOAD MANIPULADO (P')</text>
+            <text class="cr-mono" x="415" y="80" fill="#dc2626" font-size="9.5px" text-anchor="middle">sub="estudiante" ➔ cambiado a "admin@icesi.edu.co"</text>
+
+            <text x="610" y="74" font-family="monospace" font-size="20" fill="#64748b" text-anchor="middle">.</text>
+
+            <rect x="620" y="38" width="256" height="60" rx="6" fill="#fefce8" stroke="#fde047"/>
+            <text class="cr-mono" x="748" y="58" fill="#854d0e" font-weight="700" text-anchor="middle">FIRMA RECIBIDA (S)</text>
+            <text class="cr-mono" x="748" y="80" fill="#ca8a04" font-size="9.5px" text-anchor="middle">Firma original previa al cambio</text>
+          </g>
+
+          <!-- Bottom Split: Server Recalculation -->
+          <g transform="translate(32, 215)">
+            <rect width="435" height="205" rx="10" fill="#ffffff" stroke="#93c5fd" stroke-width="1.8" filter="url(#cr-sh)"/>
+            <rect width="435" height="5" rx="2.5" fill="#2563eb"/>
+            <text class="cr-label" x="20" y="24" fill="#2563eb">1. RECÁLCULO EN SERVIDOR (JJTW 0.12+)</text>
+            <text class="cr-body" x="20" y="48">JJWT toma el Header y Payload recibido y calcula:</text>
+
+            <rect x="20" y="62" width="395" height="54" rx="6" fill="#1e293b"/>
+            <text class="cr-mono" x="30" y="85" fill="#facc15">HMAC-SHA256(H + "." + P', jwt.secret)</text>
+            <text class="cr-mono" x="30" y="103" fill="#38bdf8">➔ Hash_Calculado = "9e8a7b6c5d..."</text>
+
+            <text class="cr-body" x="20" y="140">La clave privada <tspan class="cr-mono" fill="#1e40af">jwt.secret</tspan> solo reside en la</text>
+            <text class="cr-body" x="20" y="158">memoria del servidor. El atacante jamás podrá adivinar</text>
+            <text class="cr-body" x="20" y="176">la firma correspondiente al nuevo payload alterado.</text>
+          </g>
+
+          <g transform="translate(493, 215)">
+            <rect width="435" height="205" rx="10" fill="#ffffff" stroke="#fca5a5" stroke-width="1.8" filter="url(#cr-sh)"/>
+            <rect width="435" height="5" rx="2.5" fill="#dc2626"/>
+            <text class="cr-label" x="20" y="24" fill="#dc2626">2. COMPARACIÓN CRIPTOGRÁFICA</text>
+            <text class="cr-body" x="20" y="48">Compara el hash calculado contra la firma enviada:</text>
+
+            <rect x="20" y="62" width="395" height="54" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+            <text class="cr-mono" x="30" y="85" fill="#991b1b" font-weight="700">Hash_Calculado != Firma_Recibida (S)</text>
+            <text class="cr-mono" x="30" y="103" fill="#dc2626" font-weight="700">➔ LANZA: io.jsonwebtoken.security.SignatureException</text>
+
+            <text class="cr-body" x="20" y="140">• <tspan font-weight="700" fill="#0f172a">Catch en Filtro:</tspan> <tspan class="cr-mono">SecurityContextHolder.clearContext()</tspan></text>
+            <text class="cr-body" x="20" y="158">• <tspan font-weight="700" fill="#0f172a">Respuesta:</tspan> <tspan class="cr-mono" fill="#dc2626">401 Unauthorized</tspan> inmediata.</text>
+            <text class="cr-body" x="20" y="176">• <tspan font-weight="700" fill="#0f172a">Base de Datos:</tspan> Cero consultas ejecutadas (Zero-DB).</text>
+          </g>
+        </svg>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 18: Separador Micro-Ciclo 5
+    // =========================================================================
+    icesi.sectionSlideEBlue(
+      '05. Escenarios Críticos en Producción: Hidratación vs. Stateless',
+      'Vulnerabilidades reales, el dilema de los Stale Claims, Hidratación desde BD y persistencia stateless.'
+    ),
+
+    // =========================================================================
+    // SLIDE 19: Tres Escenarios Críticos de Seguridad JWT en Producción
+    // =========================================================================
+    icesi.slideThreeCards(
+      'Tres Escenarios Críticos de Seguridad JWT en Producción',
+      '1. Robo de Token Vigente',
+      `<p style="font-size:13px; line-height:1.45;"><strong>El Riesgo Stateless</strong><br>Si un atacante roba un JWT válido (por XSS), el servidor lo aceptará hasta que llegue su fecha <code>exp</code>.<br><br><strong>Mitigación:</strong> Emitir <em>Access Tokens</em> de vida corta (5–15 min) + <em>Refresh Tokens</em> en cookie <code>HttpOnly</code> o lista de revocación en Redis.</p>`,
+      '2. Alteración del Payload',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Escalación de Privilegios</strong><br>Un estudiante decodifica su JWT en Base64, cambia <code>ROLE_ESTUDIANTE</code> por <code>ROLE_ADMINISTRADOR</code> y lo reenvía.<br><br><strong>Defensa:</strong> Al no conocer la <code>jwt.secret</code>, el HMAC calculado falla (<code>SignatureException</code> ➔ <code>401 Unauthorized</code>).</p>`,
+      '3. Stale Claims (Datos Viejos)',
+      `<p style="font-size:13px; line-height:1.45;"><strong>Revocación de Rol en Vivo</strong><br>¿Qué pasa si desactivamos un usuario cuyo token aún tiene 45 min de vida?<br><br><strong>Defensa por Hidratación BD:</strong> Al consultar <code>loadUserByUsername(email)</code> en el filtro, obtenemos permisos frescos de la BD al instante.</p>`
+    ),
+
+    // =========================================================================
+    // SLIDE 20: Comparativa Hidratación BD vs 100% Claims Stateless
+    // =========================================================================
+    icesi.slideStandard(
+      'Decisión de Arquitectura: Hidratación desde BD vs. 100% Claims del Token',
+      `
+      <table class="icesi-table" style="margin-bottom:16px;">
+        <thead>
+          <tr>
+            <th>Dimensión Arquitectónica</th>
+            <th>Enfoque A: Hidratación de UserDetails desde BD</th>
+            <th>Enfoque B: 100% Stateless Leyendo Claims del JWT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Costo en Base de Datos</strong></td>
+            <td>1 consulta rápida por clave única (<code>username</code> / <code>email</code>)</td>
+            <td><strong>0 consultas SQL</strong> (Solo verificación criptográfica en CPU)</td>
+          </tr>
+          <tr>
+            <td><strong>Revocación de Roles / Permisos</strong></td>
+            <td><strong>Efecto Inmediato</strong> en la siguiente petición HTTP</td>
+            <td>Diferido hasta que el token expire (<code>exp</code>)</td>
+          </tr>
+          <tr>
+            <td><strong>Desactivación de Cuenta (active=false)</strong></td>
+            <td><strong>Bloqueo Inmediato</strong> al evaluar el estado del usuario</td>
+            <td>El usuario sigue operando hasta que expire su JWT</td>
+          </tr>
+          <tr>
+            <td><strong>Caso de Uso Recomendado</strong></td>
+            <td>Sistemas académicos, financieros y empresariales críticos</td>
+            <td>Microservicios masivos con Access Tokens de 5 minutos</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-box" style="border-left:5px solid var(--icesi-purple);">
+        <p style="margin:0; font-size:13px; color:#1e293b;">
+          <strong>Balance de Ingeniería:</strong> Incluso consultando <code>UserDetailsService</code>, la arquitectura sigue siendo <strong>100% Stateless en la capa web</strong> porque el contenedor no almacena ningún objeto <code>HttpSession</code> en RAM entre peticiones.
+        </p>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 21: Estrategias Complementarias: Refresh Tokens y Redis Blacklist
+    // =========================================================================
+    icesi.slideThreeCols(
+      'Estrategias Complementarias: Refresh Tokens y Blacklist Redis',
+      `
+      <div style="background:#ffffff; border:1px solid #cbd5e1; border-top:4px solid #E31B23; border-radius:8px; padding:16px; height:100%; box-sizing:border-box; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="font-weight:700; color:#E31B23; font-size:15px; margin-bottom:8px;">El Problema (Zero-DB)</div>
+        <div style="font-size:12.5px; color:#334155; line-height:1.55;">
+          Al confiar 100% en la firma sin ir a la base de datos, el servidor asume que los roles del token siguen vigentes.
+          <br><br>
+          Si un administrador suspende a un empleado a las <strong>10:05 AM</strong> pero su token vence a las <strong>11:00 AM</strong>, podrá seguir ejecutando peticiones durante <strong>55 minutos</strong>.
+        </div>
+      </div>
+      `,
+      `
+      <div style="background:#ffffff; border:1px solid #cbd5e1; border-top:4px solid var(--icesi-blue); border-radius:8px; padding:16px; height:100%; box-sizing:border-box; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="font-weight:700; color:var(--icesi-blue); font-size:15px; margin-bottom:8px;">Solución 1: Refresh Tokens</div>
+        <div style="font-size:12.5px; color:#334155; line-height:1.55;">
+          • <strong>Access Token (JWT):</strong> Expiración muy corta (ej. 5 a 15 min). Viaja en cada llamada HTTP.
+          <br><br>
+          • <strong>Refresh Token:</strong> Cadena opaca guardada en base de datos (duración 30 días). Se usa solo para emitir nuevos JWTs y puede revocarse inmediatamente al despedir al usuario.
+        </div>
+      </div>
+      `,
+      `
+      <div style="background:#ffffff; border:1px solid #cbd5e1; border-top:4px solid var(--icesi-green); border-radius:8px; padding:16px; height:100%; box-sizing:border-box; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="font-weight:700; color:var(--icesi-green); font-size:15px; margin-bottom:8px;">Solución 2: Redis Blacklist</div>
+        <div style="font-size:12.5px; color:#334155; line-height:1.55;">
+          Al cerrar sesión o revocar permisos, el identificador único del token (<code>jti</code>) se guarda en una BD en memoria ultrarrápida (Redis).
+          <br><br>
+          La clave en Redis tiene un tiempo de vida (TTL) igual a los minutos restantes del token, eliminándose sola sin saturar RAM.
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 22: Verificación de Convivencia MVC
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Verificación de Convivencia MVC y Checklist Final',
+      `
+      <div style="font-size:15px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Prueba de Fuego en Navegador Web</div>
+      <div class="h-item h-item-blue" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">1. Abrir Navegador en /usuarios</div>
+          <div class="h-item-desc">Ingresar a <code>http://localhost:8080/springboot-api/usuarios</code>. El navegador redirige limpiamente a <code>/login</code> (Thymeleaf).</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">2. Iniciar Sesión con Formulario</div>
+          <div class="h-item-desc">Ingresar con <code>admin@icesi.edu.co</code> / <code>admin123</code>. Comprobar que se crea la cookie <code>JSESSIONID</code> en Storage.</div>
+        </div>
+      </div>
+      <div class="callout-box" style="border-left:4px solid var(--icesi-green);">
+        <p style="margin:0; font-size:12.5px; color:#334155;">
+          <strong>Conclusión:</strong> El sistema atiende peticiones REST 100% Stateless y vistas HTML Stateful de forma simultánea y transparente.
+        </p>
+      </div>
+      `,
+      `
+      <div style="font-size:15px; font-weight:700; color:var(--icesi-green); margin-bottom:10px;">Checklist Arquitectónico Completado</div>
+      <div class="h-item h-item-green" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Dual FilterChain Operativa</div>
+          <div class="h-item-desc"><code>@Order(1)</code> con <code>securityMatcher("/api/**")</code> y <code>@Order(2)</code> para MVC.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Seguridad Declarativa RBAC</div>
+          <div class="h-item-desc">Endpoints protegidos con <code>@PreAuthorize</code> mediante roles y authorities.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Respuestas Nativas en JSON</div>
+          <div class="h-item-desc">401 y 403 formateados en JSON sin fugas de redirecciones web.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Integridad Criptográfica Verificada</div>
+          <div class="h-item-desc">Pruebas en Postman corroborando el rechazo ante sabotajes de firma.</div>
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 23: Portada de Cierre
+    // =========================================================================
+    icesi.titleSlideF(
+      'Fin de la Sesión 3 — Cierre de REST & JWT',
+      '¡Arquitectura Híbrida 100% Funcional: REST Stateless con JWT y Web MVC en Convivencia Total!'
+    )
+  ];
+
+  document.getElementById('icesi-slides').innerHTML = slides.join('\n');
+  icesi.init({
+    hash: true,
+    slideNumber: false,
+    controls: false,
+    progress: true,
+    center: false,
+    width: 1280,
+    height: 720,
+    margin: 0,
+    minScale: 0.2,
+    maxScale: 2.0
+  });
+</script>
+
+</body>
+</html>

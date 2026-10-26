@@ -463,7 +463,7 @@
     <div class="h-item h-item-green" style="margin-bottom:14px;">
       <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></div>
       <div style="flex:1; min-width:0;">
-        <div class="h-item-title">03. OncePerRequestFilter & Dual Chain</div>
+        <div class="h-item-title">03. Filtros, Dual Chain & RBAC (@PreAuthorize)</div>
         <div class="h-item-desc">Verificación criptográfica, <code>JwtAuthenticationFilter</code> y coexistencia <code>@Order(1)</code> API + <code>@Order(2)</code> MVC.</div>
       </div>
     </div>
@@ -1413,7 +1413,308 @@ public class SecurityConfig {
     ),
 
     // =========================================================================
-    // SLIDE 20: Separador Micro-Ciclo 4
+    // SLIDE 20: Separador - Autorización Granular con @PreAuthorize y RBAC
+    // =========================================================================
+    icesi.sectionSlideEPurple(
+      'Autorización Granular con @PreAuthorize y RBAC',
+      'Del "quién eres" al "qué puedes hacer": consumo de Authorities e inyección declarativa con SpEL.'
+    ),
+
+    // =========================================================================
+    // SLIDE 21: Flujo de Autorización RBAC (Bespoke SVG 960x450)
+    // =========================================================================
+    icesi.slideStandard(
+      'Flujo de Autorización RBAC: De los Claims en el JWT a @PreAuthorize',
+      `
+      <div style="display:flex; justify-content:center; align-items:center; width:100%; height:100%;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 450" width="100%" height="450" style="max-width:960px; display:block; margin:0 auto;">
+          <defs>
+            <style>
+              .rb-title { font-family: system-ui, -apple-system, sans-serif; font-size: 18px; font-weight: 700; fill: #0f172a; }
+              .rb-sub   { font-family: system-ui, -apple-system, sans-serif; font-size: 12px; fill: #64748b; }
+              .rb-label { font-family: system-ui, -apple-system, sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+              .rb-card-title { font-family: system-ui, -apple-system, sans-serif; font-size: 13.5px; font-weight: 700; fill: #0f172a; }
+              .rb-mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 9px; line-height: 1.3; }
+              .rb-body  { font-family: system-ui, -apple-system, sans-serif; font-size: 10.5px; fill: #475569; }
+              .rb-bullet { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; fill: #334155; }
+              .rb-pill-txt { font-family: system-ui, -apple-system, sans-serif; font-size: 9.5px; font-weight: 700; }
+            </style>
+            <filter id="rb-sh" x="-4%" y="-3%" width="108%" height="108%" filterUnits="objectBoundingBox">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+            </filter>
+            <marker id="rba-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker>
+            <marker id="rba-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker>
+            <marker id="rba-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#059669"/></marker>
+          </defs>
+
+          <!-- Fondo Contenedor -->
+          <rect width="960" height="450" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+          <text class="rb-title" x="24" y="32">Secuencia de Autorización Sin Consulta a Base de Datos (Zero-DB Hit)</text>
+          <text class="rb-sub" x="24" y="52">De la extracción de claims en JwtAuthenticationFilter a la evaluación SpEL previa a cada método</text>
+
+          <!-- ============================================================== -->
+          <!-- CARD 1: TOKEN ENTRANTE -->
+          <!-- ============================================================== -->
+          <g transform="translate(24, 68)">
+            <rect width="210" height="358" rx="12" fill="#ffffff" stroke="#93c5fd" stroke-width="1.6" filter="url(#rb-sh)"/>
+            <rect width="210" height="4" rx="2" fill="#2563eb"/>
+            <text class="rb-label" x="12" y="20" fill="#2563eb">PASO 1: TOKEN ENTRANTE</text>
+            <text class="rb-card-title" x="12" y="38">Payload de Claims</text>
+            <text class="rb-body" x="12" y="54">Cliente envía JWT en header:</text>
+            <text class="rb-mono" x="12" y="67" fill="#2563eb" font-weight="700">Authorization: Bearer ...</text>
+
+            <!-- Box JSON -->
+            <rect x="10" y="78" width="190" height="136" rx="6" fill="#0f172a"/>
+            <text class="rb-mono" x="18" y="96" fill="#94a3b8">// Claims del Token</text>
+            <text class="rb-mono" x="18" y="112" fill="#f8fafc">{</text>
+            <text class="rb-mono" x="24" y="127" fill="#38bdf8"> "sub": "admin@icesi",</text>
+            <text class="rb-mono" x="24" y="142" fill="#a78bfa"> "authorities": [</text>
+            <text class="rb-mono" x="32" y="157" fill="#4ade80">  "ROLE_ADMIN",</text>
+            <text class="rb-mono" x="32" y="172" fill="#4ade80">  "USER_READ"</text>
+            <text class="rb-mono" x="24" y="187" fill="#a78bfa"> ]</text>
+            <text class="rb-mono" x="18" y="201" fill="#f8fafc">}</text>
+
+            <!-- Bullet points -->
+            <text class="rb-bullet" x="12" y="234">• Firma HMAC-SHA256 íntegra</text>
+            <text class="rb-bullet" x="12" y="252">• Claims auto-contenidos</text>
+            <text class="rb-bullet" x="12" y="270" font-weight="700" fill="#1d4ed8">• Cero consulta a BD</text>
+
+            <!-- Capa Pill -->
+            <rect x="10" y="306" width="190" height="26" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+            <text class="rb-pill-txt" x="105" y="323" fill="#1d4ed8" text-anchor="middle">Capa: Cliente HTTP</text>
+          </g>
+
+          <!-- Conector 1 -> 2 -->
+          <line x1="237" y1="210" x2="253" y2="210" stroke="#2563eb" stroke-width="2.2" marker-end="url(#rba-blue)"/>
+
+          <!-- ============================================================== -->
+          <!-- CARD 2: FILTRO JWT -->
+          <!-- ============================================================== -->
+          <g transform="translate(258, 68)">
+            <rect width="210" height="358" rx="12" fill="#ffffff" stroke="#c4b5fd" stroke-width="1.6" filter="url(#rb-sh)"/>
+            <rect width="210" height="4" rx="2" fill="#7c3aed"/>
+            <text class="rb-label" x="12" y="20" fill="#7c3aed">PASO 2: FILTRO JWT</text>
+            <text class="rb-card-title" x="12" y="38">Hidratación Contexto</text>
+            <text class="rb-body" x="12" y="54">Parsea claims y crea las</text>
+            <text class="rb-body" x="12" y="67">autoridades de Spring:</text>
+
+            <!-- Box Authorities -->
+            <rect x="10" y="78" width="190" height="136" rx="6" fill="#f5f3ff" stroke="#ddd6fe"/>
+            <text class="rb-mono" x="18" y="96" fill="#6d28d9" font-weight="700">// Conversión a Authorities</text>
+            <text class="rb-mono" x="18" y="112" fill="#475569">SimpleGrantedAuthority:</text>
+            <text class="rb-mono" x="22" y="128" fill="#7c3aed" font-weight="700">➔ ROLE_ADMIN</text>
+            <text class="rb-mono" x="22" y="144" fill="#7c3aed" font-weight="700">➔ USER_READ</text>
+            <line x1="18" y1="154" x2="190" y2="154" stroke="#ddd6fe" stroke-dasharray="2 2"/>
+            <text class="rb-mono" x="18" y="169" fill="#475569">// Set en SecurityContext</text>
+            <text class="rb-mono" x="18" y="185" fill="#0f172a" font-weight="700">SecurityContextHolder</text>
+            <text class="rb-mono" x="18" y="200" fill="#2563eb">.getContext().setAuth(...)</text>
+
+            <!-- Bullet points -->
+            <text class="rb-bullet" x="12" y="234">• ThreadLocal por petición</text>
+            <text class="rb-bullet" x="12" y="252">• Estado autenticado inmutable</text>
+            <text class="rb-bullet" x="12" y="270" font-weight="700" fill="#6d28d9">• Disponible para Spring AOP</text>
+
+            <!-- Capa Pill -->
+            <rect x="10" y="306" width="190" height="26" rx="6" fill="#faf5ff" stroke="#e9d5ff"/>
+            <text class="rb-pill-txt" x="105" y="323" fill="#7c3aed" text-anchor="middle">Capa: Security Filter</text>
+          </g>
+
+          <!-- Conector 2 -> 3 -->
+          <line x1="471" y1="210" x2="487" y2="210" stroke="#7c3aed" stroke-width="2.2" marker-end="url(#rba-purple)"/>
+
+          <!-- ============================================================== -->
+          <!-- CARD 3: INTERCEPTOR AOP -->
+          <!-- ============================================================== -->
+          <g transform="translate(492, 68)">
+            <rect width="210" height="358" rx="12" fill="#ffffff" stroke="#a7f3d0" stroke-width="1.6" filter="url(#rb-sh)"/>
+            <rect width="210" height="4" rx="2" fill="#059669"/>
+            <text class="rb-label" x="12" y="20" fill="#059669">PASO 3: INTERCEPTOR AOP</text>
+            <text class="rb-card-title" x="12" y="38">@PreAuthorize SpEL</text>
+            <text class="rb-body" x="12" y="54">Proxy intercepta antes de</text>
+            <text class="rb-body" x="12" y="67">invocar el método Java:</text>
+
+            <!-- Box SpEL -->
+            <rect x="10" y="78" width="190" height="136" rx="6" fill="#ecfdf5" stroke="#a7f3d0"/>
+            <text class="rb-mono" x="18" y="96" fill="#065f46" font-weight="700">// Expresión en Controller</text>
+            <text class="rb-mono" x="18" y="112" fill="#047857">@PreAuthorize(</text>
+            <text class="rb-mono" x="22" y="128" fill="#047857" font-weight="700"> "hasRole('ADMIN')"</text>
+            <text class="rb-mono" x="22" y="144" fill="#047857" font-weight="700"> "or hasAuthority('READ')"</text>
+            <text class="rb-mono" x="18" y="159" fill="#047857">)</text>
+            <line x1="18" y1="168" x2="190" y2="168" stroke="#a7f3d0" stroke-dasharray="2 2"/>
+            <text class="rb-mono" x="18" y="184" fill="#1e293b">// Evaluación de Authorities</text>
+            <text class="rb-mono" x="18" y="200" fill="#059669" font-weight="700">Coincide ➔ Concede Acceso</text>
+
+            <!-- Bullet points -->
+            <text class="rb-bullet" x="12" y="234">• Seguridad declarativa limpia</text>
+            <text class="rb-bullet" x="12" y="252">• Desacoplado del controlador</text>
+            <text class="rb-bullet" x="12" y="270" font-weight="700" fill="#047857">• Si no coincide: frena llamada</text>
+
+            <!-- Capa Pill -->
+            <rect x="10" y="306" width="190" height="26" rx="6" fill="#ecfdf5" stroke="#a7f3d0"/>
+            <text class="rb-pill-txt" x="105" y="323" fill="#059669" text-anchor="middle">Capa: Spring AOP Proxy</text>
+          </g>
+
+          <!-- Conector 3 -> 4 -->
+          <line x1="705" y1="210" x2="721" y2="210" stroke="#059669" stroke-width="2.2" marker-end="url(#rba-green)"/>
+
+          <!-- ============================================================== -->
+          <!-- CARD 4: RESULTADO HTTP -->
+          <!-- ============================================================== -->
+          <g transform="translate(726, 68)">
+            <rect width="210" height="358" rx="12" fill="#ffffff" stroke="#fed7aa" stroke-width="1.6" filter="url(#rb-sh)"/>
+            <rect width="210" height="4" rx="2" fill="#ea580c"/>
+            <text class="rb-label" x="12" y="20" fill="#ea580c">PASO 4: RESULTADO HTTP</text>
+            <text class="rb-card-title" x="12" y="38">Despacho Final</text>
+            <text class="rb-body" x="12" y="54">Respuesta HTTP según la</text>
+            <text class="rb-body" x="12" y="67">evaluación de permisos:</text>
+
+            <!-- Subcard 200 OK -->
+            <rect x="10" y="78" width="190" height="64" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+            <rect x="16" y="86" width="56" height="18" rx="4" fill="#2563eb"/>
+            <text x="44" y="99" font-family="system-ui" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">200 OK</text>
+            <text x="78" y="99" font-family="system-ui" font-size="11" font-weight="700" fill="#1e40af">Autorizado</text>
+            <text class="rb-body" x="16" y="118">Ejecuta el método Java y</text>
+            <text class="rb-body" x="16" y="131">retorna DTO serializado.</text>
+
+            <!-- Subcard 403 Forbidden -->
+            <rect x="10" y="150" width="190" height="64" rx="6" fill="#fef2f2" stroke="#fecaca"/>
+            <rect x="16" y="158" width="86" height="18" rx="4" fill="#dc2626"/>
+            <text x="59" y="171" font-family="system-ui" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle">403 FORBIDDEN</text>
+            <text x="108" y="171" font-family="system-ui" font-size="11" font-weight="700" fill="#991b1b">Denegado</text>
+            <text class="rb-mono" x="16" y="190" fill="#b91c1c" font-weight="700">AccessDeniedException</text>
+            <text class="rb-body" x="16" y="203">Método Java nunca se invoca.</text>
+
+            <!-- Bullet points -->
+            <text class="rb-bullet" x="12" y="234">• Cero ejecución no autorizada</text>
+            <text class="rb-bullet" x="12" y="252">• Capturado por ExceptionHandler</text>
+            <text class="rb-bullet" x="12" y="270" font-weight="700" fill="#c2410c">• JSON estructurado al cliente</text>
+
+            <!-- Capa Pill -->
+            <rect x="10" y="306" width="190" height="26" rx="6" fill="#fff7ed" stroke="#fed7aa"/>
+            <text class="rb-pill-txt" x="105" y="323" fill="#ea580c" text-anchor="middle">Capa: REST Controller</text>
+          </g>
+        </svg>
+      </div>
+      `
+    ),
+
+    // SLIDE 22: Expresiones SpEL en Métodos
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Habilitación Declarativa: Expresiones SpEL en @PreAuthorize',
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. Roles (RBAC) vs. Permisos Atómicos</div>
+      <div class="h-item h-item-blue" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">hasRole('ADMINISTRADOR')</div>
+          <div class="h-item-desc">Busca automáticamente la autoridad con prefijo <code>ROLE_ADMINISTRADOR</code>. Ideal para jerarquías amplias.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-purple" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">hasAuthority('USER_READ')</div>
+          <div class="h-item-desc">Evalúa el permiso directo sin asumir ningún prefijo. Permite un control de privilegios granular por acción.</div>
+        </div>
+      </div>
+      `,
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-green); margin-bottom:6px;">2. Catálogo de Expresiones SpEL</div>
+      <table class="icesi-table">
+        <thead>
+          <tr>
+            <th>Expresión SpEL</th>
+            <th>Significado y Uso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>hasRole('ADMIN')</code></td>
+            <td>Requiere <code>ROLE_ADMIN</code>.</td>
+          </tr>
+          <tr>
+            <td><code>hasAnyRole('A', 'B')</code></td>
+            <td>Permite acceso si posee el rol A o el rol B.</td>
+          </tr>
+          <tr>
+            <td><code>hasAuthority('READ')</code></td>
+            <td>Exige el permiso puntual <code>READ</code>.</td>
+          </tr>
+          <tr>
+            <td><code>hasRole('A') or hasAuthority('B')</code></td>
+            <td>Combina roles con permisos usando operadores booleanos.</td>
+          </tr>
+          <tr>
+            <td><code>isAuthenticated()</code></td>
+            <td>Cualquier usuario autenticado legítimamente.</td>
+          </tr>
+        </tbody>
+      </table>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 23: Código UsuarioRestController con @PreAuthorize
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Asegurando UsuarioRestController con @PreAuthorize',
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">1. Endpoints de Consulta (Lectura Flexible)</div>
+      <pre><code class="language-java">@RestController
+@RequestMapping("/api/v1/usuarios")
+@RequiredArgsConstructor
+public class UsuarioRestController {
+
+    // Lectura permitida a Admin, Profesor o quien tenga USER_READ
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESOR') " + 
+                  "or hasAuthority('USER_READ')")
+    public List<UsuarioResponseDTO> obtenerUsuarios(
+            @RequestParam(required = false) Boolean active) {
+        return usuarioMapper.toListUsuarioResponseDTO(
+            usuarioService.listarUsuarios(active));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'PROFESOR') " + 
+                  "or hasAuthority('USER_READ')")
+    public ResponseEntity<UsuarioResponseDTO> obtnerUsuarioPorId(
+            @PathVariable Long id) {
+        return usuarioService.obtenerPorId(id)
+            .map(u -> ResponseEntity.ok(usuarioMapper.toUsuarioResponseDTO(u)))
+            .orElse(ResponseEntity.notFound().build());
+    }</code></pre>
+      `,
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-green); margin-bottom:6px;">2. Endpoints de Mutación (Exclusivos Admin)</div>
+      <pre><code class="language-java">    // Creación, actualización y eliminación restringidas a ADMIN
+    @PostMapping
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<UsuarioResponseDTO> crearUsuario(
+            @RequestBody UsuarioRequestDTO dto) {
+        // ... creación con 201 Created ...
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<UsuarioResponseDTO> actualizarUsuario(
+            @PathVariable Long id, @RequestBody UsuarioRequestDTO dto) {
+        // ... actualización ...
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
+        usuarioService.eliminarUsuario(id);
+        return ResponseEntity.noContent().build();
+    }
+}</code></pre>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 24: Separador Micro-Ciclo 4
     // =========================================================================
     icesi.sectionSlideEOrange(
       '04. Escenarios Críticos en Producción y Laboratorio Integral',
@@ -1421,7 +1722,7 @@ public class SecurityConfig {
     ),
 
 // =========================================================================
-    // SLIDE 21: Escenarios Críticos en Producción (3 Cards - 7 args!)
+    // SLIDE 25: Escenarios Críticos en Producción (3 Cards - 7 args!)
     // =========================================================================
     icesi.slideThreeCards(
       'Tres Escenarios Críticos de Seguridad JWT en Producción',
@@ -1434,7 +1735,7 @@ public class SecurityConfig {
     ),
 
 // =========================================================================
-    // SLIDE 22: Comparativa Hidratación BD vs 100% Claims Stateless
+    // SLIDE 26: Comparativa Hidratación BD vs 100% Claims Stateless
     // =========================================================================
     icesi.slideStandard(
       'Decisión de Arquitectura: Hidratación desde BD vs. 100% Claims del Token',
@@ -1479,7 +1780,7 @@ public class SecurityConfig {
     ),
 
 // =========================================================================
-    // SLIDE 23: Laboratorio Final en Vivo (5 Pruebas en Postman y jwt.io)
+    // SLIDE 27: Laboratorio Final en Vivo (5 Pruebas en Postman y jwt.io)
     // =========================================================================
     icesi.slideStripeTopRight(
       'Laboratorio Final en Vivo: 5 Pruebas en Postman y jwt.io',
@@ -1535,7 +1836,7 @@ public class SecurityConfig {
     ),
 
 // =========================================================================
-    // SLIDE 24: Cierre de la Semana 11
+    // SLIDE 28: Cierre de la Semana 11
     // =========================================================================
     icesi.titleSlideF(
       'Fin de la Sesión 2 — Semana 11',

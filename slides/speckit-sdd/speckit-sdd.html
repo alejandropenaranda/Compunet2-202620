@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>De Vibe Coding a Spec-Driven Development (Spec-Kit Manual & .agents en agy CLI)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Reveal.js Themes & Highlights -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css" id="theme">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+  <!-- ICESI Beamer Stylesheet -->
+  <link rel="stylesheet" href="../../dist/main.css?v=28">
+
+  <style>
+    /* Strict 16:9 1280x720 Base Dimensions */
+    .reveal .slides {
+      width: 1280px !important;
+      height: 720px !important;
+      text-align: left;
+    }
+    .reveal section.slide {
+      width: 1280px !important;
+      height: 720px !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+      background: #ffffff;
+    }
+
+    /* Global Brand & Logo adjustments */
+    .slide .logo-positive,
+    .slide .logo-negative {
+      position: absolute !important;
+      top: 32px !important;
+      left: 60px !important;
+      width: 160px !important;
+      height: auto !important;
+      z-index: 20 !important;
+    }
+    .slide.title-f .logo-positive {
+      filter: brightness(0) invert(1) !important;
+    }
+
+    /* Header positioning across content slides */
+    .slide.standard .slide-header,
+    .slide.two-cols .slide-header,
+    .slide.three-cols .slide-header,
+    .slide.four-cards .slide-header {
+      position: absolute !important;
+      left: 60px !important;
+      top: 120px !important;
+      width: 1160px !important;
+      height: 48px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      z-index: 10 !important;
+    }
+    .slide.standard .slide-header h2,
+    .slide.two-cols .slide-header h2,
+    .slide.three-cols .slide-header h2,
+    .slide.four-cards .slide-header h2 {
+      position: relative !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      font-size: 28px !important;
+      line-height: 35px !important;
+      font-weight: 700 !important;
+      color: var(--icesi-blue) !important;
+      margin: 0 !important;
+    }
+
+    /* Defined Content Box (Top 185px to 675px = 490px height) */
+    .slide.standard .slide-content {
+      position: absolute !important;
+      left: 60px !important;
+      top: 185px !important;
+      width: 1160px !important;
+      height: 490px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+    }
+
+    .slide.two-cols .cols-container {
+      position: absolute !important;
+      left: 60px !important;
+      top: 185px !important;
+      width: 1160px !important;
+      height: 490px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 32px !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.two-cols .col {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+
+    .slide.three-cols .cols-container {
+      position: absolute !important;
+      left: 60px !important;
+      top: 185px !important;
+      width: 1160px !important;
+      height: 490px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 20px !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.three-cols .col {
+      flex: 1 !important;
+      min-width: 0 !important;
+    }
+
+    /* Cards Grids Vertically Centered */
+    .slide.four-cards .cards-grid {
+      position: absolute !important;
+      left: 60px !important;
+      top: 185px !important;
+      width: 1160px !important;
+      height: 490px !important;
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      align-content: center !important;
+      gap: 16px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .slide.four-cards .cards-grid.cards-grid-3 {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 24px !important;
+      align-content: center !important;
+    }
+    .slide.four-cards .cards-grid.cards-grid-2 {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 28px !important;
+      align-content: center !important;
+    }
+
+    .slide.four-cards .card {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06) !important;
+      border: 1px solid #CBD5E1 !important;
+      border-radius: 8px !important;
+      background: #FFFFFF !important;
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
+    }
+    .slide.four-cards .card-header {
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      padding: 12px 14px !important;
+      letter-spacing: 0.03em !important;
+      text-transform: uppercase !important;
+    }
+    .slide.four-cards .card-body {
+      font-size: 13.2px !important;
+      line-height: 1.45 !important;
+      padding: 16px !important;
+      flex: 1 !important;
+    }
+
+    /* Sidebar Layout Vertically Centered */
+    .slide.sidebar-left .sidebar {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 420px !important;
+      height: 720px !important;
+    }
+    .slide.sidebar-left .sidebar .logo-negative {
+      top: 32px !important;
+      left: 45px !important;
+    }
+    .slide.sidebar-left .sidebar-title {
+      position: absolute !important;
+      left: 465px !important;
+      top: 120px !important;
+      width: 755px !important;
+      height: 48px !important;
+      margin: 0 !important;
+    }
+    .slide.sidebar-left .sidebar-title h2 {
+      position: relative !important;
+      left: 0 !important;
+      top: 0 !important;
+      margin: 0 !important;
+      font-size: 28px !important;
+      line-height: 35px !important;
+      font-weight: 700 !important;
+      color: var(--icesi-blue) !important;
+    }
+    .slide.sidebar-left .sidebar-content {
+      position: absolute !important;
+      left: 465px !important;
+      top: 185px !important;
+      width: 755px !important;
+      height: 490px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* Full-color section dividers */
+    .slide.section-e {
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+      text-align: center !important;
+      padding: 0 90px !important;
+      box-sizing: border-box !important;
+      width: 1280px !important;
+      height: 720px !important;
+    }
+    .slide.section-e .section-title {
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      width: 1100px !important;
+      font-size: 40px !important;
+      line-height: 1.22 !important;
+      font-weight: 700 !important;
+      margin: 0 0 22px 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+      color: #ffffff !important;
+      hyphens: none !important;
+    }
+    .slide.section-e .section-content {
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      width: 1100px !important;
+      height: auto !important;
+      font-size: 21px !important;
+      line-height: 1.42 !important;
+      font-weight: 400 !important;
+      color: rgba(255, 255, 255, 0.95) !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      text-align: center !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+    }
+
+    /* Code styling enhancements — prevent .slide pre overflow & double box */
+    .reveal pre,
+    .slide pre {
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow: hidden !important;
+    }
+    .reveal pre code,
+    .slide pre code,
+    .md-code-box {
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      font-family: "Consolas", "Fira Code", monospace !important;
+      font-size: 11.8px !important;
+      line-height: 1.38 !important;
+      border-radius: 8px !important;
+      border: 1px solid #313244 !important;
+      border-left: 4px solid var(--icesi-blue) !important;
+      padding: 12px 15px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+      background: #181825 !important;
+      color: #e2e8f0 !important;
+      box-sizing: border-box !important;
+      max-height: 440px !important;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+      overflow: hidden !important;
+      margin: 0 !important;
+    }
+    .md-code-box {
+      border-left-color: var(--icesi-purple) !important;
+    }
+    .md-code-box span {
+      font-family: "Consolas", "Fira Code", monospace !important;
+    }
+
+    /* Vibrant Syntax Highlighting for Java, JSON & Markdown */
+    .hljs-meta { color: #38bdf8 !important; font-weight: 700 !important; }
+    .hljs-keyword { color: #fb7185 !important; font-weight: 700 !important; }
+    .hljs-type, .hljs-title.class_ { color: #fbbf24 !important; font-weight: 700 !important; }
+    .hljs-title.function_ { color: #c084fc !important; font-weight: 700 !important; }
+    .hljs-string { color: #4ade80 !important; }
+    .hljs-number, .hljs-literal { color: #facc15 !important; font-weight: 700 !important; }
+    .hljs-comment { color: #94a3b8 !important; font-style: italic !important; }
+    .hljs-attr { color: #f472b6 !important; font-weight: 700 !important; }
+    .hljs-section { color: #38bdf8 !important; font-weight: 700 !important; }
+    .hljs-strong { color: #facc15 !important; font-weight: 700 !important; }
+    .hljs-emphasis { color: #c084fc !important; font-style: italic !important; }
+    .hljs-bullet { color: #4ade80 !important; font-weight: 700 !important; }
+    .hljs-code { color: #38bdf8 !important; }
+
+    /* Semantic color classes for enriched Markdown snippets */
+    .md-h { color: #38bdf8 !important; font-weight: 700 !important; }
+    .md-cmd { color: #c084fc !important; font-weight: 700 !important; }
+    .md-kw { color: #facc15 !important; font-weight: 700 !important; }
+    .md-gherkin { color: #fb7185 !important; font-weight: 700 !important; }
+    .md-path { color: #4ade80 !important; font-weight: 600 !important; }
+    .md-ann { color: #fb923c !important; font-weight: 700 !important; }
+    .md-http { color: #38bdf8 !important; font-weight: 700 !important; }
+    .md-cmt { color: #94a3b8 !important; font-style: italic !important; }
+
+    /* Fix inline code inside table headers so there is NEVER a white box on white text */
+    .slide th code,
+    table.icesi-table th code {
+      background: transparent !important;
+      color: #ffffff !important;
+      padding: 0 !important;
+      font-weight: 700 !important;
+    }
+
+    /* Horizontal Card Item Pattern */
+    .h-item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      border: 1px solid #CBD5E1;
+      border-radius: 8px;
+      padding: 9px 13px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .h-item-icon {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+    }
+    .h-item-blue { border-left: 4px solid var(--icesi-blue); }
+    .h-item-blue .h-item-icon { background: rgba(84,84,233,0.12); color: var(--icesi-blue); }
+    .h-item-green { border-left: 4px solid var(--icesi-green); }
+    .h-item-green .h-item-icon { background: rgba(76,185,121,0.12); color: var(--icesi-green); }
+    .h-item-orange { border-left: 4px solid var(--icesi-orange); }
+    .h-item-orange .h-item-icon { background: rgba(233,104,59,0.12); color: var(--icesi-orange); }
+    .h-item-purple { border-left: 4px solid var(--icesi-purple); }
+    .h-item-purple .h-item-icon { background: rgba(134,92,240,0.12); color: var(--icesi-purple); }
+
+    .h-item-title { font-size: 13.8px; font-weight: 700; color: #1e293b; line-height: 1.25; margin-bottom: 2px; }
+    .h-item-desc { font-size: 12.2px; color: #475569; line-height: 1.36; }
+
+    /* Callout Card */
+    .callout-box {
+      background: #f8fafc;
+      border: 1px solid #CBD5E1;
+      border-left: 5px solid var(--icesi-blue);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    /* Tables */
+    table.icesi-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.4px;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid #cbd5e1;
+    }
+    table.icesi-table th {
+      background: var(--icesi-blue);
+      color: #ffffff;
+      padding: 9px 12px;
+      font-weight: 700;
+      text-align: left;
+      font-size: 12.5px;
+    }
+    table.icesi-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+      line-height: 1.35;
+    }
+    table.icesi-table tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .badge-blue { background: rgba(84,84,233,0.14); color: var(--icesi-blue); }
+    .badge-green { background: rgba(76,185,121,0.16); color: #15803d; }
+    .badge-orange { background: rgba(233,104,59,0.16); color: #c2410c; }
+    .badge-purple { background: rgba(134,92,240,0.15); color: var(--icesi-purple); }
+
+    /* Hide Navigation Controls / Arrows */
+    .reveal .controls,
+    .reveal aside.controls {
+      display: none !important;
+    }
+    .reveal .progress { height: 4px !important; color: var(--icesi-blue) !important; }
+  </style>
+</head>
+<body>
+
+<div class="reveal">
+  <div class="slides" id="icesi-slides"></div>
+</div>
+
+<!-- Reveal.js & Plugins -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/markdown/markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/highlight/highlight.min.js"></script>
+
+<!-- ICESI Beamer Library -->
+<script src="../../dist/main.js?v=28"></script>
+
+<script>
+  icesi.setBasePath('../../');
+
+  const slides = [
+
+    // =========================================================================
+    // SLIDE 1: Portada
+    // =========================================================================
+    icesi.titleSlideA(
+      'De "Vibe Coding" a Ingeniería Guiada por Especificaciones',
+      'Las 6 Fases de Spec-Driven Development (SDD), Plantillas y Comandos /speckit.*<br><span class="slide-footer-tag">Computación en Internet II • Semana 13 • Universidad Icesi</span>'
+    ),
+
+    // =========================================================================
+    // SLIDE 2: Ruta de Aprendizaje (5 Micro-Ciclos)
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Ruta de Aprendizaje — Sesión de 2 Horas (5 Micro-Ciclos)',
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Parte I: Las 6 Fases SDD y Generación en Vivo desde Plantillas</div>
+      <div class="h-item h-item-orange" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Ciclo 1 (20 min) • Fase 1: <code>Constitution</code> y Memoria</div>
+          <div class="h-item-desc">SDLC Tradicional vs. las 6 Fases de SDD. Inspección de <code>00-constitution.md</code>, <code>.agents/memory/</code> y <code>specs/templates/</code>.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-blue" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Ciclo 2 (25 min) • Fases 2 y 3: <code>/speckit.specify</code> + <code>/speckit.clarify</code></div>
+          <div class="h-item-desc">Creación en vivo de <code>001-cursos-rest-api/01-spec.md</code> desde el template e <strong>Interrogatorio Socrático</strong> de casos borde.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Ciclo 3 (25 min) • Fases 4 y 5: <code>/speckit.plan</code> + <code>/speckit.tasks</code></div>
+          <div class="h-item-desc">Auditoría del código existente para generar <code>02-plan.md</code> (CÓMO técnico) y partición atómica en <code>03-tasks.md</code>.</div>
+        </div>
+      </div>
+      `,
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-purple); margin-bottom:10px;">Parte II: Single-Task Rule, Validación y Comandos de Agente</div>
+      <div class="h-item h-item-purple" style="margin-bottom:12px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Ciclo 4 (30 min) • Fase 6: <code>/speckit.implement</code> (T1 a T4)</div>
+          <div class="h-item-desc">Regla de una sola tarea a la vez para construir <code>/api/v1/cursos</code> validando con <code>./mvnw test-compile</code> en cada paso.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-blue" style="margin-bottom:14px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Ciclo 5 (20 min) • Validación Cruzada (T5) y Reto Autónomo</div>
+          <div class="h-item-desc">Pruebas en Postman contra <code>01-spec.md</code> y anatomía de <code>.github/prompts/</code> (<code>/speckit.*</code>) y <code>.agents/skills/</code>.</div>
+        </div>
+      </div>
+      <div class="callout-box" style="border-left-color: var(--icesi-green);">
+        <div style="font-size:12.5px; color:#1e293b; line-height:1.4;">
+          <strong>Flujo Real en Clase:</strong> Partimos <strong>solo con las plantillas en blanco</strong> (<code>specs/templates/</code>) y generamos <code>001-cursos-rest-api</code> en vivo refinando las decisiones como arquitectos.
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 3: Micro-Ciclo 1 Divider + SVG Comparativo Vibe Coding vs SDD
+    // =========================================================================
+    icesi.sectionSlideEBlue(
+      '01. La Crisis del "Vibe Coding" vs. SDD',
+      `
+      <div style="background: rgba(255,255,255,0.96); border-radius: 12px; padding: 18px 24px; margin-top: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.18);">
+        <svg width="960" height="250" viewBox="0 0 960 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Top Lane: Vibe Coding -->
+          <rect x="15" y="15" width="930" height="95" rx="10" fill="#FFF5F2" stroke="#E9683B" stroke-width="2"/>
+          <text x="35" y="42" fill="#E9683B" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="bold">ANTIPATRÓN: "VIBE CODING" (IMPULSADO POR PROMPTS IMPROVISADOS)</text>
+
+          <rect x="35" y="55" width="185" height="42" rx="6" fill="#E9683B"/>
+          <text x="127" y="80" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5" font-weight="bold">Prompt Ambiguo en Chat</text>
+
+          <line x1="225" y1="76" x2="265" y2="76" stroke="#E9683B" stroke-width="2.5"/>
+          <rect x="270" y="55" width="205" height="42" rx="6" fill="#393939"/>
+          <text x="372" y="74" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">Amnesia Arquitectónica</text>
+          <text x="372" y="90" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="10.5">(Expone @Entity / Sin RBAC)</text>
+
+          <line x1="480" y1="76" x2="520" y2="76" stroke="#E9683B" stroke-width="2.5"/>
+          <rect x="525" y="55" width="190" height="42" rx="6" fill="#393939"/>
+          <text x="620" y="80" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">Parche sobre Parche</text>
+
+          <line x1="720" y1="76" x2="755" y2="76" stroke="#E9683B" stroke-width="2.5"/>
+          <rect x="760" y="55" width="165" height="42" rx="6" fill="#B91C1C"/>
+          <text x="842" y="80" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">Deuda Técnica Crítica</text>
+
+          <!-- Bottom Lane: Spec-Driven Development -->
+          <rect x="15" y="135" width="930" height="100" rx="10" fill="#F0FDF4" stroke="#4CB979" stroke-width="2"/>
+          <text x="35" y="162" fill="#15803D" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="bold">INGENIERÍA: SPEC-DRIVEN DEVELOPMENT (PIPELINE SPEC-KIT EN MARKDOWN)</text>
+
+          <rect x="35" y="175" width="195" height="44" rx="6" fill="#5454E9"/>
+          <text x="132" y="195" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">00-constitution.md</text>
+          <text x="132" y="211" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="10.5">Reglas Innegociables</text>
+
+          <line x1="235" y1="197" x2="265" y2="197" stroke="#5454E9" stroke-width="2.5"/>
+          <rect x="270" y="175" width="195" height="44" rx="6" fill="#865CF0"/>
+          <text x="367" y="195" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">01-spec.md (QUÉ)</text>
+          <text x="367" y="211" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="10.5">Dominio + Given/When/Then</text>
+
+          <line x1="470" y1="197" x2="500" y2="197" stroke="#865CF0" stroke-width="2.5"/>
+          <rect x="505" y="175" width="195" height="44" rx="6" fill="#5454E9"/>
+          <text x="602" y="195" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">02-plan.md (CÓMO)</text>
+          <text x="602" y="211" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="10.5">DTOs + MapStruct + REST</text>
+
+          <line x1="705" y1="197" x2="735" y2="197" stroke="#4CB979" stroke-width="2.5"/>
+          <rect x="740" y="175" width="185" height="44" rx="6" fill="#4CB979"/>
+          <text x="832" y="195" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">03-tasks.md (T1..T5)</text>
+          <text x="832" y="211" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="10.5">Código Verificado</text>
+        </svg>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 4: Anatomía de un Desastre: "¿Me haces el CRUD REST de Cursos?"
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Experimento de Choque: "¿Me haces el CRUD REST de Cursos?"',
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-orange); margin-bottom:8px;">Lo que genera la IA con un Prompt de "Vibe Coding":</div>
+      <pre><code class="language-java">@RestController
+@RequestMapping("/cursos") // 1. Rompe prefijo /api/v1/cursos
+public class CursoRestController {
+
+    @Autowired // 2. Inyección por atributo prohibida
+    private CursoRepository cursoRepository; // Salta el Service
+
+    @GetMapping("/listarCursos") // 3. URI estilo RPC no RESTful
+    public List&lt;Curso&gt; listar() {
+        // 4. PELIGRO CRÍTICO: Retorna @Entity Curso directo
+        // Filtra Curso -> Profesor -> Usuario.password (BCrypt)
+        // y desata ciclos infinitos en Jackson
+        return cursoRepository.findAll();
+    }
+
+    @PostMapping("/crear")
+    // 5. Sin @PreAuthorize ni validación de rol/autoridad
+    public Curso crear(@RequestBody Curso curso) {
+        return cursoRepository.save(curso);
+    }
+}</code></pre>
+      `,
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">Las 4 Fallas Estructurales del "Vibe Coding":</div>
+      <div class="h-item h-item-orange" style="margin-bottom:9px;">
+        <div class="h-item-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">1. Amnesia Arquitectónica (Context Drift)</div>
+          <div class="h-item-desc">El historial del chat es efímero: la IA olvida que nuestro proyecto usa <code>/api/v1/...</code>, Lombok y MapStruct.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-orange" style="margin-bottom:9px;">
+        <div class="h-item-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">2. Fuga de Entidades JPA y Secretos</div>
+          <div class="h-item-desc">Al retornar <code>Curso</code> sin DTO, serializa el objeto <code>Profesor</code> y el <code>password</code> de su <code>Usuario</code>.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-purple" style="margin-bottom:9px;">
+        <div class="h-item-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">3. Ceguera frente al Modelo RBAC Real</div>
+          <div class="h-item-desc">Desconoce que en <code>data.sql</code> existen permisos específicos (<code>COURSE_READ</code>, <code>COURSE_WRITE</code>).</div>
+        </div>
+      </div>
+      <div class="h-item h-item-blue">
+        <div class="h-item-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">4. Acoplamiento Prematuro</div>
+          <div class="h-item-desc">Mezcla reglas de negocio con código en un solo paso sin definir criterios de aceptación verificables.</div>
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 5: Arquitectura Artesanal SDD (Zero-Install: Plantillas + Memoria)
+    // =========================================================================
+    icesi.slideSidebarLeftBlue(
+      'Arquitectura SDD Zero-Install',
+      `
+      <div class="callout-box" style="margin-bottom:14px;">
+        <div style="font-size:13.3px; color:#1e293b; line-height:1.4;">
+          <strong>¿Qué es GitHub Spec-Kit (<code>github/spec-kit</code>)?</strong> Un enfoque de <strong>Spec-Driven Development (SDD)</strong> donde el código es el resultado compilado de especificaciones Markdown. No necesitamos instalar <code>uv</code>: disponemos de plantillas, memoria y comandos directamente en el repo.
+        </div>
+      </div>
+      <div class="h-item h-item-blue" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">1. Punto de Partida Limpio: Solo Plantillas y Memoria</div>
+          <div class="h-item-desc">Al iniciar la clase, la carpeta <code>001-cursos-rest-api/</code> <strong>aún no existe</strong>. El repositorio solo tiene <code>00-constitution.md</code>, <code>.agents/memory/</code> y los moldes en blanco en <code>specs/templates/</code>.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">2. Generación en Vivo + Refinamiento del Desarrollador</div>
+          <div class="h-item-desc">Con lenguaje natural e invocando <code>/speckit.*</code>, el agente crea <code>001-cursos-rest-api/</code> desde las plantillas y nosotros auditamos y refinamos cada decisión.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-purple">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">3. Doble Integración: Slash Commands y Skills</div>
+          <div class="h-item-desc">Funciona con <code>/speckit.*</code> en VS Code / Copilot (<code>.github/prompts/</code>) y con skills nativos en Antigravity CLI (<code>.agents/skills/</code>).</div>
+        </div>
+      </div>
+      `,
+      {
+        type: 'graphic',
+        html: `
+        <svg width="370" height="390" viewBox="0 0 370 390" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="15" y="12" width="340" height="366" rx="12" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+          <text x="32" y="38" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="bold">ARQUITECTURA EN EL REPOSITORIO</text>
+          
+          <rect x="32" y="50" width="306" height="38" rx="6" fill="rgba(255,255,255,0.95)"/>
+          <text x="46" y="74" fill="#393939" font-family="monospace" font-size="12" font-weight="bold">AGENTS.md + .agents/memory/*.md</text>
+
+          <rect x="32" y="96" width="306" height="38" rx="6" fill="#E4EB60"/>
+          <text x="46" y="120" fill="#393939" font-family="monospace" font-size="12" font-weight="bold">specs/00-constitution.md</text>
+
+          <rect x="32" y="142" width="306" height="44" rx="6" fill="rgba(255,255,255,0.2)" stroke="#FFFFFF" stroke-width="1.5"/>
+          <text x="46" y="162" fill="#FFFFFF" font-family="monospace" font-size="12" font-weight="bold">specs/templates/ (Moldes Base)</text>
+          <text x="46" y="178" fill="#E4EB60" font-family="monospace" font-size="10.5">01-spec | 02-plan | 03-tasks</text>
+
+          <rect x="32" y="196" width="306" height="168" rx="8" fill="rgba(255,255,255,0.96)" stroke="#4CB979" stroke-width="2" stroke-dasharray="5 3"/>
+          <text x="46" y="218" fill="#15803D" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="bold">SE GENERA EN VIVO CON /speckit.*:</text>
+          <text x="46" y="236" fill="#5454E9" font-family="monospace" font-size="12" font-weight="bold">specs/001-cursos-rest-api/</text>
+
+          <rect x="48" y="246" width="274" height="32" rx="5" fill="#EDE9FE"/>
+          <text x="60" y="266" fill="#6D28D9" font-family="monospace" font-size="11" font-weight="bold">01-spec.md (Specify + Clarify)</text>
+
+          <rect x="48" y="284" width="274" height="32" rx="5" fill="#DBEAFE"/>
+          <text x="60" y="304" fill="#1D4ED8" font-family="monospace" font-size="11" font-weight="bold">02-plan.md (Plan Arquitectónico)</text>
+
+          <rect x="48" y="322" width="274" height="32" rx="5" fill="#DCFCE7"/>
+          <text x="60" y="342" fill="#15803D" font-family="monospace" font-size="11" font-weight="bold">03-tasks.md (Tasks + Implement)</text>
+        </svg>
+        `
+      }
+    ),
+
+    // =========================================================================
+    // SLIDE 6: Micro-Ciclo 2 Divider (Full-Color Static Template)
+    // =========================================================================
+    icesi.sectionSlideEPurple(
+      '02. SDLC Tradicional vs. Las 6 Fases Fundacionales de SDD',
+      `
+      <div style="background: rgba(255,255,255,0.96); border-radius: 12px; padding: 18px 24px; margin-top: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.18);">
+        <svg width="960" height="190" viewBox="0 0 960 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="480" y="28" text-anchor="middle" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="bold">LAS 6 FASES FUNDACIONALES DE SPEC-DRIVEN DEVELOPMENT (SDD)</text>
+
+          <rect x="20" y="50" width="138" height="90" rx="8" fill="#5454E9"/>
+          <text x="89" y="78" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="11.5" font-weight="bold">FASE 1</text>
+          <text x="89" y="98" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="bold">Constitution</text>
+          <text x="89" y="118" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10">00-constitution</text>
+
+          <line x1="162" y1="95" x2="176" y2="95" stroke="#393939" stroke-width="2.5"/>
+
+          <rect x="180" y="50" width="138" height="90" rx="8" fill="#865CF0"/>
+          <text x="249" y="78" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="11.5" font-weight="bold">FASE 2</text>
+          <text x="249" y="98" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="bold">Specify</text>
+          <text x="249" y="118" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10">01-spec (QUÉ)</text>
+
+          <line x1="322" y1="95" x2="336" y2="95" stroke="#393939" stroke-width="2.5"/>
+
+          <rect x="340" y="50" width="138" height="90" rx="8" fill="#E9683B"/>
+          <text x="409" y="78" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="11.5" font-weight="bold">FASE 3</text>
+          <text x="409" y="98" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="bold">Clarify</text>
+          <text x="409" y="118" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="10">Diálogo Socrático</text>
+
+          <line x1="482" y1="95" x2="496" y2="95" stroke="#393939" stroke-width="2.5"/>
+
+          <rect x="500" y="50" width="138" height="90" rx="8" fill="#5454E9"/>
+          <text x="569" y="78" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="11.5" font-weight="bold">FASE 4</text>
+          <text x="569" y="98" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="bold">Plan</text>
+          <text x="569" y="118" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10">02-plan (CÓMO)</text>
+
+          <line x1="642" y1="95" x2="656" y2="95" stroke="#393939" stroke-width="2.5"/>
+
+          <rect x="660" y="50" width="138" height="90" rx="8" fill="#393939"/>
+          <text x="729" y="78" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="11.5" font-weight="bold">FASE 5</text>
+          <text x="729" y="98" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="bold">Tasks</text>
+          <text x="729" y="118" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10">03-tasks (T1..Tn)</text>
+
+          <line x1="802" y1="95" x2="816" y2="95" stroke="#393939" stroke-width="2.5"/>
+
+          <rect x="820" y="50" width="120" height="90" rx="8" fill="#4CB979"/>
+          <text x="880" y="78" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="11.5" font-weight="bold">FASE 6</text>
+          <text x="880" y="98" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="bold">Implement</text>
+          <text x="880" y="118" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10">1 Tarea + ./mvnw</text>
+
+          <text x="480" y="168" text-anchor="middle" fill="#5454E9" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5" font-weight="bold">Fases 1 a 5: Diseño y Clarificación en Markdown  |  Fase 6: Codificación Controlada</text>
+        </svg>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 7: SDLC Tradicional vs. Las 6 Fases Fundacionales de SDD
+    // =========================================================================
+    icesi.slideStandard(
+      'SDLC Tradicional / Vibe Coding vs. Las 6 Fases de SDD',
+      `
+      <table class="icesi-table" style="margin-bottom:12px;">
+        <thead>
+          <tr>
+            <th>Fase SDD</th>
+            <th>Comando Slash / Skill</th>
+            <th>SDLC Tradicional / Vibe Coding</th>
+            <th>Spec-Driven Development (SDD)</th>
+            <th>Entregable en Git</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Constitution</strong></td>
+            <td><code>/speckit.constitution</code></td>
+            <td>Requisitos informales; la IA ignora convenciones del proyecto.</td>
+            <td><strong>Reglas de Oro innegociables</strong> y memoria permanente del stack.</td>
+            <td><code>00-constitution.md</code> + <code>.agents/memory/</code></td>
+          </tr>
+          <tr>
+            <td><strong>2. Specify</strong></td>
+            <td><code>/speckit.specify</code></td>
+            <td>Análisis ambiguo mezclando QUÉ con código prematuro.</td>
+            <td>El <strong>QUÉ y POR QUÉ</strong> funcional con escenarios <strong>Gherkin</strong>.</td>
+            <td><code>01-spec.md</code> <em>(Borrador inicial)</em></td>
+          </tr>
+          <tr>
+            <td><strong>3. Clarify</strong></td>
+            <td><code>/speckit.clarify</code></td>
+            <td>Diseño reactivo: la IA adivina casos borde en silencio.</td>
+            <td><strong>Diálogo Socrático</strong>: 3 a 5 preguntas críticas sobre casos borde.</td>
+            <td><code>01-spec.md</code> <em>(Clarificado)</em></td>
+          </tr>
+          <tr>
+            <td><strong>4. Plan</strong></td>
+            <td><code>/speckit.plan</code></td>
+            <td>Codificación temprana duplicando servicios o exponiendo <code>@Entity</code>.</td>
+            <td>Auditoría de código existente y diseño del <strong>CÓMO</strong> técnico.</td>
+            <td><code>02-plan.md</code></td>
+          </tr>
+          <tr>
+            <td><strong>5. Tasks</strong></td>
+            <td><code>/speckit.tasks</code></td>
+            <td>Implementación monolítica imposible de depurar.</td>
+            <td>Partición en <strong>tareas atómicas secuenciales</strong> (<code>T1..T5</code>).</td>
+            <td><code>03-tasks.md</code> <code>[ ]</code></td>
+          </tr>
+          <tr>
+            <td><strong>6. Implement</strong></td>
+            <td><code>/speckit.implement</code></td>
+            <td>Pruebas tardías y alta deuda técnica.</td>
+            <td><strong>Single-Task Rule</strong>: 1 tarea a la vez + <code>./mvnw</code> + Postman.</td>
+            <td>Código Java + <code>03-tasks.md</code> <code>[x]</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-box" style="border-left-color: var(--icesi-purple);">
+        <div style="font-size:12.4px; color:#1e293b;">
+          <strong>Diferencia decisiva:</strong> En SDD las Fases 1 a 5 ocurren <strong>sin escribir una sola línea de Java</strong>; recién en la Fase 6 el agente codifica bajo contrato estricto.
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 8: Pilar 1: ¿Qué es y por qué existe 00-constitution.md?
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Pilar 1: ¿Por qué existe 00-constitution.md?',
+      `
+      <div style="display:flex; justify-content:center; align-items:center; background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:16px;">
+        <svg width="510" height="360" viewBox="0 0 510 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="20" y="20" width="470" height="68" rx="10" fill="#393939"/>
+          <text x="255" y="48" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="bold">Agente de IA (Copilot / Claude / agy CLI)</text>
+          <text x="255" y="68" text-anchor="middle" fill="#CECFD4" font-family="'Plus Jakarta Sans', sans-serif" font-size="11.5">Entrenado con millones de repositorios heterogéneos</text>
+
+          <line x1="255" y1="88" x2="255" y2="122" stroke="#5454E9" stroke-width="3"/>
+
+          <!-- Shield Filter -->
+          <rect x="15" y="122" width="480" height="115" rx="12" fill="#5454E9"/>
+          <text x="255" y="148" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="14.5" font-weight="bold">FILTRO CONSTITUCIONAL: specs/00-constitution.md</text>
+          <text x="255" y="172" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12">• Bloquea @Autowired en campos → Exige @RequiredArgsConstructor</text>
+          <text x="255" y="194" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12">• Bloquea retorno de @Entity → Exige RequestDTO / ResponseDTO</text>
+          <text x="255" y="216" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12">• Bloquea roles inventados → Exige catálogo RBAC de data.sql</text>
+
+          <line x1="255" y1="237" x2="255" y2="270" stroke="#4CB979" stroke-width="3"/>
+
+          <rect x="35" y="270" width="440" height="68" rx="10" fill="#4CB979"/>
+          <text x="255" y="298" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="bold">Código Generado 100% Alineado al Proyecto</text>
+          <text x="255" y="318" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="11.5">Compila al primer intento con Lombok + MapStruct + Spring Security</text>
+        </svg>
+      </div>
+      `,
+      `
+      <div style="font-size:14px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">Los 5 Artículos de nuestra Constitución en <code>springboot</code>:</div>
+      <div class="h-item h-item-blue" style="margin-bottom:8px;">
+        <div class="h-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Art. 1 • Stack Tecnológico Inalterable</div>
+          <div class="h-item-desc">Java 21, Spring Boot 3.4.3, H2, JJWT 0.12.6, Lombok y MapStruct 1.6.3.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-purple" style="margin-bottom:8px;">
+        <div class="h-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Art. 2 • Fronteras Estrictas de Paquetes</div>
+          <div class="h-item-desc">Separación entre <code>controller.mvc</code>, <code>controller.rest</code>, <code>dto</code>, <code>mapper</code> y <code>service</code>.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green" style="margin-bottom:8px;">
+        <div class="h-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Art. 3 • Inyección por Constructor y Aislamiento DTO</div>
+          <div class="h-item-desc">Obligatorio <code>private final</code> + <code>@RequiredArgsConstructor</code> y uso de <code>ResponseEntity&lt;T&gt;</code>.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-orange">
+        <div class="h-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Art. 4 y 5 • Seguridad RBAC y Verificación Maven</div>
+          <div class="h-item-desc">Uso obligatorio de <code>@PreAuthorize</code> y validación con <code>./mvnw clean compile</code>.</div>
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 9: Nuestra Constitución en Acción: Stack, Capas y Estilo (Art. 1–3)
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Inspección de specs/00-constitution.md (Artículos 1 al 3)',
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">Extracto Real de <code>springboot/specs/00-constitution.md</code>:</div>
+      <div class="md-code-box"><span class="md-h">## Artículo 3. Estándares de Codificación y DTOs</span>
+
+<span class="md-kw">1. Inyección por Constructor Obligatoria:</span>
+   - <span class="md-gherkin">PROHIBIDO</span> usar <span class="md-ann">@Autowired</span> sobre atributos.
+   - Toda dependencia debe ser <span class="md-path">'private final'</span> con
+     <span class="md-ann">'@RequiredArgsConstructor'</span> de Lombok.
+
+<span class="md-kw">2. Aislamiento con Patrón DTO:</span>
+   - Ningún método en <span class="md-path">'controller.rest'</span> puede recibir
+     ni retornar una entidad del paquete <span class="md-path">'model'</span>
+     (<span class="md-http">Usuario, Curso, Profesor, Matricula</span>).
+   - Separación explícita entre <span class="md-cmd">*RequestDTO</span> y <span class="md-cmd">*ResponseDTO</span>.
+
+<span class="md-kw">3. Semántica RESTful y ResponseEntity&lt;T&gt;:</span>
+   - URIs con sustantivos en plural (<span class="md-path">/api/v1/cursos</span>).
+   - <span class="md-http">POST</span> retorna <span class="md-kw">201 Created</span> + Header Location.
+   - <span class="md-http">DELETE</span> retorna <span class="md-kw">204 No Content</span>.</div>
+      `,
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-purple); margin-bottom:8px;">Mapa de Fronteras de Paquetes (Artículo 2):</div>
+      <table class="icesi-table" style="margin-bottom:12px;">
+        <thead>
+          <tr>
+            <th>Paquete</th>
+            <th>Permitido</th>
+            <th>Prohibición Estricta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>controller.rest</code></td>
+            <td><code>@RestController</code> bajo <code>/api/v1/...</code></td>
+            <td>Inyectar <code>@Repository</code> o exponer <code>@Entity</code></td>
+          </tr>
+          <tr>
+            <td><code>dto.&lt;Modulo&gt;</code></td>
+            <td>POJOs con Lombok (<code>@Data</code>, <code>@Builder</code>)</td>
+            <td>Anotaciones JPA (<code>@Entity</code>, <code>@ManyToOne</code>)</td>
+          </tr>
+          <tr>
+            <td><code>mapper</code></td>
+            <td><code>@Mapper(componentModel = "spring")</code></td>
+            <td>Reflexión en runtime (<code>ModelMapper</code>)</td>
+          </tr>
+          <tr>
+            <td><code>service</code></td>
+            <td>Lógica de dominio y transacciones</td>
+            <td>Acoplar <code>ResponseEntity</code> o <code>HttpServletRequest</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-box">
+        <div style="font-size:12.2px; color:#1e293b;">
+          <strong>Efecto inmediato:</strong> Al incluir esta tabla en <code>00-constitution.md</code>, la IA adopta exactamente el mismo estilo de <code>UsuarioRestController.java</code>.
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 10: Blindando la Seguridad en 00-constitution.md (Art. 4 y 5)
+    // =========================================================================
+    icesi.slideSidebarLeftPurple(
+      'Gobernanza de Seguridad RBAC',
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-purple); margin-bottom:6px;">Artículo 4 de <code>00-constitution.md</code>: Anclaje a <code>data.sql</code></div>
+      <div class="md-code-box"><span class="md-h">## Artículo 4. Reglas de Seguridad y Autorización (RBAC)</span>
+
+<span class="md-kw">1. Protección con @PreAuthorize:</span>
+   - Todo endpoint en <span class="md-path">'controller.rest'</span> (excepto <span class="md-path">/api/v1/auth/**</span>)
+     debe declarar <span class="md-ann">@PreAuthorize</span> usando <span class="md-cmd">hasRole(...)</span> o <span class="md-cmd">hasAuthority(...)</span>.
+
+<span class="md-kw">2. Catálogo Oficial de Roles y Autoridades (según data.sql):</span>
+   - <span class="md-http">Roles:</span> <span class="md-path">ADMINISTRADOR, PROFESOR, ESTUDIANTE</span>.
+   - <span class="md-http">Permisos:</span> <span class="md-path">USER_CREATE, USER_READ, USER_UPDATE, USER_DELETE,</span>
+     <span class="md-path">COURSE_READ, COURSE_WRITE, ENROLLMENT_WRITE</span>.
+
+<span class="md-kw">3. Preservación de la Cadena Dual (SecurityConfig.java):</span>
+   - <span class="md-gherkin">Prohibido</span> alterar <span class="md-ann">@Order(1)</span> (<span class="md-path">/api/**</span> Stateless JWT) ni <span class="md-ann">@Order(2)</span> (MVC).</div>
+      <div class="callout-box" style="margin-top:12px; border-left-color: var(--icesi-orange);">
+        <div style="font-size:12.4px; color:#1e293b; line-height:1.4;">
+          <strong>¿Por qué es vital el punto 2?</strong> Sin la lista explícita de permisos de <code>data.sql</code>, los LLMs suelen inventar anotaciones como <code>@PreAuthorize("hasRole('ADMIN')")</code> que fallan con <code>403 Forbidden</code> en tiempo de ejecución.
+        </div>
+      </div>
+      `,
+      {
+        type: 'icons',
+        items: [
+          {
+            icon: '<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" fill="rgba(255,255,255,0.22)"/><rect x="8" y="13" width="12" height="8" rx="2" stroke="white" stroke-width="1.8"/><path d="M10 13V10a4 4 0 0 1 8 0v3" stroke="white" stroke-width="1.8"/></svg>',
+            label: 'Cadena Dual Intacta'
+          },
+          {
+            icon: '<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" fill="rgba(255,255,255,0.22)"/><path d="M14 6L21 9v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V9l7-3z" stroke="white" stroke-width="1.8"/></svg>',
+            label: 'Catálogo Real data.sql'
+          },
+          {
+            icon: '<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" fill="rgba(255,255,255,0.22)"/><polyline points="9,14 12.5,17.5 19.5,10.5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>',
+            label: '@PreAuthorize Obligatorio'
+          },
+          {
+            icon: '<svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="13" fill="rgba(255,255,255,0.22)"/><polyline points="10,10 6,14 10,18" stroke="white" stroke-width="1.8" fill="none"/><polyline points="18,10 22,14 18,18" stroke="white" stroke-width="1.8" fill="none"/></svg>',
+            label: 'Verificación ./mvnw'
+          }
+        ]
+      }
+    ),
+
+    // =========================================================================
+    // SLIDE 11: Micro-Ciclo 3 Divider + Diagrama SVG Separación Cognitiva
+    // =========================================================================
+    icesi.sectionSlideEGreen(
+      '03. Del "QUÉ" de Negocio al "CÓMO" Arquitectónico',
+      `
+      <div style="background: rgba(255,255,255,0.96); border-radius: 12px; padding: 18px 24px; margin-top: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.18);">
+        <svg width="940" height="225" viewBox="0 0 940 225" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Left Box: 01-spec.md -->
+          <rect x="20" y="20" width="380" height="185" rx="12" fill="#EDE9FE" stroke="#865CF0" stroke-width="2.5"/>
+          <rect x="40" y="36" width="160" height="26" rx="5" fill="#865CF0"/>
+          <text x="120" y="54" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="13" font-weight="bold">01-spec.md</text>
+          <text x="40" y="84" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="bold">EL QUÉ Y EL POR QUÉ (Dominio)</text>
+          <text x="40" y="110" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5">• Historias de Usuario (HU-01 a HU-05)</text>
+          <text x="40" y="132" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5">• Matriz de Acceso RBAC por operación</text>
+          <text x="40" y="154" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5">• Escenarios Given / When / Then</text>
+          <text x="40" y="182" fill="#B91C1C" font-family="'Plus Jakarta Sans', sans-serif" font-size="11.5" font-weight="bold">Prohibido incluir código Java aquí</text>
+
+          <!-- Center Bridge -->
+          <line x1="405" y1="112" x2="535" y2="112" stroke="#5454E9" stroke-width="3.5" stroke-dasharray="6 4"/>
+          <rect x="422" y="88" width="96" height="48" rx="8" fill="#5454E9"/>
+          <text x="470" y="110" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="bold">Gobernado por</text>
+          <text x="470" y="125" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10.5">00-constitution</text>
+
+          <!-- Right Box: 02-plan.md -->
+          <rect x="540" y="20" width="380" height="185" rx="12" fill="#DBEAFE" stroke="#5454E9" stroke-width="2.5"/>
+          <rect x="560" y="36" width="160" height="26" rx="5" fill="#5454E9"/>
+          <text x="640" y="54" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="13" font-weight="bold">02-plan.md</text>
+          <text x="560" y="84" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="bold">EL CÓMO TÉCNICO (Arquitectura)</text>
+          <text x="560" y="110" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5">• Auditoría de clases existentes a reutilizar</text>
+          <text x="560" y="132" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5">• Contratos JSON (CursoRequest/ResponseDTO)</text>
+          <text x="560" y="154" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5">• Reglas @Mapping de CursoMapper</text>
+          <text x="560" y="182" fill="#1D4ED8" font-family="'Plus Jakarta Sans', sans-serif" font-size="11.5" font-weight="bold">Tabla exacta de Endpoints + @PreAuthorize</text>
+        </svg>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 12: Fase 2 (/speckit.specify) y Fase 3 (/speckit.clarify) en Vivo
+    // =========================================================================
+    icesi.slideTwoCols(
+      'En Vivo: De Lenguaje Natural a 01-spec.md (/speckit.specify + /speckit.clarify)',
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">Paso 1: Generar <code>01-spec.md</code> desde el Template (<code>/speckit.specify</code>)</div>
+      <div class="md-code-box"><span class="md-cmd">/speckit.specify</span> Quiero crear la especificación
+<span class="md-path">001-cursos-rest-api</span> para exponer la gestión de Cursos
+como API REST en <span class="md-http">/api/v1/cursos</span> protegida con <span class="md-kw">JWT</span>.
+Necesitamos listar todos los cursos, filtrar por
+departamento, obtener por ID, crear curso asociándolo
+a un profesor existente, actualizar y eliminar.</div>
+      <div class="h-item h-item-green" style="margin-top:10px; margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">¿Qué hace el Agente automáticamente?</div>
+          <div class="h-item-desc">Lee <code>00-constitution.md</code> y <code>specs/templates/01-spec-template.md</code>, y crea la carpeta <code>specs/001-cursos-rest-api/01-spec.md</code> con historias y escenarios Gherkin.</div>
+        </div>
+      </div>
+      <div class="callout-box" style="border-left-color: var(--icesi-orange);">
+        <div style="font-size:12.2px; color:#1e293b;">
+          <strong>¿Pasamos directo al código? ¡No!</strong> El primer borrador aún tiene casos borde ocultos que debemos descubrir con <code>/speckit.clarify</code>.
+        </div>
+      </div>
+      `,
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-purple); margin-bottom:8px;">Paso 2: Diálogo Socrático en Fase 3 (<code>/speckit.clarify</code>)</div>
+      <div class="h-item h-item-purple" style="margin-bottom:8px;">
+        <div class="h-item-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Pregunta 1 del Agente: Privacidad del Profesor</div>
+          <div class="h-item-desc"><em>"Profesor tiene relación con Usuario (que incluye password). ¿Qué campos exactos del profesor se exponen en el JSON?"</em> &rarr; <strong>Decisión:</strong> Aplanar solo <code>profesorId</code>, <code>nombre</code> y <code>email</code>.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-blue" style="margin-bottom:8px;">
+        <div class="h-item-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Pregunta 2 del Agente: Filtro por Departamento</div>
+          <div class="h-item-desc"><em>"¿El filtro ?departamento= distingue mayúsculas y qué retorna si no hay coincidencias?"</em> &rarr; <strong>Decisión:</strong> <code>IgnoreCase</code> y <code>200 OK</code> con <code>[]</code>.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-orange">
+        <div class="h-item-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Pregunta 3 del Agente: Validaciones y Autoridades</div>
+          <div class="h-item-desc"><em>"¿Qué ocurre si creditos &lt;= 0 o profesorId no existe?"</em> &rarr; <strong>Decisión:</strong> <code>400 Bad Request</code> para validaciones y <code>404 Not Found</code> si el profesor no existe.</div>
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 13: Escenarios Given/When/Then y Matriz RBAC en 01-spec.md
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Caso 001-cursos-rest-api: 01-spec.md en Acción',
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-purple); margin-bottom:6px;">Escenarios Given / When / Then (<code>01-spec.md</code>):</div>
+      <div class="md-code-box"><span class="md-h">### Escenario 2: Rechazo RBAC a Estudiante (403)</span>
+- <span class="md-gherkin">DADO:</span> Que el estudiante <span class="md-http">apaez@icesi.edu.co</span> posee
+  únicamente <span class="md-path">COURSE_READ</span> y <span class="md-path">ENROLLMENT_WRITE</span>.
+- <span class="md-gherkin">CUANDO:</span> Intenta registrar un nuevo curso (<span class="md-http">POST</span>).
+- <span class="md-gherkin">ENTONCES:</span> El sistema bloquea la petición con <span class="md-kw">403 Forbidden</span>
+  antes de ejecutar la lógica de negocio.
+
+<span class="md-h">### Escenario 3: Creación por Profesor o Admin (201)</span>
+- <span class="md-gherkin">DADO:</span> Un usuario con autoridad <span class="md-path">COURSE_WRITE</span> y que
+  el profesor con <span class="md-kw">id = 3</span> existe en la BD.
+- <span class="md-gherkin">CUANDO:</span> Envía <span class="md-path">"Arquitectura de Agentes IA"</span>, <span class="md-kw">3 créditos</span>,
+  <span class="md-path">"Computación y Sistemas Inteligentes"</span>, <span class="md-kw">profesorId = 3</span>.
+- <span class="md-gherkin">ENTONCES:</span> Persiste el curso y retorna <span class="md-kw">201 Created</span> +
+  Header Location + representación enriquecida.
+
+<span class="md-h">### Escenario 4: Profesor Inexistente (404)</span>
+- <span class="md-gherkin">CUANDO:</span> Envía un <span class="md-kw">profesorId = 999</span> inexistente.
+- <span class="md-gherkin">ENTONCES:</span> Responde <span class="md-kw">404 Not Found</span> (nunca 500).</div>
+      `,
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">Matriz RBAC Definida en <code>01-spec.md</code>:</div>
+      <table class="icesi-table" style="margin-bottom:12px;">
+        <thead>
+          <tr>
+            <th>Operación de Dominio</th>
+            <th>Permiso / Rol Exigido</th>
+            <th>Roles que lo poseen (data.sql)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Listar Cursos / Filtrar Depto.</strong></td>
+            <td><span class="badge badge-green">COURSE_READ</span></td>
+            <td><code>ESTUDIANTE</code>, <code>PROFESOR</code>, <code>ADMINISTRADOR</code></td>
+          </tr>
+          <tr>
+            <td><strong>Consultar Curso por ID</strong></td>
+            <td><span class="badge badge-green">COURSE_READ</span></td>
+            <td><code>ESTUDIANTE</code>, <code>PROFESOR</code>, <code>ADMINISTRADOR</code></td>
+          </tr>
+          <tr>
+            <td><strong>Crear Nuevo Curso</strong></td>
+            <td><span class="badge badge-blue">COURSE_WRITE</span></td>
+            <td><code>PROFESOR</code>, <code>ADMINISTRADOR</code></td>
+          </tr>
+          <tr>
+            <td><strong>Actualizar Curso</strong></td>
+            <td><span class="badge badge-blue">COURSE_WRITE</span></td>
+            <td><code>PROFESOR</code>, <code>ADMINISTRADOR</code></td>
+          </tr>
+          <tr>
+            <td><strong>Eliminar Curso</strong></td>
+            <td><span class="badge badge-orange">ROLE_ADMINISTRADOR</span></td>
+            <td>Exclusivo <code>ADMINISTRADOR</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-box">
+        <div style="font-size:12.2px; color:#1e293b;">
+          Observa cómo la matriz combina <strong>autoridades granulares</strong> (<code>COURSE_READ</code>, <code>COURSE_WRITE</code>) con <strong>restricción por rol</strong> para el borrado físico.
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 14: Pilar 3: Anatomía de 02-plan.md (Auditoría y Aplanado DTO)
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Pilar 3: 02-plan.md — Reutilización y Aplanado DTO',
+      `
+      <div style="font-size:13.2px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">Paso 1 en <code>02-plan.md</code>: Auditar antes de Crear</div>
+      <div class="h-item h-item-blue" style="margin-bottom:7px; padding:7px 11px;">
+        <div class="h-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title"><code>CursoRepository.java</code> (Reutilizar 100%)</div>
+          <div class="h-item-desc">Ya incluye <code>findByDepartamentoIgnoreCase(String depto)</code>.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green" style="margin-bottom:8px; padding:7px 11px;">
+        <div class="h-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title"><code>CursoService.java</code> (Solo +1 método puente)</div>
+          <div class="h-item-desc">Solo agregamos <code>listarPorDepartamento(String)</code> sin romper MVC.</div>
+        </div>
+      </div>
+      <div style="font-size:13.2px; font-weight:700; color:var(--icesi-purple); margin-bottom:5px;">Contrato JSON de Salida (<code>CursoResponseDTO</code>):</div>
+      <pre><code class="language-json" style="font-size:11.2px !important; line-height:1.3 !important; padding:10px 14px !important;">{
+  "id": 15,
+  "nombre": "Arquitectura de Agentes IA",
+  "creditos": 3,
+  "departamento": "Computación y Sistemas Inteligentes",
+  "profesorId": 3,
+  "nombreProfesor": "Alejandro Munoz",
+  "especialidadProfesor": "Arquitectura de Software y Patrones",
+  "totalMatriculados": 0
+}</code></pre>
+      `,
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">Paso 2 en <code>02-plan.md</code>: Diseño del Aplanado (Flattening)</div>
+      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:14px; display:flex; justify-content:center;">
+        <svg width="510" height="365" viewBox="0 0 510 365" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Left: JPA Graph -->
+          <rect x="12" y="15" width="215" height="335" rx="10" fill="#FFF5F2" stroke="#E9683B" stroke-width="2"/>
+          <text x="119" y="38" text-anchor="middle" fill="#E9683B" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5" font-weight="bold">GRAFO JPA INTERNO (@Entity)</text>
+
+          <rect x="28" y="52" width="183" height="58" rx="6" fill="#393939"/>
+          <text x="119" y="74" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="12" font-weight="bold">Curso</text>
+          <text x="119" y="94" text-anchor="middle" fill="#CECFD4" font-family="monospace" font-size="10.5">id, nombre, creditos, depto</text>
+
+          <line x1="119" y1="110" x2="119" y2="132" stroke="#E9683B" stroke-width="2"/>
+          <rect x="28" y="132" width="183" height="58" rx="6" fill="#393939"/>
+          <text x="119" y="154" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="12" font-weight="bold">Profesor (@ManyToOne)</text>
+          <text x="119" y="174" text-anchor="middle" fill="#CECFD4" font-family="monospace" font-size="10.5">id, especialidad, usuario</text>
+
+          <line x1="119" y1="190" x2="119" y2="212" stroke="#E9683B" stroke-width="2"/>
+          <rect x="28" y="212" width="183" height="60" rx="6" fill="#B91C1C"/>
+          <text x="119" y="234" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="12" font-weight="bold">Usuario (@OneToOne)</text>
+          <text x="119" y="252" text-anchor="middle" fill="#E4EB60" font-family="monospace" font-size="10">nombre, apellido, PASSWORD!</text>
+
+          <rect x="28" y="284" width="183" height="48" rx="6" fill="#393939"/>
+          <text x="119" y="306" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="11.5" font-weight="bold">List&lt;Matricula&gt;</text>
+          <text x="119" y="322" text-anchor="middle" fill="#CECFD4" font-family="monospace" font-size="10">Colección @OneToMany</text>
+
+          <!-- Arrow MapStruct -->
+          <path d="M235 182 L275 182" stroke="#5454E9" stroke-width="3.5"/>
+          <rect x="233" y="145" width="46" height="26" rx="4" fill="#5454E9"/>
+          <text x="256" y="162" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="9.5" font-weight="bold">Mapper</text>
+
+          <!-- Right: Flattened DTO -->
+          <rect x="283" y="15" width="215" height="335" rx="10" fill="#F0FDF4" stroke="#4CB979" stroke-width="2"/>
+          <text x="390" y="38" text-anchor="middle" fill="#15803D" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5" font-weight="bold">CONTRATO PLANO SEGURO</text>
+
+          <rect x="298" y="55" width="185" height="275" rx="8" fill="#FFFFFF" stroke="#4CB979" stroke-width="1.5"/>
+          <text x="390" y="80" text-anchor="middle" fill="#5454E9" font-family="monospace" font-size="12" font-weight="bold">CursoResponseDTO</text>
+          <text x="312" y="110" fill="#393939" font-family="monospace" font-size="11">• id: Long</text>
+          <text x="312" y="134" fill="#393939" font-family="monospace" font-size="11">• nombre: String</text>
+          <text x="312" y="158" fill="#393939" font-family="monospace" font-size="11">• creditos: int</text>
+          <text x="312" y="182" fill="#393939" font-family="monospace" font-size="11">• departamento: String</text>
+          <text x="312" y="212" fill="#6D28D9" font-family="monospace" font-size="11" font-weight="bold">• profesorId: Long</text>
+          <text x="312" y="236" fill="#6D28D9" font-family="monospace" font-size="11" font-weight="bold">• nombreProfesor: String</text>
+          <text x="312" y="260" fill="#6D28D9" font-family="monospace" font-size="11" font-weight="bold">• especialidadProfesor</text>
+          <text x="312" y="290" fill="#15803D" font-family="monospace" font-size="11" font-weight="bold">• totalMatriculados: int</text>
+          <text x="390" y="318" text-anchor="middle" fill="#15803D" font-family="'Plus Jakarta Sans', sans-serif" font-size="10.5" font-weight="bold">¡Cero Fuga de Password!</text>
+        </svg>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 15: Contratos de Mapeo y Endpoints en 02-plan.md
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Especificación de Mapeo y Endpoints en 02-plan.md',
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">Sección 3 de <code>02-plan.md</code>: Reglas de <code>CursoMapper</code></div>
+      <div class="md-code-box"><span class="md-h">## 3. Estrategia de Mapeo (mapper/CursoMapper.java)</span>
+
+Interfaz <span class="md-ann">@Mapper(componentModel = "spring")</span>:
+
+<span class="md-kw">1. CursoResponseDTO toCursoResponseDTO(Curso curso):</span>
+   - <span class="md-ann">@Mapping</span>(source = <span class="md-path">"profesor.id"</span>, target = <span class="md-path">"profesorId"</span>)
+   - <span class="md-ann">@Mapping</span>(source = <span class="md-path">"profesor.especialidad"</span>,
+              target = <span class="md-path">"especialidadProfesor"</span>)
+   - <span class="md-ann">@Mapping</span>(target = <span class="md-path">"nombreProfesor"</span>,
+              expression = <span class="md-http">"java(obtenerNombreCompletoProfesor(curso))"</span>)
+   - <span class="md-ann">@Mapping</span>(target = <span class="md-path">"totalMatriculados"</span>,
+              expression = <span class="md-http">"java(curso.getMatriculas() != null</span>
+                            <span class="md-http">? curso.getMatriculas().size() : 0)"</span>)
+
+<span class="md-kw">2. Curso toEntity(CursoRequestDTO requestDTO):</span>
+   - Ignorar <span class="md-cmd">id, profesor y matriculas</span> (<span class="md-kw">ignore = true</span>)
+     porque los resuelve <span class="md-http">CursoService</span>.</div>
+      `,
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-purple); margin-bottom:8px;">Sección 4 de <code>02-plan.md</code>: Tabla de Endpoints HTTP</div>
+      <table class="icesi-table" style="margin-bottom:12px;">
+        <thead>
+          <tr>
+            <th>Verbo y Ruta</th>
+            <th>Regla @PreAuthorize</th>
+            <th>Éxito / Error</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>GET /api/v1/cursos</code><br><small><code>?departamento=...</code></small></td>
+            <td><code>hasAuthority('COURSE_READ')</code></td>
+            <td><code>200 OK</code></td>
+          </tr>
+          <tr>
+            <td><code>GET /api/v1/cursos/{id}</code></td>
+            <td><code>hasAuthority('COURSE_READ')</code></td>
+            <td><code>200 OK</code> / <code>404</code></td>
+          </tr>
+          <tr>
+            <td><code>POST /api/v1/cursos</code></td>
+            <td><code>hasAuthority('COURSE_WRITE')</code></td>
+            <td><code>201 Created</code> + <code>Location</code> / <code>404</code></td>
+          </tr>
+          <tr>
+            <td><code>PUT /api/v1/cursos/{id}</code></td>
+            <td><code>hasAuthority('COURSE_WRITE')</code></td>
+            <td><code>200 OK</code> / <code>404</code></td>
+          </tr>
+          <tr>
+            <td><code>DELETE /api/v1/cursos/{id}</code></td>
+            <td><code>hasRole('ADMINISTRADOR')</code></td>
+            <td><code>204 No Content</code> / <code>404</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-box" style="border-left-color: var(--icesi-green);">
+        <div style="font-size:12.2px; color:#1e293b;">
+          Con <code>02-plan.md</code> aprobado, el agente ya no tiene que "adivinar" nombres de campos, rutas ni códigos de estado: solo traduce el plano en código.
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 16: Micro-Ciclo 4 Divider + Bucle de Ejecución Atómica
+    // =========================================================================
+    icesi.sectionSlideEOrange(
+      '04. Desglose Atómico (03-tasks.md) y Ejecución Controlada',
+      `
+      <div style="background: rgba(255,255,255,0.96); border-radius: 12px; padding: 18px 24px; margin-top: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.18);">
+        <svg width="960" height="215" viewBox="0 0 960 215" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="480" y="30" text-anchor="middle" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="bold">PROTOCOLO DE EJECUCIÓN DE UNA SOLA TAREA A LA VEZ (SINGLE-TASK LOOP)</text>
+
+          <rect x="20" y="55" width="165" height="95" rx="10" fill="#5454E9"/>
+          <text x="102" y="88" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">PASO 1</text>
+          <text x="102" y="108" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5" font-weight="bold">Seleccionar Ti</text>
+          <text x="102" y="128" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10.5">- [ ] Tarea T1</text>
+
+          <line x1="190" y1="102" x2="215" y2="102" stroke="#393939" stroke-width="2.5"/>
+
+          <rect x="220" y="55" width="185" height="95" rx="10" fill="#865CF0"/>
+          <text x="312" y="88" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">PASO 2</text>
+          <text x="312" y="108" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5" font-weight="bold">Inyectar Contexto</text>
+          <text x="312" y="128" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10.5">00 + 01 + 02 + 03.md</text>
+
+          <line x1="410" y1="102" x2="435" y2="102" stroke="#393939" stroke-width="2.5"/>
+
+          <rect x="440" y="55" width="165" height="95" rx="10" fill="#393939"/>
+          <text x="522" y="88" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">PASO 3</text>
+          <text x="522" y="108" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5" font-weight="bold">Generar y Auditar</text>
+          <text x="522" y="128" text-anchor="middle" fill="#CECFD4" font-family="'Plus Jakarta Sans', sans-serif" font-size="10.5">Solo archivos de Ti</text>
+
+          <line x1="610" y1="102" x2="635" y2="102" stroke="#393939" stroke-width="2.5"/>
+
+          <rect x="640" y="55" width="150" height="95" rx="10" fill="#E9683B"/>
+          <text x="715" y="88" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">PASO 4</text>
+          <text x="715" y="108" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5" font-weight="bold">Compilar</text>
+          <text x="715" y="128" text-anchor="middle" fill="#E4EB60" font-family="monospace" font-size="10.5">./mvnw compile</text>
+
+          <line x1="795" y1="102" x2="820" y2="102" stroke="#393939" stroke-width="2.5"/>
+
+          <rect x="825" y="55" width="115" height="95" rx="10" fill="#4CB979"/>
+          <text x="882" y="88" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">PASO 5</text>
+          <text x="882" y="108" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5" font-weight="bold">Marcar [x]</text>
+          <text x="882" y="128" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10.5">Avanzar Ti+1</text>
+
+          <text x="480" y="185" text-anchor="middle" fill="#B91C1C" font-family="'Plus Jakarta Sans', sans-serif" font-size="12.5" font-weight="bold">Regla Crítica: Prohibido avanzar a la Tarea Ti+1 si la Tarea Ti no compila en verde.</text>
+        </svg>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 17: ¿Por qué dividir 02-plan.md en Tareas Atómicas (03-tasks.md)?
+    // =========================================================================
+    icesi.slideFourCards(
+      '¿Por qué Dividir el Plan en Tareas Atómicas (03-tasks.md)?',
+      '01 • CERO EFECTO DOMINÓ',
+      `
+      <div style="margin-bottom:10px;"><span class="badge badge-orange">Aislamiento de Fallos</span></div>
+      <p style="font-size:13px; color:#1e293b; margin:0;">Si pides 5 clases en un solo prompt y un atributo del DTO queda mal tipado, el Mapper y el Controlador arrastrarán errores de compilación en cascada.</p>
+      `,
+      '02 • ORDEN BOTTOM-UP',
+      `
+      <div style="margin-bottom:10px;"><span class="badge badge-blue">Grafo de Compilación</span></div>
+      <p style="font-size:13px; color:#1e293b; margin:0;">Construimos desde las hojas hacia la raíz: <strong>T1 (DTOs)</strong> &rarr; <strong>T2 (Mapper)</strong> &rarr; <strong>T3 (Service)</strong> &rarr; <strong>T4 (Controller)</strong>. Cada capa compila por sí sola.</p>
+      `,
+      '03 • AUDITORÍA HUMANA',
+      `
+      <div style="margin-bottom:10px;"><span class="badge badge-purple">Revisión en 60 Segundos</span></div>
+      <p style="font-size:13px; color:#1e293b; margin:0;">Es 10 veces más rápido y seguro auditar 1 archivo de 40 líneas que inspeccionar 450 líneas generadas de golpe por el LLM.</p>
+      `,
+      '04 • BITÁCORA EN GIT',
+      `
+      <div style="margin-bottom:10px;"><span class="badge badge-green">Estado Persistente</span></div>
+      <p style="font-size:13px; color:#1e293b; margin:0;">El checklist <code>- [x]</code> dentro de <code>03-tasks.md</code> registra exactamente qué tareas ya fueron compiladas y cuáles faltan por ejecutar.</p>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 18: El Mapa de 5 Tareas en 001-cursos-rest-api/03-tasks.md
+    // =========================================================================
+    icesi.slideTwoCols(
+      'El Mapa de 5 Tareas en 001-cursos-rest-api/03-tasks.md',
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:8px;">Secuencia de Construcción Incremental (En Vivo en el IDE):</div>
+      <div class="h-item h-item-blue" style="margin-bottom:8px;">
+        <div class="h-item-icon"><span style="font-weight:800; font-size:13px;">T1</span></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Crear <code>CursoRequestDTO</code> y <code>CursoResponseDTO</code></div>
+          <div class="h-item-desc">Paquete <code>dto</code> con Lombok y Jakarta Validation. Verificación: <code>./mvnw test-compile</code>.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-purple" style="margin-bottom:8px;">
+        <div class="h-item-icon"><span style="font-weight:800; font-size:13px;">T2</span></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Crear <code>CursoMapper</code> (Aplanamiento Seguro)</div>
+          <div class="h-item-desc">Convierte entre <code>Curso</code>, <code>Profesor</code> y DTOs sin filtrar <code>Usuario.password</code>.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green" style="margin-bottom:8px;">
+        <div class="h-item-icon"><span style="font-weight:800; font-size:13px;">T3</span></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Extender <code>CursoService.buscarPorDepartamento(...)</code></div>
+          <div class="h-item-desc">Delega en <code>cursoRepository.findByDepartamentoIgnoreCase</code> sin tocar MVC.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-orange">
+        <div class="h-item-icon"><span style="font-weight:800; font-size:13px;">T4</span></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">Implementar <code>CursoRestController</code> + <code>@PreAuthorize</code></div>
+          <div class="h-item-desc">5 endpoints bajo <code>/api/v1/cursos</code> + Validación <strong>T5</strong> en Postman.</div>
+        </div>
+      </div>
+      `,
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-purple); margin-bottom:6px;">Invocación en el IDE con <code>/speckit.implement</code> (Single-Task Rule):</div>
+      <div class="md-code-box"><span class="md-cmt"># Ejecutamos UNA sola tarea a la vez en el IDE:</span>
+<span class="md-cmd">/speckit.implement</span> Ejecuta únicamente la <span class="md-kw">Tarea T1</span> de
+<span class="md-path">specs/001-cursos-rest-api/03-tasks.md</span>.
+
+<span class="md-h">## Protocolo que sigue el Agente en cada Tarea:</span>
+<span class="md-kw">1. Lee los contratos:</span>
+   - <span class="md-path">specs/00-constitution.md</span>
+   - <span class="md-path">specs/001-cursos-rest-api/01-spec.md</span>
+   - <span class="md-path">specs/001-cursos-rest-api/02-plan.md</span>
+   - <span class="md-path">specs/001-cursos-rest-api/03-tasks.md</span>
+
+<span class="md-kw">2. Implementa y Verifica:</span>
+   - Crea solo los archivos de <span class="md-kw">T1</span> (<span class="md-http">CursoRequestDTO, CursoResponseDTO</span>).
+   - Ejecuta <span class="md-ann">./mvnw test-compile</span> y marca <span class="md-path">- [x] Tarea T1</span>.</div>
+      <div class="callout-box" style="margin-top:10px;">
+        <div style="font-size:12px; color:#1e293b;">
+          <strong>Ahora pasamos al IDE:</strong> Ejecutaremos en vivo <code>T1 &rarr; T2 &rarr; T3 &rarr; T4</code> revisando cada archivo generado antes de probar en Postman.
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 19: Micro-Ciclo 5 Divider (Full-Color Static Template)
+    // =========================================================================
+    icesi.sectionSlideEBlue(
+      '05. Verificación en Postman y Automatización con /speckit.* y .agents',
+      `
+      <div style="background: rgba(255,255,255,0.96); border-radius: 12px; padding: 18px 24px; margin-top: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.18);">
+        <svg width="940" height="195" viewBox="0 0 940 195" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="470" y="28" text-anchor="middle" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="14" font-weight="bold">CIERRE DEL CICLO SDD: VALIDACIÓN EMPÍRICA Y AUTOMATIZACIÓN NATIVA</text>
+
+          <rect x="25" y="48" width="275" height="115" rx="10" fill="#EDE9FE" stroke="#865CF0" stroke-width="2"/>
+          <text x="162" y="76" text-anchor="middle" fill="#6D28D9" font-family="'Plus Jakarta Sans', sans-serif" font-size="13.5" font-weight="bold">1. Escenarios Gherkin (01-spec.md)</text>
+          <text x="162" y="102" text-anchor="middle" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="12">Dado / Cuando / Entonces</text>
+          <text x="162" y="124" text-anchor="middle" fill="#5454E9" font-family="monospace" font-size="11.5" font-weight="bold">200 | 201 | 204 | 403 | 404</text>
+          <text x="162" y="146" text-anchor="middle" fill="#475569" font-family="'Plus Jakarta Sans', sans-serif" font-size="11">Contrato de pruebas acordado</text>
+
+          <line x1="305" y1="105" x2="335" y2="105" stroke="#5454E9" stroke-width="3"/>
+
+          <rect x="340" y="48" width="260" height="115" rx="10" fill="#DCFCE7" stroke="#4CB979" stroke-width="2"/>
+          <text x="470" y="76" text-anchor="middle" fill="#15803D" font-family="'Plus Jakarta Sans', sans-serif" font-size="13.5" font-weight="bold">2. Validación Cruzada (Tarea T5)</text>
+          <text x="470" y="102" text-anchor="middle" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="12">Pruebas HTTP con Token JWT</text>
+          <text x="470" y="124" text-anchor="middle" fill="#15803D" font-family="monospace" font-size="11.5" font-weight="bold">Postman / cURL + ./mvnw test</text>
+          <text x="470" y="146" text-anchor="middle" fill="#475569" font-family="'Plus Jakarta Sans', sans-serif" font-size="11">Cierre de [x] en 03-tasks.md</text>
+
+          <line x1="605" y1="105" x2="635" y2="105" stroke="#5454E9" stroke-width="3"/>
+
+          <rect x="640" y="48" width="275" height="115" rx="10" fill="#DBEAFE" stroke="#5454E9" stroke-width="2"/>
+          <text x="777" y="76" text-anchor="middle" fill="#1D4ED8" font-family="'Plus Jakarta Sans', sans-serif" font-size="13.5" font-weight="bold">3. Escalado a Nuevos Módulos</text>
+          <text x="777" y="102" text-anchor="middle" fill="#393939" font-family="monospace" font-size="11.5">.github/prompts/ (/speckit.*)</text>
+          <text x="777" y="124" text-anchor="middle" fill="#5454E9" font-family="monospace" font-size="11.5" font-weight="bold">.agents/skills/ (speckit-*)</text>
+          <text x="777" y="146" text-anchor="middle" fill="#475569" font-family="'Plus Jakarta Sans', sans-serif" font-size="11">Listo para 002-matriculas-rest-api</text>
+        </svg>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 20: Tarea T5: Cerrando el Círculo — De 01-spec.md a Postman
+    // =========================================================================
+    icesi.slideStandard(
+      'Tarea T5: Trazabilidad Directa de 01-spec.md a Postman',
+      `
+      <table class="icesi-table" style="margin-bottom:14px;">
+        <thead>
+          <tr>
+            <th>Prueba</th>
+            <th>Escenario en 01-spec.md</th>
+            <th>Usuario Autenticado (JWT)</th>
+            <th>Petición HTTP</th>
+            <th>Respuesta Verificada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>P1</strong></td>
+            <td><strong>Escenario 1</strong> (Catálogo filtrado)</td>
+            <td><code>apaez@icesi.edu.co</code> (<code>ESTUDIANTE</code>)</td>
+            <td><code>GET /api/v1/cursos?departamento=Computación y Sistemas Inteligentes</code></td>
+            <td><span class="badge badge-green">200 OK</span> Lista de 6 cursos TIC con <code>nombreProfesor</code> y <code>totalMatriculados</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>P2</strong></td>
+            <td><strong>Escenario 2</strong> (Rechazo RBAC)</td>
+            <td><code>apaez@icesi.edu.co</code> (Sin <code>COURSE_WRITE</code>)</td>
+            <td><code>POST /api/v1/cursos</code></td>
+            <td><span class="badge badge-orange">403 Forbidden</span> Bloqueado por <code>@PreAuthorize</code> en formato JSON.</td>
+          </tr>
+          <tr>
+            <td><strong>P3</strong></td>
+            <td><strong>Escenario 3</strong> (Registro exitoso)</td>
+            <td><code>drincon@icesi.edu.co</code> (<code>PROFESOR</code>)</td>
+            <td><code>POST /api/v1/cursos</code> (<code>profesorId: 3</code>)</td>
+            <td><span class="badge badge-blue">201 Created</span> + Header <code>Location: .../api/v1/cursos/15</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>P4</strong></td>
+            <td><strong>Escenario 4</strong> (Docente inexistente)</td>
+            <td><code>drincon@icesi.edu.co</code> (<code>PROFESOR</code>)</td>
+            <td><code>POST /api/v1/cursos</code> (<code>profesorId: 999</code>)</td>
+            <td><span class="badge badge-orange">404 Not Found</span> Captura limpia de <code>IllegalArgumentException</code>.</td>
+          </tr>
+          <tr>
+            <td><strong>P5</strong></td>
+            <td><strong>Regla RN-03</strong> (Borrado Admin)</td>
+            <td>1° <code>drincon</code> (Profesor) &rarr; 2° <code>admin</code> (Admin)</td>
+            <td><code>DELETE /api/v1/cursos/15</code></td>
+            <td>1° <span class="badge badge-orange">403 Forbidden</span> &rarr; 2° <span class="badge badge-green">204 No Content</span>.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout-box" style="border-left-color: var(--icesi-green);">
+        <div style="font-size:12.8px; color:#1e293b;">
+          <strong>Convergencia SDD:</strong> Recién cuando las 5 pruebas pasan en Postman y <code>./mvnw test</code> está en verde, marcamos <code>- [x] Tarea T5</code> en <code>03-tasks.md</code>.
+        </div>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 23: Lista de Chequeo para Auditar Código Generado por IA
+    // =========================================================================
+    icesi.slideFourCards(
+      'Checklist del Ingeniero al Auditar Código Generado por IA',
+      '01 • FRONTERA DTO',
+      `
+      <div style="margin-bottom:10px;"><span class="badge badge-orange">Privacidad y Ciclos</span></div>
+      <p style="font-size:13px; color:#1e293b; margin:0;">¿Algún método del controlador recibe o devuelve una clase <code>@Entity</code>? ¿Se filtran campos internos como <code>password</code> o colecciones perezosas?</p>
+      `,
+      '02 • INYECCIÓN Y MAPEO',
+      `
+      <div style="margin-bottom:10px;"><span class="badge badge-blue">Estándar Lombok/MapStruct</span></div>
+      <p style="font-size:13px; color:#1e293b; margin:0;">¿Todas las dependencias son <code>private final</code> con <code>@RequiredArgsConstructor</code>? ¿El Mapper generó su clase <code>*MapperImpl</code> en compilación?</p>
+      `,
+      '03 • SEGURIDAD RBAC',
+      `
+      <div style="margin-bottom:10px;"><span class="badge badge-purple">Alineación con data.sql</span></div>
+      <p style="font-size:13px; color:#1e293b; margin:0;">¿Cada endpoint tiene su anotación <code>@PreAuthorize</code> usando exactamente los nombres de permisos y roles definidos en <code>data.sql</code>?</p>
+      `,
+      '04 • NO REGRESIÓN MVC',
+      `
+      <div style="margin-bottom:10px;"><span class="badge badge-green">Convivencia Dual</span></div>
+      <p style="font-size:13px; color:#1e293b; margin:0;">¿Las vistas Thymeleaf existentes y los tests en <code>src/test/java</code> siguen funcionando sin haberse roto ningún método del <code>@Service</code>?</p>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 24: Automatización sin Instalar uv: .github/prompts/ + .agents/
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Cómo Funciona la Automatización: Slash Commands y .agents/',
+      `
+      <div style="font-size:13.8px; font-weight:700; color:var(--icesi-blue); margin-bottom:10px;">3 Piezas que Reemplazan a <code>uv</code> en Nuestro Repositorio:</div>
+      <div class="h-item h-item-blue" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">1. <code>AGENTS.md</code> + <code>.agents/memory/</code> (Memoria Activa)</div>
+          <div class="h-item-desc">Conecta automáticamente <code>00-constitution.md</code>, <code>tech-stack.md</code> y <code>architecture.md</code> para que el agente nunca olvide la arquitectura del curso.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-purple" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">2. <code>.github/prompts/</code> (Slash Commands <code>/speckit.*</code>)</div>
+          <div class="h-item-desc">Habilitados en <code>.vscode/settings.json</code> (<code>chat.promptFiles: true</code>). Al escribir <code>/speckit.specify</code> o <code>/speckit.clarify</code>, el IDE inyecta el flujo SDD completo.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green">
+        <div class="h-item-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">3. <code>.agents/skills/</code> (Skills Nativos en <code>agy</code> CLI)</div>
+          <div class="h-item-desc">Empaqueta las 6 fases como <code>SKILL.md</code> autodescubiertos por Antigravity CLI e IDE sin instalar librerías externas.</div>
+        </div>
+      </div>
+      `,
+      `
+      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:14px; display:flex; justify-content:center;">
+        <svg width="510" height="365" viewBox="0 0 510 365" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Nivel 1 -->
+          <rect x="18" y="16" width="474" height="135" rx="10" fill="#EFF6FF" stroke="#5454E9" stroke-width="2"/>
+          <text x="35" y="42" fill="#5454E9" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="bold">CAPA 1: PLANTILLAS Y MEMORIA (specs/templates/ + memory/)</text>
+          <rect x="35" y="56" width="205" height="75" rx="8" fill="#FFFFFF" stroke="#5454E9" stroke-width="1.5"/>
+          <text x="137" y="82" text-anchor="middle" fill="#393939" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">Moldes en Blanco</text>
+          <text x="137" y="102" text-anchor="middle" fill="#475569" font-family="monospace" font-size="11">specs/templates/01..03</text>
+          <text x="137" y="118" text-anchor="middle" fill="#475569" font-family="'Plus Jakarta Sans', sans-serif" font-size="10.5">+ 00-constitution.md</text>
+
+          <line x1="245" y1="93" x2="275" y2="93" stroke="#5454E9" stroke-width="2.5"/>
+
+          <rect x="280" y="56" width="195" height="75" rx="8" fill="#5454E9"/>
+          <text x="377" y="85" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="bold">Transparencia Total</text>
+          <text x="377" y="105" text-anchor="middle" fill="#E4EB60" font-family="'Plus Jakarta Sans', sans-serif" font-size="11">Sin cajas negras ocultas</text>
+
+          <!-- Arrow Down -->
+          <line x1="255" y1="155" x2="255" y2="188" stroke="#865CF0" stroke-width="3"/>
+
+          <!-- Nivel 2 -->
+          <rect x="18" y="190" width="474" height="158" rx="10" fill="#F5F3FF" stroke="#865CF0" stroke-width="2"/>
+          <text x="35" y="216" fill="#6D28D9" font-family="'Plus Jakarta Sans', sans-serif" font-size="13" font-weight="bold">CAPA 2: COMANDOS CON BARRA (/speckit.*) Y SKILLS (.agents/)</text>
+
+          <rect x="35" y="230" width="210" height="100" rx="8" fill="#393939"/>
+          <text x="140" y="254" text-anchor="middle" fill="#E4EB60" font-family="monospace" font-size="11.5" font-weight="bold">.github/prompts/*.prompt.md</text>
+          <text x="140" y="274" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="11">+ .agents/skills/speckit-*</text>
+          <text x="140" y="296" text-anchor="middle" fill="#4CB979" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="bold">VS Code / Copilot / agy CLI</text>
+          <text x="140" y="314" text-anchor="middle" fill="#CECFD4" font-family="'Plus Jakarta Sans', sans-serif" font-size="10">Cero instalación de uv</text>
+
+          <line x1="250" y1="280" x2="275" y2="280" stroke="#865CF0" stroke-width="2.5"/>
+
+          <rect x="280" y="230" width="195" height="100" rx="8" fill="#4CB979"/>
+          <text x="377" y="252" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', sans-serif" font-size="11.5" font-weight="bold">6 Comandos Listos:</text>
+          <text x="377" y="270" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10">/speckit.constitution</text>
+          <text x="377" y="285" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10">/speckit.specify | clarify</text>
+          <text x="377" y="300" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10">/speckit.plan | tasks</text>
+          <text x="377" y="315" text-anchor="middle" fill="#FFFFFF" font-family="monospace" font-size="10">/speckit.implement</text>
+        </svg>
+      </div>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 25: Catálogo de los 6 Comandos (/speckit.* y speckit-*)
+    // =========================================================================
+    icesi.slideFourCards(
+      'Catálogo de Comandos SDD: .github/prompts/ y .agents/skills/',
+      'FASE 1 Y 2 • SPECIFY',
+      `
+      <div style="margin-bottom:8px;"><span class="badge badge-purple">/speckit.specify</span></div>
+      <p style="font-size:12.4px; color:#1e293b; margin:0 0 8px 0;"><strong>También:</strong> <code>/speckit.constitution</code> y skill <code>speckit-specify</code></p>
+      <p style="font-size:12px; color:#475569; margin:0;">Toma tu requerimiento en lenguaje natural + <code>01-spec-template.md</code> y crea <code>specs/&lt;id&gt;/01-spec.md</code> con escenarios Gherkin.</p>
+      `,
+      'FASE 3 • CLARIFY',
+      `
+      <div style="margin-bottom:8px;"><span class="badge badge-orange">/speckit.clarify</span></div>
+      <p style="font-size:12.4px; color:#1e293b; margin:0 0 8px 0;"><strong>Skill:</strong> <code>.agents/skills/speckit-clarify/SKILL.md</code></p>
+      <p style="font-size:12px; color:#475569; margin:0;">Ejecuta el <strong>Interrogatorio Socrático</strong>: formula 3 a 5 preguntas sobre casos borde y actualiza <code>01-spec.md</code> con tus respuestas.</p>
+      `,
+      'FASE 4 Y 5 • PLAN & TASKS',
+      `
+      <div style="margin-bottom:8px;"><span class="badge badge-blue">/speckit.plan &amp; .tasks</span></div>
+      <p style="font-size:12.4px; color:#1e293b; margin:0 0 8px 0;"><strong>Skills:</strong> <code>speckit-plan</code> y <code>speckit-tasks</code></p>
+      <p style="font-size:12px; color:#475569; margin:0;">Audita el código existente para diseñar <code>02-plan.md</code> (DTOs, Mappers, Endpoints) y lo divide en tareas atómicas en <code>03-tasks.md</code>.</p>
+      `,
+      'FASE 6 • IMPLEMENT',
+      `
+      <div style="margin-bottom:8px;"><span class="badge badge-green">/speckit.implement</span></div>
+      <p style="font-size:12.4px; color:#1e293b; margin:0 0 8px 0;"><strong>Skill:</strong> <code>.agents/skills/speckit-implement/SKILL.md</code></p>
+      <p style="font-size:12px; color:#475569; margin:0;">Aplica la <strong>Single-Task Rule</strong>: implementa una única tarea pendiente a la vez, verifica con <code>./mvnw test-compile</code> y marca <code>[x]</code>.</p>
+      `
+    ),
+
+    // =========================================================================
+    // SLIDE 24: Reto Autónomo en Clase: Creando 002-matriculas-rest-api
+    // =========================================================================
+    icesi.slideTwoCols(
+      'Reto en Vivo: Creando 002-matriculas-rest-api con /speckit.*',
+      `
+      <div style="font-size:13.5px; font-weight:700; color:var(--icesi-blue); margin-bottom:6px;">Flujo Completo de 6 Fases para tu Siguiente Módulo:</div>
+      <div class="md-code-box"><span class="md-h"># 1. Especificar desde el template (Fase 2)</span>
+<span class="md-cmd">/speckit.specify</span> Quiero crear <span class="md-path">002-matriculas-rest-api</span> en
+<span class="md-http">/api/v1/matriculas</span> para consultar matrículas e inscribir
+estudiantes en cursos usando <span class="md-kw">ENROLLMENT_WRITE</span>.
+
+<span class="md-h"># 2. Interrogatorio Socrático de casos borde (Fase 3)</span>
+<span class="md-cmd">/speckit.clarify</span> Hazme las preguntas de casos borde sobre
+<span class="md-ann">matrículas duplicadas, cupos o semestres</span>.
+
+<span class="md-h"># 3. Diseño Técnico y Checklist Atómico (Fases 4 y 5)</span>
+<span class="md-cmd">/speckit.plan</span> Genera <span class="md-path">02-plan.md</span> para <span class="md-path">002-matriculas-rest-api</span>
+<span class="md-cmd">/speckit.tasks</span> Genera <span class="md-path">03-tasks.md</span> para <span class="md-path">002-matriculas-rest-api</span>
+
+<span class="md-h"># 4. Implementación Controlada Tarea por Tarea (Fase 6)</span>
+<span class="md-cmd">/speckit.implement</span> Ejecuta únicamente la <span class="md-kw">Tarea T1</span></div>
+      `,
+      `
+      <div style="font-size:13.8px; font-weight:700; color:var(--icesi-purple); margin-bottom:10px;">Los 3 Mandamientos del Desarrollador SDD:</div>
+      <div class="h-item h-item-blue" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">1. Gobernar y Clarificar antes de Diseñar</div>
+          <div class="h-item-desc">Nunca pases al plan técnico sin haber ejecutado <code>/speckit.clarify</code> para resolver casos borde en <code>01-spec.md</code>.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-purple" style="margin-bottom:10px;">
+        <div class="h-item-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">2. Auditar el Plan Técnico (<code>02-plan.md</code>)</div>
+          <div class="h-item-desc">El desarrollador es el arquitecto: revisa que la IA reutilice los servicios existentes y aplane los DTOs sin filtrar entidades.</div>
+        </div>
+      </div>
+      <div class="h-item h-item-green">
+        <div class="h-item-icon"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div style="flex:1; min-width:0;">
+          <div class="h-item-title">3. Single-Task Rule y Verificación Empírica</div>
+          <div class="h-item-desc">Avanza una tarea a la vez en <code>03-tasks.md</code> verificando siempre con <code>./mvnw</code> y Postman.</div>
+        </div>
+      </div>
+      `
+    )
+  ];
+
+  document.getElementById('icesi-slides').innerHTML = slides.join('\n');
+  icesi.init({
+    hash: true,
+    slideNumber: false,
+    controls: false,
+    progress: true,
+    center: false,
+    width: 1280,
+    height: 720,
+    margin: 0,
+    minScale: 0.2,
+    maxScale: 2.0
+  });
+</script>
+
+</body>
+</html>

@@ -41,7 +41,7 @@ INSERT INTO rol_permiso (rol_id, permiso_id) VALUES (2, 6); -- COURSE_WRITE
 INSERT INTO rol_permiso (rol_id, permiso_id) VALUES (3, 5); -- COURSE_READ
 INSERT INTO rol_permiso (rol_id, permiso_id) VALUES (3, 7); -- ENROLLMENT_WRITE
 
--- ------------------------------------------------------------------------------
+--- ------------------------------------------------------------------------------
 -- 4. USUARIOS DEL SISTEMA (Total: 27 usuarios = 2 Admin + 10 Docentes + 15 Estudiantes)
 -- Contraseñas Hasheadas con BCrypt (strength 10) para pruebas en clase:
 --   - 3 Usuarios Principales de Prueba:

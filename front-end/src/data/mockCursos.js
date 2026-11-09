@@ -4,20 +4,20 @@ export const MOCK_CURSOS = [
         nombre: "Computación en Internet II",
         creditos: 3,
         departamento: "Computación y Sistemas Inteligentes",
-        profesor: "Kevin Rodriguez"
+        profesor: "Alejandro Peñaranda"
     },
-    {
-        id: 2,
-        nombre: "Bases de Datos",
-        creditos: 3,
-        departamento: "Computación y Sistemas Inteligentes",
-        profesor: "Claudia Martinez"
-    },
-    {
-        id: 3,
-        nombre: "Sistemas Distribuidos",
-        creditos: 4,
-        departamento: "TIC",
-        profesor: "Andres Perez"
-    }
+    // {
+    //     id: 2,
+    //     nombre: "Bases de Datos",
+    //     creditos: 3,
+    //     departamento: "Computación y Sistemas Inteligentes",
+    //     profesor: "Claudia Martinez"
+    // },
+    // {
+    //     id: 3,
+    //     nombre: "Sistemas Distribuidos",
+    //     creditos: 4,
+    //     departamento: "TIC",
+    //     profesor: "Andres Perez"
+    // }
 ];

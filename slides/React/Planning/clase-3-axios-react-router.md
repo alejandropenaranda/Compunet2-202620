@@ -122,7 +122,7 @@ export default function CursosPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div className="header-row">
         <h1>Catálogo de Asignaturas</h1>
         <Link to="/cursos/nuevo" className="btn btn-success">
           Nuevo Curso
@@ -179,7 +179,7 @@ export default function CursoDetallePage() {
       <h1>{curso.nombre}</h1>
       <p><strong>Créditos:</strong> {curso.creditos}</p>
       <p><strong>Departamento:</strong> {curso.departamento}</p>
-      <div className="card" style={{ marginTop: '1rem' }}>
+      <div className="card card-detalle">
         <h4>Docente Titular</h4>
         <p>{curso.profesorNombreCompleto || curso.profesor || 'Docente Asignado'}</p>
         <p className="card-subtitle">{curso.profesorCorreo || 'docente@icesi.edu.co'}</p>
@@ -223,7 +223,7 @@ export default function CursoFormPage() {
   return (
     <div>
       <Link to="/cursos" className="btn btn-link">Volver al Catálogo</Link>
-      <form onSubmit={handleSubmit} className="form-curso" style={{ marginTop: '1rem' }}>
+      <form onSubmit={handleSubmit} className="form-curso">
         <h2>Registrar Nuevo Curso</h2>
         <input
           placeholder="Nombre de la asignatura"
@@ -275,7 +275,7 @@ export default function CursoCard({ curso }) {
       <p className="card-profesor">
         <strong>Docente:</strong> {profesor || 'Sin profesor asignado'}
       </p>
-      <div style={{ marginTop: '0.8rem' }}>
+      <div className="card-actions">
         <Link to={`/cursos/${id}`} className="btn btn-primary">
           Ver Detalle
         </Link>

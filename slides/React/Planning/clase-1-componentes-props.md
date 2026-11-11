@@ -137,10 +137,12 @@ body {
   flex-direction: column;
   gap: 1rem;
   max-width: 450px;
+  margin: 0 auto 2rem auto;
   background: #fff;
   padding: 1.5rem;
   border-radius: 8px;
   border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .form-curso input {
@@ -157,6 +159,82 @@ body {
 
 .status-loading { background: #e0f2fe; color: #0369a1; }
 .status-error { background: #fee2e2; color: #b91c1c; }
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.card-actions {
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.card-detalle {
+  max-width: 600px;
+  margin-top: 1rem;
+}
+
+.card-destacado {
+  border: 2px solid var(--accent);
+  background: #f8faff;
+}
+
+.card-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge-troncal {
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.banner-seleccion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #e0f2fe;
+  border-left: 4px solid var(--accent);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.btn-close-banner {
+  background: #dbeafe;
+  color: #0369a1;
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-close-banner:hover {
+  background: #bfdbfe;
+  color: #075985;
+}
+
+.filtro-container {
+  margin-bottom: 1.5rem;
+}
 ```
 
 ---
@@ -205,8 +283,8 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <h2>Portal Cursos Icesi</h2>
-      <div>
-        <span style={{ marginRight: '1rem' }}>Docente Activo</span>
+      <div className="navbar-user">
+        <span>Docente Activo</span>
         <button className="btn btn-danger">Salir</button>
       </div>
     </nav>
@@ -231,7 +309,7 @@ export default function CursoCard({ curso }) {
       <p className="card-profesor">
         <strong>Docente:</strong> {profesor || 'Sin profesor asignado'}
       </p>
-      <div style={{ marginTop: '0.8rem' }}>
+      <div className="card-actions">
         <button className="btn btn-primary">Ver Detalle</button>
       </div>
     </div>

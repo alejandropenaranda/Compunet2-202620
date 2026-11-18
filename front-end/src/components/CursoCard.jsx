@@ -1,8 +1,10 @@
 // src/components/CursoCard.jsx
+import { Link } from 'react-router';
 
 // >>> [MODIFICADO]: Se agregan las props 'destacado' (default false) y 'onSeleccionar' (callback)
 export default function CursoCard({ curso, destacado = false, onSeleccionar }) {
-  const { id, nombre, creditos, departamento, profesor } = curso;
+  const { id, nombre, creditos, departamento, profesor, profesorNombre, profesorApellido } = curso;
+  const nombreDocente = [profesorNombre, profesorApellido].filter(Boolean).join(' ') || profesor;
 
   return (
     // >>> [MODIFICADO]: Clase condicional 'card-destacado' según la prop 'destacado'
@@ -18,7 +20,7 @@ export default function CursoCard({ curso, destacado = false, onSeleccionar }) {
         <strong>Créditos:</strong> {creditos} · <strong>Depto:</strong> {departamento}
       </p>
       <p className="card-profesor">
-        <strong>Docente:</strong> {profesor || 'Sin profesor asignado'}
+        <strong>Docente:</strong> {nombreDocente || 'Sin profesor asignado'}
       </p>
 
       <div className="card-actions">
@@ -29,6 +31,9 @@ export default function CursoCard({ curso, destacado = false, onSeleccionar }) {
         >
           Seleccionar
         </button>
+        <Link to={`/cursos/${id}`} className="btn btn-link">
+          Ver Detalle
+        </Link>
       </div>
     </div>
   );

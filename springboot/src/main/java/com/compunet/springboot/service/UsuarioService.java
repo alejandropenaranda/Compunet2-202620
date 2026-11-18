@@ -97,11 +97,11 @@ public class UsuarioService {
         List<Rol> rolesAsignados = new ArrayList<>();
         if (nombresRoles != null && !nombresRoles.isEmpty()) {
             for (String nombreRol : nombresRoles) {
-                rolRepository.findByNombre(nombreRol).ifPresent(rolesAsignados::add);
+                Rol rol = rolRepository.findByNombre(nombreRol)
+                        .orElseThrow(() -> new IllegalStateException("El rol especificado no existe: " + nombreRol));
+                rolesAsignados.add(rol);
             }
-        }
-
-        if (rolesAsignados.isEmpty()) {
+        } else {
             rolesAsignados.add(obtenerRolDefault());
         }
 
